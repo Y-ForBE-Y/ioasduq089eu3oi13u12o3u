@@ -1,0 +1,59 @@
+-- Локальный скрипт
+local Players = game:GetService("Players")
+
+-- Получаем текущего игрока
+local localPlayer = Players.LocalPlayer
+
+-- Функция для отключения коллизии между двумя персонажами
+local function disableCollision(character1, character2)
+    for _, part1 in ipairs(character1:GetDescendants()) do
+        if part1:IsA("BasePart") then
+            for _, part2 in ipairs(character2:GetDescendants()) do
+                if part2:IsA("BasePart") then
+                    local noCollisionConstraint = Instance.new("NoCollisionConstraint")
+                    noCollisionConstraint.Part0 = part1
+                    noCollisionConstraint.Part1 = part2
+                    noCollisionConstraint.Parent = part1
+                end
+            end
+        end
+    end
+end
+
+-- Функция для обработки нового игрока
+local function onPlayerAdded(player)
+    player.CharacterAdded:Connect(function(character)
+        -- Ждём загрузки персонажа
+        character:WaitForChild("HumanoidRootPart")
+        if localPlayer.Character then
+            disableCollision(localPlayer.Character, character)
+        end
+    end)
+end
+
+-- Обработка уже существующих игроков
+for _, player in ipairs(Players:GetPlayers()) do
+    if player ~= localPlayer then
+        onPlayerAdded(player)
+        if player.Character then
+            disableCollision(localPlayer.Character, player.Character)
+        end
+    end
+end
+
+-- Обработка новых игроков
+Players.PlayerAdded:Connect(function(player)
+    if player ~= localPlayer then
+        onPlayerAdded(player)
+    end
+end)
+
+-- Обработка изменения персонажа локального игрока
+localPlayer.CharacterAdded:Connect(function(character)
+    character:WaitForChild("HumanoidRootPart")
+    for _, player in ipairs(Players:GetPlayers()) do
+        if player ~= localPlayer and player.Character then
+            disableCollision(character, player.Character)
+        end
+    end
+end)
