@@ -1,4 +1,6 @@
 --!nolint BuiltinGlobalWrite
+print("Step 1")
+
 
 local Success, Error = pcall(function()
 	Start = os.clock()
