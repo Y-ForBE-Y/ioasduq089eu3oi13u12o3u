@@ -1,6 +1,20 @@
-local module = require(game:GetService("ReplicatedStorage"):WaitForChild("TDX_Shared"):WaitForChild("Common"):WaitForChild("Enums"))
+local url = "https://raw.githubusercontent.com/Y-ForBE-Y/ioasduq089eu3oi13u12o3u/main/EnumsTDX.lua"
+local script = game:HttpGet(url, true)
+local module = loadstring(script)()
+
 local Maps = module.Maps
 local MapDifficulties = module.MapDifficulties
+
+local tbl = {
+    Veer = "V_eeer";
+    EpicDJGameKing = "epicdjgameking";
+    Scrufus = "Scrufus";
+    JohnRoblox = "JOHN ROBLOX :3";
+    ExtremelyHugeBadger = "ExtremelyHugeBadger";
+    Arch = "archmaestros";
+    Rikaforge = "rikaforge";
+    Atrazine = "Atrazine";
+}
 local tbl = {
     Veer = "V_eeer";
     EpicDJGameKing = "epicdjgameking";
