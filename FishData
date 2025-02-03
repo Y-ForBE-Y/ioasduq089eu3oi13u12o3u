@@ -44,6 +44,27 @@ local module_2_upvr = {
         HoldAnimation = fish:WaitForChild("heavy");
         From = "Glacial Grotto";
     };
+    ["Ancient Megalodon"] = {
+        BlockPassiveCapture = true;
+        HideFishModel = true;
+        WeightPool = {500000, 700000};
+        Chance = 0.005;
+        Rarity = "Exotic";
+        Resilience = 5;
+        ProgressEfficiency = 0.2;
+        Description = "The Ancient Megalodon is a colossal predatory shark from prehistoric times, unmatched in size and ferocity. With its massive mouth and serrated teeth, it can effortlessly rip through any obstacle. A true apex predator of the Ancient Isle, it offers an incredible battle for those daring to catch it.";
+        Hint = "???";
+        FavouriteBait = "Shark Head";
+        FavouriteTime = "None";
+        Price = 16000;
+        XP = 9000;
+        Seasons = {"None"};
+        Weather = {"None"};
+        Quips = {"WOAH THE ANCIENT MEG!"};
+        SparkleColor = Color3.fromRGB(131, 255, 49);
+        HoldAnimation = fish:WaitForChild("heavy");
+        From = "Ancient Isle";
+    };
     Rarities = {"Trash", "Common", "Uncommon", "Unusual", "Rare", "Legendary", "Mythical", "Divine", "Exotic", "Secret", "Relic", "Fragment", "Gemstone", "Limited"};
     RarityColours = {
         Trash = Color3.fromRGB(145, 145, 145);
