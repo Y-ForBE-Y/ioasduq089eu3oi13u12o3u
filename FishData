@@ -1,13 +1,10 @@
 --From the game:GetService("ReplicatedStorage").modules.library.fish
 
--- Decompiler will be improved soon!
--- Decompiled with Konstant V2.1, a fast Luau decompiler made in Luau by plusgiant5 (https://discord.gg/wyButjTMhM)
--- Decompiled on 2025-02-02 17:39:03
--- Luau version 6, Types version 3
--- Time taken: 0.429823 seconds
+local url_to_presents = "https://github.com/Y-ForBE-Y/ioasduq089eu3oi13u12o3u/blob/main/presentsData"
+local presentsContent = game:HttpGet(url_to_presents)
 
 local fish = game:GetService("ReplicatedStorage"):WaitForChild("resources"):WaitForChild("animations"):WaitForChild("fish")
-local module = require(game:GetService("ReplicatedStorage").modules.library.fish.presents)
+local module = loadstring(scriptContent)()
 local tbl = {
     ["Desolate Deep"] = {
         Trash = 22;
