@@ -25,7 +25,7 @@ local tbl = {
     };
 }
 local module_2_upvr = {
-    ["1"] = {
+    ["Ancient Megalodon"] = {
         WeightPool = {3000, 6000};
         Chance = 0.01;
         Rarity = "Mythical";
