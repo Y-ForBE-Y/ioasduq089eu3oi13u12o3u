@@ -65,6 +65,24 @@ local module_2_upvr = {
         HoldAnimation = fish:WaitForChild("heavy");
         From = "Ancient Isle";
     };
+    Cod = {
+        WeightPool = {20, 100};
+        Chance = 75;
+        Rarity = "Uncommon";
+        Resilience = 70;
+        Description = "Cod are robust, deep-water fish. Best found in the open cold oceans during winter and spring. Cods are a reliable and rewarding catch with substantial size and strong fighting ability.";
+        Hint = "Found in cold deep ocean water.";
+        FavouriteBait = "Minnow";
+        FavouriteTime = nil;
+        Price = 90;
+        XP = 70;
+        Seasons = {"Winter", "Spring"};
+        Weather = {"Foggy"};
+        Quips = {"A Cod!", "I caught a Cod!", "Woah, a Cod!", "Cod of duty!", "What's up, Coddy!"};
+        SparkleColor = Color3.fromRGB(207, 158, 139);
+        HoldAnimation = fish:WaitForChild("basic");
+        From = "Ocean";
+    };
     Rarities = {"Trash", "Common", "Uncommon", "Unusual", "Rare", "Legendary", "Mythical", "Divine", "Exotic", "Secret", "Relic", "Fragment", "Gemstone", "Limited"};
     RarityColours = {
         Trash = Color3.fromRGB(145, 145, 145);
