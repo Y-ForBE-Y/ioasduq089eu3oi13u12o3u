@@ -1,9 +1,3 @@
--- Decompiler will be improved soon!
--- Decompiled with Konstant V2.1, a fast Luau decompiler made in Luau by plusgiant5 (https://discord.gg/wyButjTMhM)
--- Decompiled on 2025-02-02 22:59:30
--- Luau version 6, Types version 3
--- Time taken: 0.000912 seconds
-
 return {
     Basic = {"Cookie", "Cookie", "Glass of Milk", "Glass of Milk", "Candy Cane Carp", "Santa Salmon", "Ornament Fish"};
     Unique = {"Icicle", "Icicle", "Icicle", "Glass of Milk", "Glass of Milk", "Glass of Milk", "Candy Cane Carp", "Candy Cane Carp", "Candy Cane Carp", "Candy Cane Carp", "Candy Cane Carp", "Candy Cane Carp", "Ornament Fish", "Ornament Fish", "Ornament Fish", "Ornament Fish", "Santa Salmon", "Santa Salmon", "Santa Salmon", "Santa Salmon", "Santa Salmon", "Santa Salmon", "Gingerbread Fish", "Gingerbread Fish", "Gingerbread Fish", "Enchant Relic", "Enchant Relic"};
