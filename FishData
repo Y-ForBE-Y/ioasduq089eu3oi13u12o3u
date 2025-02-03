@@ -25,7 +25,7 @@ local tbl = {
     };
 }
 local module_2_upvr = {
-    ["Icebeard Shark"] = {
+    ["Cod"] = {
         WeightPool = {3000, 6000};
         Chance = 0.01;
         Rarity = "Mythical";
