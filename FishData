@@ -1,0 +1,84 @@
+--From the game:GetService("ReplicatedStorage").modules.library.fish
+
+-- Decompiler will be improved soon!
+-- Decompiled with Konstant V2.1, a fast Luau decompiler made in Luau by plusgiant5 (https://discord.gg/wyButjTMhM)
+-- Decompiled on 2025-02-02 17:39:03
+-- Luau version 6, Types version 3
+-- Time taken: 0.429823 seconds
+
+local fish = game:GetService("ReplicatedStorage"):WaitForChild("resources"):WaitForChild("animations"):WaitForChild("fish")
+--local module = require(script:WaitForChild("presents"))
+local tbl = {
+    ["Desolate Deep"] = {
+        Trash = 22;
+        Common = 22;
+        Uncommon = 18;
+        Unusual = 17;
+        Rare = 14;
+    };
+    ["Brine Pool"] = {
+        Trash = 29;
+        Common = 29;
+        Uncommon = 25;
+        Unusual = 23;
+        Rare = 15;
+    };
+}
+local module_2_upvr = {
+    ["Icebeard Shark"] = {
+        WeightPool = {3000, 6000};
+        Chance = 0.01;
+        Rarity = "Mythical";
+        Resilience = 10;
+        ProgressEfficiency = 0.5;
+        Description = "A massive, ancient shark with frost-covered skin and icicle-like protrusions.";
+        Hint = "Only appears in the deepest, darkest parts of the Glacial Grotto.";
+        FavouriteBait = "Truffle Worm";
+        FavouriteTime = "Night";
+        Price = 8000;
+        XP = 2500;
+        Seasons = {"Winter"};
+        Weather = {"None"};
+        Quips = {"AN ICEBEARD SHARK!", "THE LEGEND EXISTS!", "INCREDIBLE!", "THE FROZEN TERROR!"};
+        SparkleColor = Color3.fromRGB(147, 198, 255);
+        HoldAnimation = fish:WaitForChild("heavy");
+        From = "Glacial Grotto";
+    };
+    Rarities = {"Trash", "Common", "Uncommon", "Unusual", "Rare", "Legendary", "Mythical", "Divine", "Exotic", "Secret", "Relic", "Fragment", "Gemstone", "Limited"};
+    RarityColours = {
+        Trash = Color3.fromRGB(145, 145, 145);
+        Common = Color3.fromRGB(142, 187, 191);
+        Uncommon = Color3.fromRGB(161, 255, 169);
+        Unusual = Color3.fromRGB(192, 135, 198);
+        Rare = Color3.fromRGB(119, 108, 181);
+        Legendary = Color3.fromRGB(240, 181, 109);
+        Mythical = Color3.fromRGB(255, 62, 120);
+        Exotic = Color3.fromRGB(255, 255, 255);
+        Secret = Color3.fromRGB(255, 255, 255);
+        Limited = Color3.fromRGB(54, 73, 159);
+        Divine = Color3.fromRGB(202, 198, 255);
+        Relic = Color3.fromRGB(120, 255, 183);
+        Fragment = Color3.fromRGB(255, 63, 5);
+        Gemstone = Color3.fromRGB(172, 57, 255);
+    };
+}
+function module_2_upvr.ToInteger(arg1, arg2) -- Line 9175
+    return math.floor(arg2.r * 255) * 65536 + math.floor(arg2.g * 255) * 256 + math.floor(arg2.b * 255)
+end
+function module_2_upvr.ToHex(arg1, arg2) -- Line 9179
+    --[[ Upvalues[1]:
+        [1]: module_2_upvr (readonly)
+    ]]
+    local any_ToInteger_result1 = module_2_upvr:ToInteger(arg2)
+    local var2150
+    repeat
+        local var2151 = any_ToInteger_result1 % 16
+        local tostring_result1 = tostring(var2151)
+        if 10 <= var2151 then
+            tostring_result1 = ({'A', 'B', 'C', 'D', 'E', 'F'})[1 + var2151 - 10]
+        end
+        var2150 = var2150..tostring_result1
+    until math.floor(any_ToInteger_result1 / 16) <= 0
+    return '#'..string.reverse(var2150)
+end
+return module_2_upvr
