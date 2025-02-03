@@ -5,7 +5,7 @@
 --local module = loadstring(scriptContent)()
 
 
---local fish = game:GetService("ReplicatedStorage"):WaitForChild("resources"):WaitForChild("animations"):WaitForChild("fish")
+local fish = game:GetService("ReplicatedStorage"):WaitForChild("resources"):WaitForChild("animations"):WaitForChild("fish")
 
 local tbl = {
     ["Desolate Deep"] = {
