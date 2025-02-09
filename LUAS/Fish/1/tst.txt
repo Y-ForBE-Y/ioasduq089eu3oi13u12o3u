@@ -1,0 +1,48 @@
+local player = game.Players.LocalPlayer
+local selectedBobber = game:GetService("ReplicatedStorage").playerstats.HUISOSIKUSITUNITY.Stats.bobber.Value
+local ReplicatedStorage = game:GetService('ReplicatedStorage')
+
+-- Функция для получения экипированного инструмента
+local function getEquippedTool()
+    return player.Character and player.Character:FindFirstChildOfClass("Tool")
+end
+
+local equippedTool = getEquippedTool()
+
+if equippedTool then
+    local equippedToolName = equippedTool.Name
+    print("Экипирован инструмент:", equippedToolName)
+
+    local playerModel = workspace:FindFirstChild(player.Name)
+    
+    if playerModel then
+        local equippedToolInWorkspace = playerModel:FindFirstChild(equippedToolName)
+
+        if equippedToolInWorkspace then
+            print("Инструмент найден в workspace. Ожидаем появления bobber...")
+
+            -- Отслеживаем появление bobber
+            equippedToolInWorkspace.ChildAdded:Connect(function(child)
+                if child.Name == "bobber" then
+                    print("Bobber найден!")
+
+                    -- Отслеживаем появление нужных моделей в bobber
+                    child.ChildAdded:Connect(function(innerChild)
+                        if innerChild:IsA("Model") and innerChild.Name ~= selectedBobber then
+                            print("Найдена модель рыбы:", innerChild.Name)
+                            -- Тут можно добавить действия с найденной моделью
+                            wait(0.5)
+                            ReplicatedStorage.events.reelfinished:FireServer(100, false)
+                        end
+                    end)
+                end
+            end)
+        else
+            warn("Инструмент не найден в workspace.")
+        end
+    else
+        warn("Модель игрока не найдена в workspace.")
+    end
+else
+    warn("Инструмент не экипирован.")
+end

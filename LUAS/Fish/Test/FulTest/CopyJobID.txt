@@ -1,0 +1,10 @@
+local jobId = game.JobId
+print("Job ID:", jobId)
+
+-- Копируем в буфер обмена (работает только в Studio)
+if setclipboard then
+    setclipboard(jobId)
+    print("Job ID скопирован в буфер обмена.")
+else
+    warn("setclipboard не поддерживается в этой среде.")
+end

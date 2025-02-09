@@ -1,0 +1,19 @@
+local player = game.Players.LocalPlayer
+local character = player.Character or player.CharacterAdded:Wait()
+local humanoid = character:WaitForChild("Humanoid")
+
+-- Полное отключение плавания
+humanoid:SetStateEnabled(Enum.HumanoidStateType.Swimming, false)
+
+-- Отключаем Buoyancy (всплытие)
+for _, part in ipairs(character:GetDescendants()) do
+    if part:IsA("BasePart") then
+        part.CustomPhysicalProperties = PhysicalProperties.new(100, 0.3, 0.5)  -- Увеличиваем массу, чтобы не всплывал
+    end
+end
+
+-- Сохраняем стандартные параметры скорости
+humanoid.WalkSpeed = 16
+humanoid.JumpPower = 50
+
+print("Плавание отключено, теперь можно ходить под водой.")

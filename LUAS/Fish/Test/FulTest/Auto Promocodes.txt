@@ -1,0 +1,20 @@
+local function ActivetePromo() 
+    local runCodeEvent = game:GetService("ReplicatedStorage"):WaitForChild("events"):WaitForChild("runcode")
+
+    local argsList = {
+        {"CARBON"},
+        {"ATLANTEANSTORM"},
+        {"SORRYGUYS"},
+        {"GOLDENTIDE"},
+        {"NewYear"},
+        {"NorthernExpedition"},
+        {"RFG"},
+    }
+
+    for _, args in ipairs(argsList) do
+        runCodeEvent:FireServer(unpack(args))
+    end
+end
+
+print("Промокоды активированны")
+ActivetePromo() 

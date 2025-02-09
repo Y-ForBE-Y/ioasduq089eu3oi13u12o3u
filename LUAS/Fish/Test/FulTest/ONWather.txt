@@ -1,0 +1,19 @@
+local player = game.Players.LocalPlayer
+local character = player.Character or player.CharacterAdded:Wait()
+local humanoid = character:WaitForChild("Humanoid")
+
+-- Восстановление состояния плавания
+humanoid:SetStateEnabled(Enum.HumanoidStateType.Swimming, true)
+
+-- Восстановление физики частей тела
+for _, part in ipairs(character:GetDescendants()) do
+    if part:IsA("BasePart") then
+        part.CustomPhysicalProperties = PhysicalProperties.new(0.7, 0.3, 0.5)  -- Стандартные значения
+    end
+end
+
+-- Восстановление стандартных параметров скорости и прыжка
+humanoid.WalkSpeed = 16
+humanoid.JumpPower = 50
+
+print("Персонаж снова может плавать и взаимодействовать с водой.")

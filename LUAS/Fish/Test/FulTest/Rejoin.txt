@@ -1,0 +1,4 @@
+print("---------------------Reconecting-----------------------------")
+print("")
+
+game:GetService("TeleportService"):Teleport(game.PlaceId, player)

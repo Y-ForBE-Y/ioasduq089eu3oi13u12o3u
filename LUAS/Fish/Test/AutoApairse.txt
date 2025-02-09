@@ -1,0 +1,31 @@
+local UserInputService = game:GetService("UserInputService")
+
+local enable = false
+
+-- Функция для обработки нажатия клавиши
+local function onInputBegan(input, gameProcessed)
+    if gameProcessed then
+        return
+    end
+
+    if input.KeyCode == Enum.KeyCode.RightControl then
+        enable = not enable -- Переключение состояния
+        print("Enable is now: " .. tostring(enable))
+        
+        -- Запуск цикла при включении
+        if enable then
+            task.spawn(function()
+                while enable do
+                    local appraiseEvent = workspace:WaitForChild("world"):WaitForChild("npcs")
+                        :WaitForChild("Appraiser"):WaitForChild("appraiser"):WaitForChild("appraise")
+                    
+                    appraiseEvent:InvokeServer()
+                    wait(1)
+                end
+            end)
+        end
+    end
+end
+
+-- Подключение события нажатия клавиши
+UserInputService.InputBegan:Connect(onInputBegan)

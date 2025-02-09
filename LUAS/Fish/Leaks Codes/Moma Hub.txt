@@ -1,0 +1,217 @@
+--if you wane skid leave credit or me mad >:(
+
+local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
+
+local Window = Rayfield:CreateWindow({
+    Name = "moma hub - scriptblox = moma1133222 follow me please",
+    Icon = 0,
+    LoadingTitle = "moma hub loading",
+    LoadingSubtitle = "by moma1133222",
+    Theme = "Default",
+    DisableRayfieldPrompts = false,
+    DisableBuildWarnings = false,
+    ConfigurationSaving = {
+        Enabled = false,
+        FolderName = nil,
+        FileName = "moma hub"
+    },
+    Discord = {
+        Enabled = false,
+        Invite = "noinvitelink",
+        RememberJoins = true
+    },
+    KeySystem = false,
+    KeySettings = {
+        Title = "Untitled",
+        Subtitle = "Key System",
+        Note = "No method of obtaining the key is provided",
+        FileName = "Key",
+        SaveKey = true,
+        GrabKeyFromSite = false,
+        Key = {"Hello"}
+    }
+})
+
+local Tab = Window:CreateTab("Main", 4483362458)
+local Section = Tab:CreateSection("Main stuff")
+
+Rayfield:Notify({
+    Title = "Follow me please",
+    Content = "my script blox moma1133222",
+    Duration = 6.5,
+    Image = 4483362458,
+})
+
+local player = game:GetService("Players").LocalPlayer
+local replicatedStorage = game:GetService("ReplicatedStorage")
+
+local args = {50, 1}
+local isCasting = false
+local loopInterval = 0.1
+
+local function toggleCasting()
+    isCasting = not isCasting
+    if isCasting then
+        local rod = nil
+        for _, item in pairs(player.Character:GetChildren()) do
+            if item:IsA("Tool") and item.Name:find("Rod") then
+                rod = item
+                break
+            end
+        end
+        
+        if not rod or not rod:FindFirstChild("events") then
+            isCasting = false
+            return
+        end
+
+        local events = rod.events
+        while isCasting do
+            events.cast:FireServer(unpack(args))
+            wait(loopInterval)
+        end
+    end
+end
+
+Tab:CreateToggle({
+    Name = "Auto Cast",
+    CurrentValue = false,
+    Flag = "AutoCastToggle",
+    Callback = function(Value)
+        if Value then
+            toggleCasting()
+        else
+            isCasting = false
+        end
+    end,
+})
+
+Tab:CreateInput({
+    Name = "Cast Distance",
+    CurrentValue = "50", 
+    PlaceholderText = "Enter distance",
+    RemoveTextAfterFocusLost = false,
+    Flag = "InputDistance",
+    Callback = function(Text)
+        local distance = tonumber(Text)
+        if distance then
+            args[1] = distance
+        end
+    end,
+})
+
+local catchArgs = {100, true}
+local isCatching = false
+
+local function toggleCatching()
+    isCatching = not isCatching
+    while isCatching do
+        replicatedStorage.events.reelfinished:FireServer(unpack(catchArgs))
+        wait(loopInterval)
+    end
+end
+
+Tab:CreateToggle({
+    Name = "Insta Catch",
+    CurrentValue = false,
+    Flag = "InstaCatchToggle",
+    Callback = function(Value)
+        if Value then
+            toggleCatching()
+        else
+            isCatching = false
+        end
+    end,
+})
+
+replicatedStorage.events.reelfinished.OnClientEvent:Connect(function()
+    if isCatching then
+        replicatedStorage.events.reelfinished:FireServer(unpack(catchArgs))
+    end
+end)
+
+local CodesSection = Tab:CreateSection("Codes")
+
+Tab:CreateButton({
+    Name = "Redeem all codes",
+    Callback = function()
+        local events = replicatedStorage:WaitForChild("events")
+        local runCodeEvent = events:WaitForChild("runcode")
+
+        local argsList = {
+            {"SORRY"},
+            {"2k_active"},
+            {"1k_active"},
+            {"Modded"},
+            {"MegaLuck"},
+            {"3MVISITS"},
+            {"LavaMegalodon"},
+            {"DEV"}
+        }
+
+        for _, args in ipairs(argsList) do
+            runCodeEvent:FireServer(unpack(args))
+        end
+    end,
+})
+
+local Section = Tab:CreateSection("Glitched")
+
+Tab:CreateButton({
+    Name = "Rejoin (if you're broken)",
+    Callback = function()
+        game:GetService("TeleportService"):Teleport(game.PlaceId, player) 
+    end,
+})
+
+local SellTab = Window:CreateTab("SELL", "rewind")
+
+SellTab:CreateSection("Sell")
+
+SellTab:CreateButton({
+    Name = "Sell hand",
+    Callback = function()
+        local merchant = workspace:WaitForChild("world"):WaitForChild("npcs"):WaitForChild("Marc Merchant"):WaitForChild("merchant"):WaitForChild("sell")
+        if merchant and merchant:IsA("RemoteFunction") then
+            pcall(function()
+                merchant:InvokeServer()
+            end)
+        end
+    end,
+})
+
+SellTab:CreateButton({
+    Name = "Sell All",
+    Callback = function()
+        local merchant = workspace:FindFirstChild("world"):FindFirstChild("npcs"):FindFirstChild("Marc Merchant"):FindFirstChild("merchant"):FindFirstChild("sellall")
+        if merchant and merchant:IsA("RemoteFunction") then
+            pcall(function()
+                merchant:InvokeServer()
+            end)
+        end
+    end,
+})
+
+local TeleportTab = Window:CreateTab("TELEPORT", "rewind")
+
+TeleportTab:CreateSection("teleports")
+
+TeleportTab:CreateButton({
+    Name = "Moosewood",
+    Callback = function()
+        local player = game.Players.LocalPlayer 
+        if player and player.Character then
+            player.Character:MoveTo(Vector3.new(383, 135, 244)) 
+        end
+    end,
+})
+
+TeleportTab:CreateButton({
+    Name = "Mod place",
+    Callback = function()
+        local player = game.Players.LocalPlayer 
+        if player and player.Character then
+            player.Character:MoveTo(Vector3.new(-37, -247, 206)) 
+        end
+    end,
+})

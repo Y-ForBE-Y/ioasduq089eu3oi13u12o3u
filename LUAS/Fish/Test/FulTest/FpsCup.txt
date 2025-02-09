@@ -1,0 +1,5 @@
+local fpsLimit = 40
+
+print("фпс ограничен до: ".. fpsLimit)
+
+setfpscap(fpsLimit)

@@ -1,0 +1,51 @@
+--X: -1505.76, Y: 131.27, Z: 1693.50 -- ХУЙ ПОЙМИ ЧТО
+local targetPosition = Vector3.new(0, 0, 0); local AngleVector = Vector3.new(180, 0, 1)
+
+-- Координаты для телепортации
+--targetPosition = Vector3.new(676.33, -742.43, 873.97); AngleVector = Vector3.new(-20, 0, 5) -- main
+targetPosition = Vector3.new(1346.98, -740.86, 1551.35); AngleVector = Vector3.new(-20, 0, 5) -- second
+--targetPosition = Vector3.new(5805.87, 136.78, 408.31); AngleVector = Vector3.new(20, 0, -5) -- ВАДАПАД
+--targetPosition = Vector3.new(-3650.84, 132.97, 778.97); AngleVector = Vector3.new(1, 0, 1) -- временной остров твинк пос
+--targetPosition = Vector3.new(-3554.87, 144.73, 470.90); AngleVector = Vector3.new(5, 0, -4) -- временной остров мейн пос
+
+
+-- happy pos = -3572.28, 143.18, 467.12
+-- my pos = -3555.00, 144.27, 471.08
+
+
+
+
+--targetPosition = Vector3.new(1236.00, 140.50, 562.75); AngleVector = Vector3.new(-5, 0, 4)
+
+-- -4352.38, -625.63, 2700.51
+-- -4956.39, -582.42, 1873.00
+-- -4287.20, -679.59, 1114.36
+
+
+
+targetPosition = Vector3.new(-3565.77, 151.92, 535.25); AngleVector = Vector3.new(-5, 0, 4)
+
+-- Получение игрока и его персонажа
+local player = game.Players.LocalPlayer
+
+-- Функция телепортации
+local function teleportToPosition()
+    -- Проверяем, есть ли у игрока персонаж
+    if player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
+        -- Устанавливаем новый CFrame с позиции и нулевой ориентацией (поворот = 0)
+        wait(1)
+		player.Character.HumanoidRootPart.CFrame = CFrame.new(targetPosition, targetPosition + AngleVector) -- Угол 0
+        wait(1)
+		player.Character.HumanoidRootPart.CFrame = CFrame.new(targetPosition, targetPosition + AngleVector) -- Угол 0
+        wait(1)
+		player.Character.HumanoidRootPart.CFrame = CFrame.new(targetPosition, targetPosition + AngleVector) -- Угол 0
+        wait(1)
+		player.Character.HumanoidRootPart.CFrame = CFrame.new(targetPosition, targetPosition + AngleVector) -- Угол 0
+		
+    else
+        warn("Персонаж игрока недоступен для телепортации.")
+    end
+end
+
+-- Вызываем функцию телепортации (можно также привязать её к событию)
+teleportToPosition()

@@ -1,0 +1,32 @@
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local Net = require(ReplicatedStorage:WaitForChild("packages"):WaitForChild("Net"))
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
+
+-- Подключаемся к RemoteEvent для избранного
+local FavouriteEvent = Net:RemoteEvent("Backpack/Favourite")
+
+-- Находим рыбу в рюкзаке
+local fishName = "Sockeye Salmon"
+local fish = LocalPlayer.Backpack:FindFirstChild(fishName)
+
+if fish then
+    -- Делаем интерфейс видимым, если нужно
+    if not script.Parent.Visible then
+        script.Parent.Visible = true
+    end
+    
+    -- Проверяем наличие дочернего элемента 'link', если его нет, добавляем
+    if not fish:FindFirstChild("link") then
+        local link = Instance.new("ObjectValue")
+        link.Name = "link"
+        link.Value = fish  -- Привязываем ссылку к самой рыбе
+        link.Parent = fish
+    end
+
+    -- Отправляем событие на сервер для добавления в избранное
+    FavouriteEvent:FireServer(fish)
+    print(fishName .. " добавлена в избранное!")
+else
+    warn("Рыба " .. fishName .. " не найдена в рюкзаке.")
+end
