@@ -1,9 +1,7 @@
---123
-
 local fish = game:GetService("ReplicatedStorage"):WaitForChild("resources"):WaitForChild("animations"):WaitForChild("fish")
 --local module = require(script:WaitForChild("presents"))
 
-local url = "https://raw.githubusercontent.com/Y-ForBE-Y/ioasduq089eu3oi13u12o3u/main/Fisch/presentsData"
+local url = "https://raw.githubusercontent.com/Y-ForBE-Y/ioasduq089eu3oi13u12o3u/main/Fisch/presentsData.lua"
 local scriptContent = game:HttpGet(url)
 local module = loadstring(scriptContent)()  -- Загружаем данные из GitHub
 
