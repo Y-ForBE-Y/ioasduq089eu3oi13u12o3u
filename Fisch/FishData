@@ -1,11 +1,3 @@
---From the game:GetService("ReplicatedStorage").modules.library.fish
-
--- Decompiler will be improved soon!
--- Decompiled with Konstant V2.1, a fast Luau decompiler made in Luau by plusgiant5 (https://discord.gg/wyButjTMhM)
--- Decompiled on 2025-02-02 17:39:03
--- Luau version 6, Types version 3
--- Time taken: 0.429823 seconds
-
 local fish = game:GetService("ReplicatedStorage"):WaitForChild("resources"):WaitForChild("animations"):WaitForChild("fish")
 --local module = require(script:WaitForChild("presents"))
 
