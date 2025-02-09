@@ -1,0 +1,1189 @@
+-- Decompiler will be improved soon!
+-- Decompiled with Konstant V2.1, a fast Luau decompiler made in Luau by plusgiant5 (https://discord.gg/wyButjTMhM)
+-- Decompiled on 2025-02-04 18:14:02
+-- Luau version 6, Types version 3
+-- Time taken: 0.039085 seconds
+
+-- KONSTANTWARNING: Variable analysis failed. Output will have some incorrect variable assignments
+local ReplicatedStorage_upvr = game:GetService("ReplicatedStorage")
+local UserInputService_upvr = game:GetService("UserInputService")
+local Net = require(ReplicatedStorage_upvr.packages.Net)
+local fx_upvr = require(ReplicatedStorage_upvr.modules.fx)
+local fish_upvr = require(ReplicatedStorage_upvr.modules.library.fish)
+local animatedgradient_upvr = require(ReplicatedStorage_upvr.modules.fx.animatedgradient)
+local LocalPlayer_upvr = game:GetService("Players").LocalPlayer
+local Character_upvw = LocalPlayer_upvr.Character
+local Parent_upvr = script.Parent
+local inventory_upvr = script.Parent:WaitForChild("inventory")
+local scroll_upvr = inventory_upvr:WaitForChild("scroll")
+local tbl_2_upvr = {
+    frame = script.Parent:WaitForChild("hotbar");
+    buttons = {tbl_2_upvr.frame['1'], tbl_2_upvr.frame['2'], tbl_2_upvr.frame['3'], tbl_2_upvr.frame['4'], tbl_2_upvr.frame['5'], tbl_2_upvr.frame['6'], tbl_2_upvr.frame['7'], tbl_2_upvr.frame['8'], tbl_2_upvr.frame['9']};
+}
+LocalPlayer_upvr.Changed:Connect(function() -- Line 31
+    --[[ Upvalues[2]:
+        [1]: Character_upvw (read and write)
+        [2]: LocalPlayer_upvr (readonly)
+    ]]
+    Character_upvw = LocalPlayer_upvr.Character
+end)
+local var39_upvw = false
+local var40_upvw = false
+local tbl_8_upvr = {false, false, false, false, false, false, false, false, false, false}
+local var42_upvw
+local var43_upvw
+game:GetService("StarterGui"):SetCoreGuiEnabled(Enum.CoreGuiType.Backpack, false)
+repeat
+    task.wait()
+until not game:IsLoaded() or LocalPlayer_upvr.Character
+function toHex(arg1) -- Line 57
+    return '#'..arg1:ToHex()
+end
+function ToggleVisibility() -- Line 61
+    --[[ Upvalues[4]:
+        [1]: inventory_upvr (readonly)
+        [2]: Parent_upvr (readonly)
+        [3]: var39_upvw (read and write)
+        [4]: tbl_2_upvr (readonly)
+    ]]
+    inventory_upvr.search.Text = ""
+    if Parent_upvr.Visible == true then
+        if var39_upvw == false then
+            inventory_upvr.Visible = true
+            tbl_2_upvr.frame.Visible = true
+            for _, v in pairs(tbl_2_upvr.buttons) do
+                v.Visible = true
+                if v.tool.Value == nil then
+                    v.BackgroundTransparency = 0.6
+                else
+                    v.BackgroundTransparency = 0.4
+                end
+            end
+            var39_upvw = true
+            script.Parent:FindFirstChild("Open").Visible = false
+            return
+        end
+        inventory_upvr.Visible = false
+        tbl_2_upvr.frame.Visible = true
+        for _, v_2 in pairs(tbl_2_upvr.buttons) do
+            if v_2.tool.Value == nil then
+                v_2.Visible = false
+            else
+                v_2.Visible = true
+            end
+        end
+        var39_upvw = false
+        script.Parent:FindFirstChild("Open").Visible = true
+    end
+end
+inventory_upvr.Changed:Connect(function() -- Line 95
+    --[[ Upvalues[2]:
+        [1]: var39_upvw (read and write)
+        [2]: inventory_upvr (readonly)
+    ]]
+    if var39_upvw ~= inventory_upvr.Visible then
+        ToggleVisibility()
+    end
+end)
+local function _(arg1) -- Line 101, Named "switchDirection"
+    local var55 = arg1:GetAttribute("Direction") or "Ascending"
+    if var55 == "Ascending" then
+        arg1.arrow.Rotation = -90
+    elseif var55 == "Descending" then
+        arg1.arrow.Rotation = 90
+    end
+    if var55 == "Ascending" then
+        return "Descending"
+    end
+    return "Ascending"
+end
+for _, v_3_upvr in pairs(inventory_upvr:WaitForChild("sortoptions"):GetChildren()) do
+    if v_3_upvr:IsA("TextButton") then
+        local module_upvr = require(script:WaitForChild("sort"))
+        v_3_upvr.Activated:Connect(function() -- Line 113
+            --[[ Upvalues[3]:
+                [1]: v_3_upvr (readonly)
+                [2]: module_upvr (readonly)
+                [3]: inventory_upvr (readonly)
+            ]]
+            local var61
+            if v_3_upvr.Name == "Rarity" then
+                local var62 = v_3_upvr
+                local var63 = var62:GetAttribute("Direction") or "Ascending"
+                if var63 == "Ascending" then
+                    var62.arrow.Rotation = -90
+                elseif var63 == "Descending" then
+                    var62.arrow.Rotation = 90
+                end
+                if var63 == "Ascending" then
+                    var61 = "Descending"
+                else
+                    var61 = "Ascending"
+                end
+                v_3_upvr:SetAttribute("Direction", var61)
+                var61 = inventory_upvr
+                var61 = v_3_upvr:GetAttribute("Direction")
+                module_upvr:ByRarity(var61.scroll, var61)
+            else
+                if v_3_upvr.Name == "Weight" then
+                    local var64 = v_3_upvr
+                    local var65 = var64:GetAttribute("Direction") or "Ascending"
+                    if var65 == "Ascending" then
+                        var64.arrow.Rotation = -90
+                    elseif var65 == "Descending" then
+                        var64.arrow.Rotation = 90
+                    end
+                    if var65 == "Ascending" then
+                        var61 = "Descending"
+                    else
+                        var61 = "Ascending"
+                    end
+                    v_3_upvr:SetAttribute("Direction", var61)
+                    var61 = inventory_upvr
+                    var61 = v_3_upvr:GetAttribute("Direction")
+                    module_upvr:ByWeight(var61.scroll, var61)
+                    return
+                end
+                if v_3_upvr.Name == "Type" then
+                    local var66 = v_3_upvr
+                    local var67 = var66:GetAttribute("Direction") or "Ascending"
+                    if var67 == "Ascending" then
+                        var66.arrow.Rotation = -90
+                    elseif var67 == "Descending" then
+                        var66.arrow.Rotation = 90
+                    end
+                    if var67 == "Ascending" then
+                        var61 = "Descending"
+                    else
+                        var61 = "Ascending"
+                    end
+                    v_3_upvr:SetAttribute("Direction", var61)
+                    var61 = inventory_upvr
+                    var61 = v_3_upvr:GetAttribute("Direction")
+                    module_upvr:ByType(var61.scroll, var61)
+                    return
+                end
+                if v_3_upvr.Name == "Name" then
+                    local var68 = v_3_upvr
+                    local var69 = var68:GetAttribute("Direction") or "Ascending"
+                    if var69 == "Ascending" then
+                        var68.arrow.Rotation = -90
+                    elseif var69 == "Descending" then
+                        var68.arrow.Rotation = 90
+                    end
+                    if var69 == "Ascending" then
+                        var61 = "Descending"
+                    else
+                        var61 = "Ascending"
+                    end
+                    v_3_upvr:SetAttribute("Direction", var61)
+                    var61 = inventory_upvr
+                    var61 = v_3_upvr:GetAttribute("Direction")
+                    module_upvr:ByName(var61.scroll, var61)
+                    return
+                end
+                if v_3_upvr.Name == "Favorite" then
+                    local var70 = v_3_upvr
+                    local var71 = var70:GetAttribute("Direction") or "Ascending"
+                    if var71 == "Ascending" then
+                        var70.arrow.Rotation = -90
+                    elseif var71 == "Descending" then
+                        var70.arrow.Rotation = 90
+                    end
+                    if var71 == "Ascending" then
+                        var61 = "Descending"
+                    else
+                        var61 = "Ascending"
+                    end
+                    v_3_upvr:SetAttribute("Direction", var61)
+                    var61 = inventory_upvr
+                    var61 = v_3_upvr:GetAttribute("Direction")
+                    module_upvr:ByFavorite(var61.scroll, var61)
+                end
+            end
+        end)
+    end
+end
+local Clicker_upvr = inventory_upvr:WaitForChild("sizeoptions"):WaitForChild("Clicker")
+Clicker_upvr.Activated:Connect(function() -- Line 135
+    --[[ Upvalues[2]:
+        [1]: Clicker_upvr (readonly)
+        [2]: inventory_upvr (readonly)
+    ]]
+    if Clicker_upvr.Text == "Large" then
+        Clicker_upvr.Text = "Small"
+        inventory_upvr:WaitForChild("scroll"):WaitForChild("grid").CellSize = UDim2.fromOffset(48, 48)
+    elseif Clicker_upvr.Text == "Small" then
+        Clicker_upvr.Text = "Large"
+        inventory_upvr:WaitForChild("scroll"):WaitForChild("grid").CellSize = UDim2.fromOffset(60, 60)
+    end
+end)
+function UpdateInput(arg1) -- Line 145
+    if arg1 ~= Enum.UserInputType.Touch and arg1 ~= Enum.UserInputType.Gamepad1 then
+        script.Parent:WaitForChild("Open").Text = "(`) Open Backpack"
+        script.Parent:WaitForChild("inventory"):WaitForChild("Close").Text = "(`) Close Backpack"
+    else
+        script.Parent:WaitForChild("Open").Text = "Interact to open"
+        script.Parent:WaitForChild("inventory"):WaitForChild("Close").Text = "Interact to close"
+    end
+    if game:GetService("UserInputService"):GetLastInputType() == Enum.UserInputType.Gamepad1 then
+        script.Parent:FindFirstChild("Open").dpad.Visible = true
+        script.Parent:WaitForChild("inventory"):WaitForChild("Close").dpad.Visible = true
+        script.Parent:FindFirstChild("Open").Icon.Visible = false
+    else
+        script.Parent:FindFirstChild("Open").dpad.Visible = false
+        script.Parent:WaitForChild("inventory"):WaitForChild("Close").dpad.Visible = false
+        script.Parent:FindFirstChild("Open").Icon.Visible = true
+    end
+end
+UpdateInput(game:GetService("UserInputService"):GetLastInputType())
+script.Parent:WaitForChild("inventory"):WaitForChild("Close").Visible = true
+if var39_upvw == false then
+    script.Parent:FindFirstChild("Open").Visible = true
+end
+game:GetService("UserInputService").LastInputTypeChanged:Connect(function(arg1) -- Line 175
+    UpdateInput(arg1)
+end)
+local function slotChanged_upvr(arg1) -- Line 179, Named "slotChanged"
+    -- KONSTANTERROR: [0] 1. Error Block 1 start (CF ANALYSIS FAILED)
+    -- KONSTANTERROR: [0] 1. Error Block 1 end (CF ANALYSIS FAILED)
+    -- KONSTANTERROR: [5] 5. Error Block 2 start (CF ANALYSIS FAILED)
+    -- KONSTANTERROR: [5] 5. Error Block 2 end (CF ANALYSIS FAILED)
+    -- KONSTANTERROR: [22] 16. Error Block 23 start (CF ANALYSIS FAILED)
+    -- KONSTANTERROR: [22] 16. Error Block 23 end (CF ANALYSIS FAILED)
+end
+for _, v_4_upvr in pairs(tbl_2_upvr.buttons) do
+    slotChanged_upvr(v_4_upvr)
+    v_4_upvr.Changed:Connect(function() -- Line 225
+        --[[ Upvalues[2]:
+            [1]: slotChanged_upvr (readonly)
+            [2]: v_4_upvr (readonly)
+        ]]
+        slotChanged_upvr(v_4_upvr)
+    end)
+    local var79_upvr
+end
+tbl_2_upvr.frame.ChildAdded:Connect(function(arg1) -- Line 230
+    --[[ Upvalues[1]:
+        [1]: var79_upvr (readonly)
+    ]]
+    var79_upvr(arg1)
+    arg1.Changed:Connect(function() -- Line 232
+        --[[ Upvalues[2]:
+            [1]: var79_upvr (copied, readonly)
+            [2]: arg1 (readonly)
+        ]]
+        var79_upvr(arg1)
+    end)
+end)
+script.Parent:FindFirstChild("Open").MouseButton1Click:Connect(function() -- Line 238
+    ToggleVisibility()
+end)
+script.Parent:WaitForChild("inventory"):WaitForChild("Close").MouseButton1Click:Connect(function() -- Line 241
+    ToggleVisibility()
+end)
+function FindLink(arg1) -- Line 246
+    --[[ Upvalues[1]:
+        [1]: ReplicatedStorage_upvr (readonly)
+    ]]
+    local var84
+    if arg1:FindFirstChild("link") or ReplicatedStorage_upvr:WaitForChild("resources"):WaitForChild("items"):WaitForChild("fish"):FindFirstChild(arg1.Name) or ReplicatedStorage_upvr:WaitForChild("resources"):WaitForChild("items"):WaitForChild("items"):FindFirstChild(arg1.Name) then
+        if arg1:WaitForChild("link").Value == nil then
+            repeat
+                game:GetService("RunService").RenderStepped:Wait()
+            until arg1:FindFirstChild("link").Value ~= nil
+            var84 = arg1:FindFirstChild("link").Value
+            return var84
+        end
+        var84 = arg1:FindFirstChild("link").Value
+    end
+    return var84
+end
+function RemoveButton(arg1) -- Line 261
+    --[[ Upvalues[2]:
+        [1]: tbl_2_upvr (readonly)
+        [2]: var39_upvw (read and write)
+    ]]
+    -- KONSTANTERROR: [0] 1. Error Block 1 start (CF ANALYSIS FAILED)
+    arg1.tool.Value = nil
+    arg1.item.Value = nil
+    arg1.sparkles.Enabled = false
+    -- KONSTANTERROR: [0] 1. Error Block 1 end (CF ANALYSIS FAILED)
+    -- KONSTANTERROR: [54] 35. Error Block 3 start (CF ANALYSIS FAILED)
+    arg1.Visible = false
+    do
+        return
+    end
+    -- KONSTANTERROR: [54] 35. Error Block 3 end (CF ANALYSIS FAILED)
+    -- KONSTANTERROR: [58] 38. Error Block 4 start (CF ANALYSIS FAILED)
+    arg1:Destroy()
+    -- KONSTANTERROR: [58] 38. Error Block 4 end (CF ANALYSIS FAILED)
+end
+local any_RemoteEvent_result1_upvr = Net:RemoteEvent("Backpack/Equip")
+function Equip(arg1) -- Line 281
+    --[[ Upvalues[3]:
+        [1]: tbl_2_upvr (readonly)
+        [2]: LocalPlayer_upvr (readonly)
+        [3]: any_RemoteEvent_result1_upvr (readonly)
+    ]]
+    if script.Parent.Visible == true and script.Parent.Parent.Parent.Enabled == true and tbl_2_upvr.frame.Visible == true and LocalPlayer_upvr.Character:FindFirstChild("HumanoidRootPart").Anchored == false then
+        if not LocalPlayer_upvr.Character:FindFirstChild("Humanoid") then return end
+        if LocalPlayer_upvr.Character.Humanoid.WalkSpeed <= 0.1 or LocalPlayer_upvr.Character.Humanoid.Health <= 0 then return end
+        any_RemoteEvent_result1_upvr:FireServer(arg1)
+    end
+end
+local any_RemoteEvent_result1_upvr_2 = Net:RemoteEvent("Backpack/Favourite")
+function FavouriteToggle(arg1) -- Line 295
+    --[[ Upvalues[2]:
+        [1]: tbl_2_upvr (readonly)
+        [2]: any_RemoteEvent_result1_upvr_2 (readonly)
+    ]]
+    if not script.Parent.Visible or not tbl_2_upvr.frame.Visible or not arg1 then
+        return false
+    end
+    if arg1:FindFirstChild("link") then
+        any_RemoteEvent_result1_upvr_2:FireServer(arg1)
+        return true
+    end
+    return false
+end
+function UpdateCanvasSize(arg1, arg2) -- Line 309
+    local var87
+    if arg2.AbsoluteCellCount.Y ~= 0 then
+        var87 = arg2.AbsoluteCellCount.Y
+    else
+        var87 = 1
+    end
+    arg1.CanvasSize = UDim2.new(0, 0, 0, var87 * 68)
+end
+local tbl_9_upvr = {}
+function FindSlotsHovered() -- Line 315
+    --[[ Upvalues[5]:
+        [1]: tbl_9_upvr (readonly)
+        [2]: tbl_2_upvr (readonly)
+        [3]: tbl_8_upvr (readonly)
+        [4]: var42_upvw (read and write)
+        [5]: var43_upvw (read and write)
+    ]]
+    for _, v_5 in pairs(tbl_9_upvr) do
+        if v_5 then
+            v_5:Disconnect()
+            v_5 = nil
+        end
+    end
+    for i_6_upvr, v_6_upvr in pairs(tbl_2_upvr.buttons) do
+        tbl_8_upvr[i_6_upvr] = false
+        tbl_9_upvr[i_6_upvr] = v_6_upvr.MouseEnter:Connect(function() -- Line 325
+            --[[ Upvalues[5]:
+                [1]: tbl_8_upvr (copied, readonly)
+                [2]: i_6_upvr (readonly)
+                [3]: var42_upvw (copied, read and write)
+                [4]: v_6_upvr (readonly)
+                [5]: tbl_2_upvr (copied, readonly)
+            ]]
+            tbl_8_upvr[i_6_upvr] = true
+            var42_upvw = v_6_upvr
+            if tbl_2_upvr.buttons[i_6_upvr].tool.Value == nil then
+                tbl_2_upvr.buttons[i_6_upvr].stroke.Thickness = 2.5
+            else
+                tbl_2_upvr.buttons[i_6_upvr].stroke.Thickness = 1.5
+            end
+        end)
+        tbl_9_upvr[tonumber(i_6_upvr + 9)] = v_6_upvr.MouseLeave:Connect(function() -- Line 336
+            --[[ Upvalues[6]:
+                [1]: var42_upvw (copied, read and write)
+                [2]: v_6_upvr (readonly)
+                [3]: var43_upvw (copied, read and write)
+                [4]: tbl_8_upvr (copied, readonly)
+                [5]: i_6_upvr (readonly)
+                [6]: tbl_2_upvr (copied, readonly)
+            ]]
+            if var42_upvw == v_6_upvr then
+                var43_upvw = var42_upvw
+                var42_upvw = nil
+            end
+            tbl_8_upvr[i_6_upvr] = false
+            tbl_2_upvr.buttons[i_6_upvr].stroke.Thickness = 1
+        end)
+    end
+end
+local tbl_5_upvr = {}
+local tbl_3_upvr = {}
+local tbl_4_upvr = {}
+local items_upvr = require(ReplicatedStorage_upvr.modules.library.items)
+local SkinCrates_upvr = require(ReplicatedStorage_upvr.modules.SkinCrates)
+local mutations_upvr = require(ReplicatedStorage_upvr.modules.fishing.mutations)
+local rods_upvr = require(ReplicatedStorage_upvr.modules.library.rods)
+local character_upvr = require(ReplicatedStorage_upvr.modules.character)
+local enchants_upvr = require(ReplicatedStorage_upvr.modules.library.rods.enchants)
+function ItemAdded(arg1, arg2) -- Line 352
+    --[[ Upvalues[23]:
+        [1]: scroll_upvr (readonly)
+        [2]: tbl_2_upvr (readonly)
+        [3]: tbl_3_upvr (readonly)
+        [4]: ReplicatedStorage_upvr (readonly)
+        [5]: var79_upvr (readonly)
+        [6]: fish_upvr (readonly)
+        [7]: animatedgradient_upvr (readonly)
+        [8]: items_upvr (readonly)
+        [9]: SkinCrates_upvr (readonly)
+        [10]: mutations_upvr (readonly)
+        [11]: rods_upvr (readonly)
+        [12]: character_upvr (readonly)
+        [13]: LocalPlayer_upvr (readonly)
+        [14]: enchants_upvr (readonly)
+        [15]: inventory_upvr (readonly)
+        [16]: tbl_5_upvr (readonly)
+        [17]: tbl_4_upvr (readonly)
+        [18]: var43_upvw (read and write)
+        [19]: var42_upvw (read and write)
+        [20]: fx_upvr (readonly)
+        [21]: Parent_upvr (readonly)
+        [22]: Character_upvw (read and write)
+        [23]: UserInputService_upvr (readonly)
+    ]]
+    -- KONSTANTERROR: [0] 1. Error Block 76 start (CF ANALYSIS FAILED)
+    for _, v_7 in pairs(scroll_upvr:GetChildren()) do
+        if v_7:IsA("ImageButton") and v_7.tool.Value == arg1 then return end
+    end
+    for _, v_8 in pairs(tbl_2_upvr.buttons) do
+        if v_8:IsA("ImageButton") and v_8.tool.Value == arg1 then return end
+    end
+    local tbl_7_upvw = {}
+    tbl_3_upvr[arg1] = tbl_7_upvw
+    local function _(arg1_2) -- Line 377, Named "UpdateFavouritedVisual"
+        --[[ Upvalues[1]:
+            [1]: arg2 (readonly)
+        ]]
+        task.spawn(function() -- Line 378
+            --[[ Upvalues[2]:
+                [1]: arg2 (copied, readonly)
+                [2]: arg1_2 (readonly)
+            ]]
+            if arg2:FindFirstChild("Favourited") then
+                arg1_2:WaitForChild("favourited").Visible = true
+            else
+                arg1_2:WaitForChild("favourited").Visible = false
+            end
+        end)
+    end
+    local function _(arg1_3) -- Line 386, Named "UpdateAppraisedVisual"
+        --[[ Upvalues[1]:
+            [1]: arg2 (readonly)
+        ]]
+        task.spawn(function() -- Line 387
+            --[[ Upvalues[2]:
+                [1]: arg2 (copied, readonly)
+                [2]: arg1_3 (readonly)
+            ]]
+            if arg2:FindFirstChild("Appraised") then
+                arg1_3:WaitForChild("appraised").Visible = true
+            else
+                arg1_3:WaitForChild("appraised").Visible = false
+            end
+        end)
+    end
+    local var123_upvw
+    local var124_upvw
+    local var125_upvw
+    local var126_upvw
+    local function _(arg1_4, arg2_2, arg3) -- Line 400, Named "LoadUI"
+        --[[ Upvalues[19]:
+            [1]: tbl_2_upvr (copied, readonly)
+            [2]: scroll_upvr (copied, readonly)
+            [3]: tbl_7_upvw (read and write)
+            [4]: ReplicatedStorage_upvr (copied, readonly)
+            [5]: var79_upvr (copied, readonly)
+            [6]: fish_upvr (copied, readonly)
+            [7]: var123_upvw (read and write)
+            [8]: var124_upvw (read and write)
+            [9]: animatedgradient_upvr (copied, readonly)
+            [10]: items_upvr (copied, readonly)
+            [11]: SkinCrates_upvr (copied, readonly)
+            [12]: mutations_upvr (copied, readonly)
+            [13]: var125_upvw (read and write)
+            [14]: arg2 (readonly)
+            [15]: var126_upvw (read and write)
+            [16]: rods_upvr (copied, readonly)
+            [17]: character_upvr (copied, readonly)
+            [18]: LocalPlayer_upvr (copied, readonly)
+            [19]: enchants_upvr (copied, readonly)
+        ]]
+        if arg1_4.Parent ~= tbl_2_upvr.frame then
+            arg1_4.Name = arg2_2.Name
+            arg1_4.Parent = scroll_upvr
+        end
+        arg1_4.itemname.Text = arg2_2.Name
+        arg1_4.tool.Value = arg2_2
+        if arg3 then
+            arg1_4.item.Value = arg3
+            local var149_upvw = false
+            local function LoadWeight_upvr() -- Line 415, Named "LoadWeight"
+                --[[ Upvalues[6]:
+                    [1]: arg3 (readonly)
+                    [2]: var149_upvw (read and write)
+                    [3]: arg1_4 (readonly)
+                    [4]: tbl_7_upvw (copied, read and write)
+                    [5]: ReplicatedStorage_upvr (copied, readonly)
+                    [6]: arg2_2 (readonly)
+                ]]
+                -- KONSTANTERROR: [0] 1. Error Block 1 start (CF ANALYSIS FAILED)
+                -- KONSTANTERROR: [0] 1. Error Block 1 end (CF ANALYSIS FAILED)
+                -- KONSTANTERROR: [224] 167. Error Block 9 start (CF ANALYSIS FAILED)
+                arg1_4.weight.TextColor3 = Color3.fromRGB(141, 141, 141)
+                arg1_4.weight.Font = Enum.Font.SourceSans
+                do
+                    return
+                end
+                -- KONSTANTERROR: [224] 167. Error Block 9 end (CF ANALYSIS FAILED)
+                -- KONSTANTERROR: [243] 180. Error Block 10 start (CF ANALYSIS FAILED)
+                arg1_4.weight.Visible = false
+                var149_upvw = false
+                -- KONSTANTERROR: [243] 180. Error Block 10 end (CF ANALYSIS FAILED)
+            end
+            LoadWeight_upvr()
+            var79_upvr(arg1_4)
+            arg1_4.stack.Visible = true
+            arg1_4.Changed:Connect(function() -- Line 454
+                --[[ Upvalues[2]:
+                    [1]: var79_upvr (copied, readonly)
+                    [2]: arg1_4 (readonly)
+                ]]
+                var79_upvr(arg1_4)
+            end)
+            local var151_upvw = false
+            local function LoadStack_upvr() -- Line 460, Named "LoadStack"
+                --[[ Upvalues[4]:
+                    [1]: arg3 (readonly)
+                    [2]: var151_upvw (read and write)
+                    [3]: arg1_4 (readonly)
+                    [4]: tbl_7_upvw (copied, read and write)
+                ]]
+                if arg3:FindFirstChild("Stack") then
+                    if var151_upvw == true then
+                    else
+                        if 1 < arg3.Stack.Value then
+                            arg1_4.stack.Text = tostring(arg3:FindFirstChild("Stack").Value).." x"
+                        else
+                            arg1_4.stack.Text = ' '
+                        end
+                        tbl_7_upvw[4] = arg3:FindFirstChild("Stack").Changed:Connect(function() -- Line 472
+                            --[[ Upvalues[2]:
+                                [1]: arg3 (copied, readonly)
+                                [2]: arg1_4 (copied, readonly)
+                            ]]
+                            if 1 < arg3.Stack.Value then
+                                arg1_4.stack.Text = tostring(arg3:FindFirstChild("Stack").Value).." x"
+                            else
+                                arg1_4.stack.Text = ' '
+                            end
+                        end)
+                        var151_upvw = true
+                    end
+                end
+                var151_upvw = false
+                arg1_4.stack.Text = ' '
+            end
+            LoadStack_upvr()
+            if fish_upvr[arg2_2.Name] then
+                if fish_upvr[arg2_2.Name].IsCrate then
+                    var123_upvw = "Crate"
+                else
+                    var123_upvw = "Fish"
+                end
+                var124_upvw = fish_upvr[arg2_2.Name].Rarity
+                arg1_4.hover.ImageColor3 = fish_upvr.RarityColours[fish_upvr[arg2_2.Name].Rarity]
+                arg1_4.raritystar.ImageColor3 = fish_upvr.RarityColours[fish_upvr[arg2_2.Name].Rarity]
+                animatedgradient_upvr.clearold(arg1_4.hover)
+                if fish_upvr[arg2_2.Name].Rarity == "Exotic" then
+                    arg1_4.hover.ImageColor3 = Color3.new(1, 1, 1)
+                    arg1_4.raritystar.ImageColor3 = Color3.new(1, 1, 1)
+                    animatedgradient_upvr.new(animatedgradient_upvr._presets.Rainbow).Parent = arg1_4.hover
+                    local any_new_result1_3 = animatedgradient_upvr.new(animatedgradient_upvr._presets.Rainbow)
+                    any_new_result1_3.Rotation = 90
+                    any_new_result1_3.Parent = arg1_4.raritystar
+                elseif fish_upvr[arg2_2.Name].Rarity == "Secret" then
+                    arg1_4.hover.ImageColor3 = Color3.new(1, 1, 1)
+                    arg1_4.raritystar.ImageColor3 = Color3.new(1, 1, 1)
+                    animatedgradient_upvr.new(animatedgradient_upvr._presets.Secret).Parent = arg1_4.hover
+                    local any_new_result1_5 = animatedgradient_upvr.new(animatedgradient_upvr._presets.Secret)
+                    any_new_result1_5.Rotation = 90
+                    any_new_result1_5.Parent = arg1_4.raritystar
+                end
+            end
+            if items_upvr[arg2_2.Name] then
+                var123_upvw = "Item"
+                var124_upvw = items_upvr[arg2_2.Name].Rarity
+                arg1_4.raritystar.ImageColor3 = items_upvr.RarityColours[items_upvr[arg2_2.Name].Rarity]
+                if fish_upvr[arg2_2.Name].Rarity == "Exotic" then
+                    arg1_4.raritystar.ImageColor3 = Color3.new(1, 1, 1)
+                    local any_new_result1_2 = animatedgradient_upvr.new(animatedgradient_upvr._presets.Rainbow)
+                    any_new_result1_2.Rotation = 90
+                    any_new_result1_2.Parent = arg1_4.raritystar
+                elseif fish_upvr[arg2_2.Name].Rarity == "Secret" then
+                    arg1_4.raritystar.ImageColor3 = Color3.new(1, 1, 1)
+                    local any_new_result1 = animatedgradient_upvr.new(animatedgradient_upvr._presets.Secret)
+                    any_new_result1.Rotation = 90
+                    any_new_result1.Parent = arg1_4.raritystar
+                end
+            end
+            if not var124_upvw then
+                var124_upvw = "Undefined"
+            end
+            if arg3.Value == "Skin Crate" and arg3:FindFirstChild("Type") then
+                arg1_4.itemname.Text = "<font color ='"..toHex(SkinCrates_upvr.List[arg3:FindFirstChild("Type").Value].Color).."'>"..arg3:FindFirstChild("Type").Value.."</font> "..arg1_4.itemname.Text
+            end
+            if arg3:FindFirstChild("Mutation") ~= nil and mutations_upvr.Mutations[arg3:FindFirstChild("Mutation").Value] then
+                arg1_4.itemname.Text = "<font color ='"..toHex(mutations_upvr.Mutations[arg3:FindFirstChild("Mutation").Value].Color).."'>"..arg3:FindFirstChild("Mutation").Value.."</font> "..arg1_4.itemname.Text
+                if arg1_4.Parent == scroll_upvr then
+                    arg1_4.Name = arg3:FindFirstChild("Mutation").Value..' '..arg1_4.Name
+                end
+            end
+            if arg3:FindFirstChild("Weight") then
+                var125_upvw = arg3:FindFirstChild("Weight").Value
+                if require(ReplicatedStorage_upvr:WaitForChild("modules"):WaitForChild("library"):WaitForChild("fish"))[arg2_2.Name].WeightPool[2] / 10 * 1.99 <= arg3:FindFirstChild("Weight").Value then
+                    arg1_4.itemname.Text = "<font color = '#8bff89'>Giant</font> "..arg1_4.itemname.Text
+                    if arg1_4.Parent == scroll_upvr then
+                        arg1_4.Name = "Giant "..arg1_4.Name
+                        -- KONSTANTWARNING: GOTO [571] #393
+                    end
+                elseif require(ReplicatedStorage_upvr:WaitForChild("modules"):WaitForChild("library"):WaitForChild("fish"))[arg2_2.Name].WeightPool[2] / 10 < arg3:FindFirstChild("Weight").Value then
+                    arg1_4.itemname.Text = "<font color = '#8bff89'>Big</font> "..arg1_4.itemname.Text
+                    if arg1_4.Parent == scroll_upvr then
+                        arg1_4.Name = "Big "..arg1_4.Name
+                        -- KONSTANTWARNING: GOTO [571] #393
+                    end
+                    -- KONSTANTWARNING: GOTO [571] #393
+                end
+            elseif not var125_upvw then
+                var125_upvw = 0
+            end
+            if arg3:FindFirstChild("Shiny") then
+                arg1_4.sparkles.Enabled = true
+                arg1_4.itemname.Text = "<font color='#fff0bc'>Shiny</font> "..arg1_4.itemname.Text
+                if arg1_4.Parent == scroll_upvr then
+                    arg1_4.Name = "Shiny "..arg1_4.Name
+                end
+            end
+            if arg3:FindFirstChild("Sparkling") then
+                arg1_4.sparkles.Enabled = true
+                arg1_4.itemname.Text = "<font color='#fff0bc'>Sparkling</font> "..arg1_4.itemname.Text
+                if arg1_4.Parent == scroll_upvr then
+                    arg1_4.Name = "Sparkling "..arg1_4.Name
+                end
+            end
+            if arg3:FindFirstChild("Favourited") then
+                task.spawn(function() -- Line 378
+                    --[[ Upvalues[2]:
+                        [1]: arg2 (copied, readonly)
+                        [2]: arg1_4 (readonly)
+                    ]]
+                    if arg2:FindFirstChild("Favourited") then
+                        arg1_4:WaitForChild("favourited").Visible = true
+                    else
+                        arg1_4:WaitForChild("favourited").Visible = false
+                    end
+                end)
+            end
+            if arg3:FindFirstChild("Appraised") then
+                task.spawn(function() -- Line 387
+                    --[[ Upvalues[2]:
+                        [1]: arg2 (copied, readonly)
+                        [2]: arg1_4 (readonly)
+                    ]]
+                    if arg2:FindFirstChild("Appraised") then
+                        arg1_4:WaitForChild("appraised").Visible = true
+                    else
+                        arg1_4:WaitForChild("appraised").Visible = false
+                    end
+                end)
+            end
+            if var126_upvw then
+                task.spawn(function() -- Line 378
+                    --[[ Upvalues[2]:
+                        [1]: arg2 (copied, readonly)
+                        [2]: var126_upvw (readonly)
+                    ]]
+                    if arg2:FindFirstChild("Favourited") then
+                        var126_upvw:WaitForChild("favourited").Visible = true
+                    else
+                        var126_upvw:WaitForChild("favourited").Visible = false
+                    end
+                end)
+                task.spawn(function() -- Line 387
+                    --[[ Upvalues[2]:
+                        [1]: arg2 (copied, readonly)
+                        [2]: var126_upvw (readonly)
+                    ]]
+                    if arg2:FindFirstChild("Appraised") then
+                        var126_upvw:WaitForChild("appraised").Visible = true
+                    else
+                        var126_upvw:WaitForChild("appraised").Visible = false
+                    end
+                end)
+            end
+            tbl_7_upvw[11] = arg3.ChildAdded:Connect(function() -- Line 601
+                --[[ Upvalues[4]:
+                    [1]: var126_upvw (copied, read and write)
+                    [2]: arg2 (copied, readonly)
+                    [3]: LoadWeight_upvr (readonly)
+                    [4]: LoadStack_upvr (readonly)
+                ]]
+                if var126_upvw ~= nil then
+                    task.spawn(function() -- Line 378
+                        --[[ Upvalues[2]:
+                            [1]: arg2 (copied, readonly)
+                            [2]: var126_upvw (readonly)
+                        ]]
+                        if arg2:FindFirstChild("Favourited") then
+                            var126_upvw:WaitForChild("favourited").Visible = true
+                        else
+                            var126_upvw:WaitForChild("favourited").Visible = false
+                        end
+                    end)
+                    task.spawn(function() -- Line 387
+                        --[[ Upvalues[2]:
+                            [1]: arg2 (copied, readonly)
+                            [2]: var126_upvw (readonly)
+                        ]]
+                        if arg2:FindFirstChild("Appraised") then
+                            var126_upvw:WaitForChild("appraised").Visible = true
+                        else
+                            var126_upvw:WaitForChild("appraised").Visible = false
+                        end
+                    end)
+                    LoadWeight_upvr()
+                    LoadStack_upvr()
+                end
+            end)
+            tbl_7_upvw[12] = arg3.ChildRemoved:Connect(function() -- Line 610
+                --[[ Upvalues[4]:
+                    [1]: var126_upvw (copied, read and write)
+                    [2]: arg2 (copied, readonly)
+                    [3]: LoadWeight_upvr (readonly)
+                    [4]: LoadStack_upvr (readonly)
+                ]]
+                if var126_upvw ~= nil then
+                    task.spawn(function() -- Line 378
+                        --[[ Upvalues[2]:
+                            [1]: arg2 (copied, readonly)
+                            [2]: var126_upvw (readonly)
+                        ]]
+                        if arg2:FindFirstChild("Favourited") then
+                            var126_upvw:WaitForChild("favourited").Visible = true
+                        else
+                            var126_upvw:WaitForChild("favourited").Visible = false
+                        end
+                    end)
+                    task.spawn(function() -- Line 387
+                        --[[ Upvalues[2]:
+                            [1]: arg2 (copied, readonly)
+                            [2]: var126_upvw (readonly)
+                        ]]
+                        if arg2:FindFirstChild("Appraised") then
+                            var126_upvw:WaitForChild("appraised").Visible = true
+                        else
+                            var126_upvw:WaitForChild("appraised").Visible = false
+                        end
+                    end)
+                    LoadWeight_upvr()
+                    LoadStack_upvr()
+                end
+            end)
+        end
+        if rods_upvr[arg2_2.Name] then
+            arg1_4.Image = "rbxassetid://16812931832"
+            arg1_4.ImageColor3 = Color3.fromRGB(0, 0, 0)
+            arg1_4.ImageTransparency = 0.5
+            arg1_4.ScaleType = Enum.ScaleType.Fit
+            local any_PS_result1 = character_upvr.PS(LocalPlayer_upvr)
+            if any_PS_result1 and any_PS_result1:WaitForChild("Rods"):FindFirstChild(arg2_2.Name) then
+                local SOME_upvr = any_PS_result1:WaitForChild("Rods"):FindFirstChild(arg2_2.Name)
+                local function enchantUpdate_upvr() -- Line 630, Named "enchantUpdate"
+                    --[[ Upvalues[4]:
+                        [1]: SOME_upvr (readonly)
+                        [2]: enchants_upvr (copied, readonly)
+                        [3]: arg1_4 (readonly)
+                        [4]: arg2_2 (readonly)
+                    ]]
+                    if SOME_upvr.Value ~= "none" and SOME_upvr.Value ~= nil and enchants_upvr.Enchants[tostring(SOME_upvr.Value)] then
+                        local var169 = enchants_upvr.Enchants[tostring(SOME_upvr.Value)]
+                        arg1_4.itemname.Text = "<font color = '"..toHex(var169.Color).."'>"..var169.Display.."</font> "..arg2_2.Name
+                    else
+                        arg1_4.itemname.Text = arg2_2.Name
+                    end
+                end
+                enchantUpdate_upvr()
+                SOME_upvr.Changed:Connect(function() -- Line 639
+                    --[[ Upvalues[1]:
+                        [1]: enchantUpdate_upvr (readonly)
+                    ]]
+                    enchantUpdate_upvr()
+                end)
+                -- KONSTANTWARNING: GOTO [838] #587
+            end
+        else
+            enchantUpdate_upvr = "resources"
+            enchantUpdate_upvr = "items"
+            enchantUpdate_upvr = "equipment"
+            enchantUpdate_upvr = arg2_2.Name
+            if ReplicatedStorage_upvr:WaitForChild(enchantUpdate_upvr):WaitForChild(enchantUpdate_upvr):WaitForChild(enchantUpdate_upvr):FindFirstChild(enchantUpdate_upvr) then
+                arg1_4.Image = "rbxassetid://6523936771"
+                SOME_upvr = 0
+                enchantUpdate_upvr = 0
+                arg1_4.ImageColor3 = Color3.fromRGB(SOME_upvr, enchantUpdate_upvr, 0)
+                arg1_4.ImageTransparency = 0.5
+                arg1_4.ScaleType = Enum.ScaleType.Fit
+            else
+                enchantUpdate_upvr = items_upvr
+                SOME_upvr = enchantUpdate_upvr.Items
+                enchantUpdate_upvr = arg2_2.Name
+                if SOME_upvr[enchantUpdate_upvr] then
+                    enchantUpdate_upvr = items_upvr.Items
+                    SOME_upvr = enchantUpdate_upvr[arg2_2.Name]
+                    if SOME_upvr.Icon then
+                        enchantUpdate_upvr = items_upvr.Items
+                        SOME_upvr = enchantUpdate_upvr[arg2_2.Name]
+                        arg1_4.Image = SOME_upvr.Icon
+                        SOME_upvr = 0
+                        enchantUpdate_upvr = 0
+                        arg1_4.ImageColor3 = Color3.fromRGB(SOME_upvr, enchantUpdate_upvr, 0)
+                        arg1_4.ImageTransparency = 0.5
+                        arg1_4.ScaleType = Enum.ScaleType.Fit
+                    end
+                end
+            end
+        end
+        if arg2_2.Name == "Boats" then
+            arg1_4.Image = "rbxassetid://71002238163754"
+            SOME_upvr = 0
+            enchantUpdate_upvr = 0
+            arg1_4.ImageColor3 = Color3.fromRGB(SOME_upvr, enchantUpdate_upvr, 0)
+            arg1_4.ImageTransparency = 0.5
+            arg1_4.ScaleType = Enum.ScaleType.Fit
+        end
+        arg1_4.BackgroundTransparency = 0.4
+        arg1_4.Visible = true
+        enchantUpdate_upvr = "Rarity"
+        arg1_4:SetAttribute(enchantUpdate_upvr, var124_upvw or "Undefined")
+        enchantUpdate_upvr = "Weight"
+        arg1_4:SetAttribute(enchantUpdate_upvr, var125_upvw or 0)
+        enchantUpdate_upvr = "Type"
+        arg1_4:SetAttribute(enchantUpdate_upvr, var123_upvw or "Undefined")
+        var126_upvw = arg1_4
+    end
+    local pairs_result1, pairs_result2_13, pairs_result3 = pairs(tbl_2_upvr.buttons)
+    -- KONSTANTERROR: [0] 1. Error Block 76 end (CF ANALYSIS FAILED)
+    -- KONSTANTERROR: [96] 77. Error Block 14 start (CF ANALYSIS FAILED)
+    -- KONSTANTERROR: [96] 77. Error Block 14 end (CF ANALYSIS FAILED)
+    -- KONSTANTERROR: [83] 67. Error Block 12 start (CF ANALYSIS FAILED)
+    -- KONSTANTWARNING: Failed to evaluate expression, replaced with nil [96.16]
+    -- KONSTANTERROR: [83] 67. Error Block 12 end (CF ANALYSIS FAILED)
+end
+inventory_upvr.MouseEnter:Connect(function() -- Line 876
+    --[[ Upvalues[4]:
+        [1]: var40_upvw (read and write)
+        [2]: var43_upvw (read and write)
+        [3]: tbl_2_upvr (readonly)
+        [4]: tbl_8_upvr (readonly)
+    ]]
+    var40_upvw = true
+    var43_upvw = nil
+    for i_9, _ in pairs(tbl_2_upvr.buttons) do
+        tbl_8_upvr[i_9] = false
+    end
+end)
+inventory_upvr.MouseLeave:Connect(function() -- Line 883
+    --[[ Upvalues[3]:
+        [1]: var40_upvw (read and write)
+        [2]: tbl_2_upvr (readonly)
+        [3]: tbl_8_upvr (readonly)
+    ]]
+    var40_upvw = false
+    for i_10, _ in pairs(tbl_2_upvr.buttons) do
+        tbl_8_upvr[i_10] = false
+    end
+end)
+FindSlotsHovered()
+UserInputService_upvr.InputBegan:Connect(function(arg1, arg2) -- Line 892
+    --[[ Upvalues[2]:
+        [1]: LocalPlayer_upvr (readonly)
+        [2]: tbl_2_upvr (readonly)
+    ]]
+    -- KONSTANTERROR: [0] 1. Error Block 1 start (CF ANALYSIS FAILED)
+    -- KONSTANTERROR: [0] 1. Error Block 1 end (CF ANALYSIS FAILED)
+    -- KONSTANTERROR: [113] 74. Error Block 62 start (CF ANALYSIS FAILED)
+    -- KONSTANTERROR: [113] 74. Error Block 62 end (CF ANALYSIS FAILED)
+    -- KONSTANTERROR: [147] 94. Error Block 61 start (CF ANALYSIS FAILED)
+    -- KONSTANTERROR: [147] 94. Error Block 61 end (CF ANALYSIS FAILED)
+    -- KONSTANTERROR: [181] 114. Error Block 60 start (CF ANALYSIS FAILED)
+    -- KONSTANTERROR: [181] 114. Error Block 60 end (CF ANALYSIS FAILED)
+    -- KONSTANTERROR: [209] 131. Error Block 38 start (CF ANALYSIS FAILED)
+    -- KONSTANTERROR: [209] 131. Error Block 38 end (CF ANALYSIS FAILED)
+    -- KONSTANTERROR: [237] 148. Error Block 41 start (CF ANALYSIS FAILED)
+    -- KONSTANTERROR: [237] 148. Error Block 41 end (CF ANALYSIS FAILED)
+    -- KONSTANTERROR: [265] 165. Error Block 44 start (CF ANALYSIS FAILED)
+    -- KONSTANTERROR: [265] 165. Error Block 44 end (CF ANALYSIS FAILED)
+    -- KONSTANTERROR: [293] 182. Error Block 47 start (CF ANALYSIS FAILED)
+    -- KONSTANTERROR: [293] 182. Error Block 47 end (CF ANALYSIS FAILED)
+    -- KONSTANTERROR: [321] 199. Error Block 50 start (CF ANALYSIS FAILED)
+    -- KONSTANTERROR: [321] 199. Error Block 50 end (CF ANALYSIS FAILED)
+    -- KONSTANTERROR: [343] 213. Error Block 56 start (CF ANALYSIS FAILED)
+    if arg1.KeyCode == Enum.KeyCode.Nine and tbl_2_upvr.buttons[9].tool.Value ~= nil then
+        Equip(tbl_2_upvr.buttons[9].tool.Value)
+    end
+    -- KONSTANTERROR: [343] 213. Error Block 56 end (CF ANALYSIS FAILED)
+    -- KONSTANTERROR: [370] 229. Error Block 55 start (CF ANALYSIS FAILED)
+    -- KONSTANTERROR: [370] 229. Error Block 55 end (CF ANALYSIS FAILED)
+end)
+inventory_upvr.search.Changed:Connect(function() -- Line 971
+    --[[ Upvalues[5]:
+        [1]: inventory_upvr (readonly)
+        [2]: Parent_upvr (readonly)
+        [3]: scroll_upvr (readonly)
+        [4]: tbl_2_upvr (readonly)
+        [5]: var39_upvw (read and write)
+    ]]
+    if inventory_upvr.search.Text ~= "" and inventory_upvr.search.Text ~= nil and inventory_upvr.search.Text ~= ' ' and Parent_upvr.Visible == true and inventory_upvr.Visible == true then
+        local string_lower_result1 = string.lower(inventory_upvr.search.Text)
+        for _, v_11 in pairs(scroll_upvr:GetChildren()) do
+            if v_11:IsA("ImageButton") then
+                v_11.Visible = string.find(string.lower(v_11.Name), string_lower_result1)
+            end
+            if v_11:FindFirstChild("favourited") and v_11:FindFirstChild("favourited").Visible == true and string.find("favourited", string_lower_result1) then
+                v_11.Visible = string.find("favourited", string_lower_result1)
+            end
+            if v_11:FindFirstChild("appraised") and v_11:FindFirstChild("appraised").Visible == true and string.find("appraised", string_lower_result1) then
+                v_11.Visible = string.find("appraised", string_lower_result1)
+            end
+        end
+        for _, v_12 in pairs(tbl_2_upvr.buttons) do
+            if v_12:IsA("ImageButton") and v_12.item.Value ~= nil then
+            end
+            if not v_12:FindFirstChild("favourited") or v_12:FindFirstChild("favourited").Visible ~= true or not string.find("favourited", string_lower_result1) then
+            end
+            if not v_12:FindFirstChild("appraised") or v_12:FindFirstChild("appraised").Visible ~= true or not string.find("appraised", string_lower_result1) then
+            end
+        end
+        UpdateCanvasSize(scroll_upvr, scroll_upvr:WaitForChild("grid"))
+    else
+        for _, v_16 in pairs(scroll_upvr:GetChildren()) do
+            if v_16:IsA("ImageButton") then
+                v_16.Visible = true
+            end
+        end
+        for _, v_17 in pairs(tbl_2_upvr.buttons) do
+            if v_17:IsA("ImageButton") then
+                if var39_upvw == true then
+                    v_17.Visible = true
+                elseif v_17.tool.Value ~= nil then
+                    v_17.Visible = true
+                end
+            end
+        end
+        UpdateCanvasSize(scroll_upvr, scroll_upvr:WaitForChild("grid"))
+    end
+end)
+scroll_upvr.ChildAdded:Connect(function() -- Line 1035
+    --[[ Upvalues[1]:
+        [1]: scroll_upvr (readonly)
+    ]]
+    UpdateCanvasSize(scroll_upvr, scroll_upvr:WaitForChild("grid"))
+end)
+scroll_upvr.ChildRemoved:Connect(function() -- Line 1038
+    --[[ Upvalues[1]:
+        [1]: scroll_upvr (readonly)
+    ]]
+    UpdateCanvasSize(scroll_upvr, scroll_upvr:WaitForChild("grid"))
+end)
+task.wait(0.5)
+if not LocalPlayer_upvr.Character then
+end
+for _, v_13 in pairs(LocalPlayer_upvr.Backpack:GetChildren()) do
+    ItemAdded(v_13, FindLink(v_13))
+end
+LocalPlayer_upvr.Backpack.ChildAdded:Connect(function(arg1) -- Line 1050
+    ItemAdded(arg1, FindLink(arg1))
+end)
+LocalPlayer_upvr.Backpack.ChildRemoved:Connect(function(arg1) -- Line 1056
+    --[[ Upvalues[3]:
+        [1]: tbl_5_upvr (readonly)
+        [2]: LocalPlayer_upvr (readonly)
+        [3]: tbl_3_upvr (readonly)
+    ]]
+    local var218 = tbl_5_upvr[arg1]
+    if var218 and arg1.Parent ~= LocalPlayer_upvr.Character then
+        if tbl_3_upvr[arg1] then
+            for _, v_14 in pairs(tbl_3_upvr[arg1]) do
+                v_14:Disconnect()
+            end
+        end
+        tbl_3_upvr[arg1] = nil
+        RemoveButton(var218)
+    end
+end)
+ReplicatedStorage_upvr:WaitForChild("playerstats"):WaitForChild(LocalPlayer_upvr.Name):WaitForChild("Inventory").ChildRemoved:Connect(function(arg1) -- Line 1072
+    --[[ Upvalues[2]:
+        [1]: tbl_5_upvr (readonly)
+        [2]: tbl_3_upvr (readonly)
+    ]]
+    local var225 = tbl_5_upvr[arg1]
+    if var225 then
+        for _, v_15 in pairs(tbl_3_upvr[arg1]) do
+            v_15:Disconnect()
+        end
+        tbl_3_upvr[arg1] = nil
+        RemoveButton(var225)
+    end
+end)
+Character_upvw.ChildAdded:Connect(function(arg1) -- Line 1084
+    --[[ Upvalues[2]:
+        [1]: tbl_5_upvr (readonly)
+        [2]: animatedgradient_upvr (readonly)
+    ]]
+    local var230 = tbl_5_upvr[arg1]
+    if var230 and var230:FindFirstChild("hover") and var230:FindFirstChild("stroke") then
+        animatedgradient_upvr.clearold(var230.hover)
+        animatedgradient_upvr.clearold(var230.stroke)
+        var230.hover.Visible = true
+        var230.BackgroundColor3 = Color3.fromRGB(17, 17, 17)
+        var230.hover.ImageColor3 = Color3.fromRGB(130, 211, 255)
+        var230.stroke.Color = Color3.fromRGB(130, 211, 255)
+    end
+end)
+Character_upvw.ChildRemoved:Connect(function(arg1) -- Line 1096
+    --[[ Upvalues[4]:
+        [1]: tbl_5_upvr (readonly)
+        [2]: tbl_4_upvr (readonly)
+        [3]: animatedgradient_upvr (readonly)
+        [4]: fish_upvr (readonly)
+    ]]
+    -- KONSTANTERROR: [0] 1. Error Block 1 start (CF ANALYSIS FAILED)
+    local var232 = tbl_5_upvr[arg1]
+    -- KONSTANTERROR: [0] 1. Error Block 1 end (CF ANALYSIS FAILED)
+    -- KONSTANTERROR: [3] 4. Error Block 2 start (CF ANALYSIS FAILED)
+    -- KONSTANTERROR: [3] 4. Error Block 2 end (CF ANALYSIS FAILED)
+    -- KONSTANTERROR: [7] 7. Error Block 3 start (CF ANALYSIS FAILED)
+    -- KONSTANTERROR: [7] 7. Error Block 3 end (CF ANALYSIS FAILED)
+    -- KONSTANTERROR: [12] 11. Error Block 4 start (CF ANALYSIS FAILED)
+    -- KONSTANTERROR: [12] 11. Error Block 4 end (CF ANALYSIS FAILED)
+    -- KONSTANTERROR: [209] 142. Error Block 13 start (CF ANALYSIS FAILED)
+    var232.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+    do
+        return
+    end
+    -- KONSTANTERROR: [209] 142. Error Block 13 end (CF ANALYSIS FAILED)
+    -- KONSTANTERROR: [218] 149. Error Block 14 start (CF ANALYSIS FAILED)
+    -- KONSTANTERROR: [218] 149. Error Block 14 end (CF ANALYSIS FAILED)
+end)
+local var233_upvw
+local var234_upvw
+UserInputService_upvr.InputBegan:Connect(function(arg1, arg2) -- Line 1159
+    --[[ Upvalues[9]:
+        [1]: LocalPlayer_upvr (readonly)
+        [2]: tbl_5_upvr (readonly)
+        [3]: fx_upvr (readonly)
+        [4]: Parent_upvr (readonly)
+        [5]: var39_upvw (read and write)
+        [6]: var234_upvw (read and write)
+        [7]: var233_upvw (read and write)
+        [8]: tbl_4_upvr (readonly)
+        [9]: scroll_upvr (readonly)
+    ]]
+    -- KONSTANTERROR: [0] 1. Error Block 1 start (CF ANALYSIS FAILED)
+    -- KONSTANTERROR: [0] 1. Error Block 1 end (CF ANALYSIS FAILED)
+    -- KONSTANTERROR: [6] 4. Error Block 2 start (CF ANALYSIS FAILED)
+    -- KONSTANTERROR: [6] 4. Error Block 2 end (CF ANALYSIS FAILED)
+    -- KONSTANTERROR: [37] 24. Error Block 36 start (CF ANALYSIS FAILED)
+    -- KONSTANTWARNING: Failed to evaluate expression, replaced with nil [38.9]
+    local var236 = tbl_5_upvr[nil.Value]
+    -- KONSTANTERROR: [37] 24. Error Block 36 end (CF ANALYSIS FAILED)
+    -- KONSTANTERROR: [52] 33. Error Block 9 start (CF ANALYSIS FAILED)
+    local Tool = var236:FindFirstChild("Tool")
+    -- KONSTANTERROR: [52] 33. Error Block 9 end (CF ANALYSIS FAILED)
+    -- KONSTANTERROR: [57] 37. Error Block 10 start (CF ANALYSIS FAILED)
+    -- KONSTANTERROR: [57] 37. Error Block 10 end (CF ANALYSIS FAILED)
+    -- KONSTANTERROR: [63] 41. Error Block 11 start (CF ANALYSIS FAILED)
+    fx_upvr:PlaySound(game:GetService("ReplicatedStorage").resources.sounds.sfx.ui.favouritedclick, Parent_upvr, true)
+    -- KONSTANTERROR: [63] 41. Error Block 11 end (CF ANALYSIS FAILED)
+    -- KONSTANTERROR: [85] 55. Error Block 12 start (CF ANALYSIS FAILED)
+    -- KONSTANTERROR: [85] 55. Error Block 12 end (CF ANALYSIS FAILED)
+end)
+UserInputService_upvr.InputChanged:Connect(function(arg1, arg2) -- Line 1239
+    --[[ Upvalues[2]:
+        [1]: var233_upvw (read and write)
+        [2]: UserInputService_upvr (readonly)
+    ]]
+    if arg1.UserInputType == Enum.UserInputType.MouseMovement or arg1.UserInputType == Enum.UserInputType.Touch then
+        if not var233_upvw then return end
+        local var239 = var233_upvw
+        var239.Visible = true
+        local any_GetMouseLocation_result1 = UserInputService_upvr:GetMouseLocation()
+        var239.Position = UDim2.fromOffset(any_GetMouseLocation_result1.X, any_GetMouseLocation_result1.Y)
+    end
+end)
+UserInputService_upvr.InputEnded:Connect(function(arg1) -- Line 1250
+    --[[ Upvalues[12]:
+        [1]: var234_upvw (read and write)
+        [2]: var233_upvw (read and write)
+        [3]: var39_upvw (read and write)
+        [4]: LocalPlayer_upvr (readonly)
+        [5]: var40_upvw (read and write)
+        [6]: var42_upvw (read and write)
+        [7]: tbl_2_upvr (readonly)
+        [8]: scroll_upvr (readonly)
+        [9]: tbl_8_upvr (readonly)
+        [10]: var43_upvw (read and write)
+        [11]: fx_upvr (readonly)
+        [12]: Parent_upvr (readonly)
+    ]]
+    if arg1.UserInputType == Enum.UserInputType.MouseButton1 or arg1.UserInputType == Enum.UserInputType.Touch then
+        local var251 = var234_upvw
+        local var252 = var233_upvw
+        if not var39_upvw then
+            if var252 ~= nil then
+                var252:Destroy()
+                var233_upvw = nil
+            end
+            return
+        end
+        if not LocalPlayer_upvr:GetMouse().Button1Up then return end
+        if var40_upvw == true then
+            if var42_upvw ~= nil and table.find(tbl_2_upvr.buttons, var251) and var42_upvw ~= var251 and var42_upvw.Parent == scroll_upvr then
+                local Name = var251.Name
+                var251.Name = var42_upvw.Name
+                var251.key.Text = ""
+                var251.Parent = scroll_upvr
+                var251.LayoutOrder = #scroll_upvr:GetChildren() + 1
+                var42_upvw.Name = Name
+                var42_upvw.key.Text = Name
+                var42_upvw.Parent = tbl_2_upvr.frame
+                var42_upvw.LayoutOrder = 0
+                tbl_2_upvr.buttons = {tbl_2_upvr.frame['1'], tbl_2_upvr.frame['2'], tbl_2_upvr.frame['3'], tbl_2_upvr.frame['4'], tbl_2_upvr.frame['5'], tbl_2_upvr.frame['6'], tbl_2_upvr.frame['7'], tbl_2_upvr.frame['8'], tbl_2_upvr.frame['9']}
+                FindSlotsHovered()
+            elseif var42_upvw ~= var251 then
+                var251.Parent = scroll_upvr
+                if table.find(tbl_2_upvr.buttons, var251) then
+                    local clone = script.hotbartemplate:Clone()
+                    clone.Name = var251.Name
+                    var251.Name = var251.tool.Value.Name
+                    clone.Parent = tbl_2_upvr.frame
+                    clone.key.Text = clone.Name
+                    clone.Visible = true
+                    if var251:FindFirstChild("key") then
+                        var251:FindFirstChild("key").Text = ""
+                    end
+                    var251.LayoutOrder = #scroll_upvr:GetChildren() + 1
+                    tbl_2_upvr.buttons = {tbl_2_upvr.frame['1'], tbl_2_upvr.frame['2'], tbl_2_upvr.frame['3'], tbl_2_upvr.frame['4'], tbl_2_upvr.frame['5'], tbl_2_upvr.frame['6'], tbl_2_upvr.frame['7'], tbl_2_upvr.frame['8'], tbl_2_upvr.frame['9']}
+                    FindSlotsHovered()
+                    -- KONSTANTWARNING: GOTO [672] #427
+                end
+                -- KONSTANTWARNING: GOTO [672] #427
+            end
+            -- KONSTANTWARNING: GOTO [672] #427
+        end
+        FindSlotsHovered()
+        local _, _, _ = pairs(tbl_2_upvr.buttons)
+        -- KONSTANTWARNING: GOTO [287] #186
+    end
+end)

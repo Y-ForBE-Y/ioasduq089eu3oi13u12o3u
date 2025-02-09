@@ -1,0 +1,52 @@
+-- Decompiler will be improved soon!
+-- Decompiled with Konstant V2.1, a fast Luau decompiler made in Luau by plusgiant5 (https://discord.gg/wyButjTMhM)
+-- Decompiled on 2025-02-01 07:45:40
+-- Luau version 6, Types version 3
+-- Time taken: 0.001971 seconds
+
+local world_upvr = game:GetService("ReplicatedStorage"):WaitForChild("world")
+local Parent_upvr = script.Parent
+function Check() -- Line 4
+    --[[ Upvalues[2]:
+        [1]: world_upvr (readonly)
+        [2]: Parent_upvr (readonly)
+    ]]
+    script.Parent:WaitForChild("label").Text = world_upvr:WaitForChild("weather").Value
+    Parent_upvr.ImageColor3 = Color3.fromRGB(255, 255, 255)
+    if world_upvr:WaitForChild("weather").Value == "Clear" then
+        Parent_upvr.Image = "rbxassetid://16956671633"
+    else
+        if world_upvr:WaitForChild("weather").Value == "Windy" then
+            Parent_upvr.Image = "rbxassetid://17860107825"
+            return
+        end
+        if world_upvr:WaitForChild("weather").Value == "Rain" then
+            Parent_upvr.Image = "rbxassetid://16956671324"
+            return
+        end
+        if world_upvr:WaitForChild("weather").Value == "Foggy" then
+            Parent_upvr.Image = "rbxassetid://18132224774"
+            return
+        end
+        if world_upvr:WaitForChild("weather").Value == "Aurora_Borealis" then
+            Parent_upvr.Image = "rbxassetid://18987581016"
+            script.Parent:WaitForChild("label").Text = "Aurora Borealis"
+            Parent_upvr.ImageColor3 = Color3.fromRGB(121, 255, 192)
+            return
+        end
+        if world_upvr:WaitForChild("weather").Value == "Eclipse" then
+            Parent_upvr.Image = "rbxassetid://93815001725064"
+        end
+    end
+end
+world_upvr:WaitForChild("weather").Changed:Connect(function() -- Line 26
+    Check()
+end)
+task.wait()
+Check()
+script.Parent.MouseEnter:Connect(function() -- Line 37
+    script.Parent:WaitForChild("label").Visible = true
+end)
+script.Parent.MouseLeave:Connect(function() -- Line 41
+    script.Parent:WaitForChild("label").Visible = false
+end)

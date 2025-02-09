@@ -1,0 +1,13 @@
+local PromoList = {
+	{"THEKRAKEN"},
+    {"RFG"},
+    {"CARBON"},
+    {"SORRYGUYS"},
+    {"ATLANTEANSTORM"},
+    {"GOLDENTIDE"},
+	{"FISCHMASDAY"},
+	{"NorthernExpedition"},
+	{"MERRYFISCHMAS"},
+}
+
+return PromoList

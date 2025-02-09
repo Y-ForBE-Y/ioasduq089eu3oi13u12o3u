@@ -1,0 +1,77 @@
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local RunService = game:GetService("RunService")
+local Players = game:GetService("Players")
+
+local LocalPlayer = Players.LocalPlayer
+
+local config = {
+    AutoRell = true,
+    AntiAFKTeg = true,
+
+}
+
+
+
+local Remotes = {
+    ReelFinished = ReplicatedStorage.events:WaitForChild("reelfinished "),
+    AFK = ReplicatedStorage.events:WaitForChild("afk"),
+}
+
+print("Step 1")
+
+if config.AntiAFKTeg then
+    Remotes.AFK:FireServer(false)
+end
+
+
+
+--[[if config.AutoRell then
+    Remotes.ReelFinished:FireServer(100, false)
+end]]
+
+print("Step 2")
+
+while true do
+    RunService.RenderStepped:Wait()
+
+    local ReelUI: ScreenGui = LocalPlayer.PlayerGui:FindFirstChild("reel")
+
+    if not ReelUI then
+        continue
+    end
+
+    if config.AutoRell then
+        local Bar = ReelUI:FindFirstChild("bar")
+
+        if Bar then
+            local ReelScript = Bar:FindFirstChild("reel")
+            if ReelScript and ReelScript.Enabled == true then
+                Remotes.ReelFinished:FireServer(100, false)
+            end
+        end
+    
+        
+    --[[elseif GetToggleValue("AutoReel") then
+        local Bar = ReelUI:FindFirstChild("bar")
+
+        if not Bar then
+            continue
+        end
+
+        local PlayerBar: Frame = Bar:FindFirstChild("playerbar")
+        local TargetBar: Frame = Bar:FindFirstChild("fish")
+
+        while Bar and ReelUI:IsDescendantOf(LocalPlayer.PlayerGui) do
+            RunService.RenderStepped:Wait()
+            local UnfilteredTargetPosition = PlayerBar.Position:Lerp(TargetBar.Position, 0.7)
+            local TargetPosition = UDim2.fromScale(
+                math.clamp(UnfilteredTargetPosition.X.Scale, 0.15, 0.85),
+                UnfilteredTargetPosition.Y.Scale
+            )
+
+            PlayerBar.Position = TargetPosition
+        end]]
+    end
+end
+
+print("Step 3")

@@ -1,0 +1,87 @@
+-- Decompiler will be improved soon!
+-- Decompiled with Konstant V2.1, a fast Luau decompiler made in Luau by plusgiant5 (https://discord.gg/wyButjTMhM)
+-- Decompiled on 2025-02-05 19:46:46
+-- Luau version 6, Types version 3
+-- Time taken: 0.003471 seconds
+
+local module_upvr = require(game:GetService("ReplicatedStorage"):WaitForChild("modules"):WaitForChild("library"):WaitForChild("fish"))
+local module = {}
+local tbl_2_upvr = {"Trash", "Common", "Uncommon"}
+local function _(arg1) -- Line 9, Named "fetch"
+    --[[ Upvalues[1]:
+        [1]: module_upvr (readonly)
+    ]]
+    return module_upvr[arg1]
+end
+function module.Apply(arg1, arg2) -- Line 13
+    --[[ Upvalues[2]:
+        [1]: module_upvr (readonly)
+        [2]: tbl_2_upvr (readonly)
+    ]]
+    -- KONSTANTWARNING: Variable analysis failed. Output will have some incorrect variable assignments
+    local var28 = arg2 / 100 + 1
+    local tbl = {}
+    local var30 = 0
+    local pairs_result1, pairs_result2, _ = pairs(arg1)
+    local var36
+    for _, v in pairs_result1, pairs_result2, var36 do
+        var30 += 1
+        tbl[var30] = {v, module_upvr[v].Chance}
+    end
+    function var36(arg1_2, arg2_2) -- Line 25
+        local var37
+        if arg1_2[2] >= arg2_2[2] then
+            var37 = false
+        else
+            var37 = true
+        end
+        return var37
+    end
+    table.sort(tbl, var36)
+    print(tbl)
+    local tbl_3 = {}
+    var36 = 0
+    for i_2 = 1, #tbl do
+        local Rarity = module_upvr[tbl[i_2][1]].Rarity
+        print("rarity of "..tbl[i_2][1].." is "..Rarity)
+        if not table.find(tbl_2_upvr, Rarity) then
+            var36 += tbl[i_2][2] * (var28 - 1)
+            ;({})[i_2] = {tbl[i_2][1], math.clamp(tbl[i_2][2] * var28, 0, 100)}
+            tbl_3[#tbl_3 + 1] = i_2
+        else
+            local var41 = 0 + 1
+        end
+    end
+    -- KONSTANTERROR: Expression was reused, decompilation is incorrect
+    print({})
+    if 0 < var36 then
+        local var42 = var36 / var41
+        i_2 = "there are "..var36.." total chances, and "..var41.." total lows, which equals out to a "..var42.." sub"
+        print(i_2)
+        i_2 = 1
+        for i_3 = 1, #tbl, i_2 do
+            if not table.find(tbl_3, i_3) then
+                local var43 = module_upvr[tbl[i_3][1]]
+                local _2 = tbl[i_3][2]
+                local clamped = math.clamp(_2 - var42, 0, math.huge)
+                if var43 and table.find(tbl_2_upvr, var43.Rarity) and clamped == 0 then
+                    print("ben", _2, tbl[i_3][1], tbl[i_3])
+                    clamped = 0.1
+                end
+                -- KONSTANTERROR: Expression was reused, decompilation is incorrect
+                ;({})[i_3] = {tbl[i_3][1], clamped}
+            end
+        end
+    else
+        local var47 = tbl
+    end
+    for _ = 1, #var47 do
+        local var48
+    end
+    for i_5 = 1, #var47 do
+        ({})[var47[i_5][1]] = var47[i_5][2]
+        local var50
+    end
+    return var50, var48
+end
+return module

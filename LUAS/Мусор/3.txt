@@ -1,0 +1,46 @@
+--TEST
+
+
+local player = game.Players.LocalPlayer
+local character = player.Character or player.CharacterAdded:Wait()
+
+local workspace = game:GetService("Workspace")
+
+
+local tool = character:FindFirstChildOfClass("Tool") -- Находит инструмент в руках
+if tool then
+    print("Игрок держит инструмент:", tool.Name)
+else
+    print("Инструмент не найден")
+end
+
+local localPlayer = game:GetService("Players").LocalPlayer
+
+local CurrentTool = workspace:WaitForChild(localPlayer.Name):WaitForChild(tool.Name)
+
+--local Bobber = CurrentTool:WaitForChild("bobber")
+
+--print(Bobber.Name)
+
+local InstantBob = true
+
+if InstantBob then
+    if CurrentTool then
+        local Bobber = CurrentTool:FindFirstChild("bobber")
+        if Bobber then
+            local Params = RaycastParams.new()
+
+            Params.FilterType = Enum.RaycastFilterType.Include
+            Params.FilterDescendantsInstances = { workspace.Terrain }
+
+            local RaycastResult = workspace:Raycast(Bobber.Position, -Vector3.yAxis * 100, Params)
+
+            if RaycastResult then
+                if RaycastResult.Instance:IsA("Terrain") then
+                    Bobber:PivotTo(CFrame.new(RaycastResult.Position))
+                end
+            end
+        end
+    end
+end
+

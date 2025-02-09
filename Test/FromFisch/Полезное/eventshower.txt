@@ -1,0 +1,48 @@
+-- Decompiler will be improved soon!
+-- Decompiled with Konstant V2.1, a fast Luau decompiler made in Luau by plusgiant5 (https://discord.gg/wyButjTMhM)
+-- Decompiled on 2025-02-01 07:44:49
+-- Luau version 6, Types version 3
+-- Time taken: 0.001265 seconds
+
+local world_upvr = game:GetService("ReplicatedStorage"):WaitForChild("world")
+local Parent_upvr = script.Parent
+function Check() -- Line 4
+    --[[ Upvalues[2]:
+        [1]: world_upvr (readonly)
+        [2]: Parent_upvr (readonly)
+    ]]
+    if world_upvr:WaitForChild("event").Value == "None" then
+        script.Parent.Visible = false
+    else
+        script.Parent.Visible = true
+        script.Parent:WaitForChild("label").Text = world_upvr:WaitForChild("event").Value
+        Parent_upvr.ImageColor3 = Color3.fromRGB(255, 255, 255)
+        Parent_upvr.Image = "rbxassetid://18997116922"
+        if world_upvr:WaitForChild("event").Value == "Night of the Fireflies" then
+            Parent_upvr.ImageColor3 = Color3.fromRGB(168, 133, 255)
+            return
+        end
+        if world_upvr:WaitForChild("event").Value == "Night of the Luminous" then
+            Parent_upvr.ImageColor3 = Color3.fromRGB(162, 255, 184)
+            return
+        end
+        if world_upvr:WaitForChild("event").Value == "Shiny Surge" then
+            Parent_upvr.ImageColor3 = Color3.fromRGB(255, 238, 143)
+            return
+        end
+        if world_upvr:WaitForChild("event").Value == "Mutation Surge" then
+            Parent_upvr.ImageColor3 = Color3.fromRGB(88, 255, 102)
+        end
+    end
+end
+world_upvr:WaitForChild("event").Changed:Connect(function() -- Line 27
+    Check()
+end)
+task.wait()
+Check()
+script.Parent.MouseEnter:Connect(function() -- Line 38
+    script.Parent:WaitForChild("label").Visible = true
+end)
+script.Parent.MouseLeave:Connect(function() -- Line 42
+    script.Parent:WaitForChild("label").Visible = false
+end)

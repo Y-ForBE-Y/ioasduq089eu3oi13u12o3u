@@ -1,0 +1,155 @@
+local player = game.Players.LocalPlayer
+local backpack = player:WaitForChild("Backpack")
+local character = player.Character or player.CharacterAdded:Wait()
+local humanoid = character:WaitForChild("Humanoid")
+
+
+-- Переменная для активации проверки на избранные инструменты
+local autoTrade = true -- (включает трейды вовсе)
+local favoriteCheck = true  -- (проверяем на то пропускаем ли мы фавориты)
+local TradeAllLoop = true -- (Передаём ли мы все предметы чтое есть)
+local TradeInHand = true -- (Передайм ли мы премет в руках раз в 5 сек)
+local targetPlayerName = "Jenalocl" -- (имя игрока которому мы передаём)
+
+local TradeCancel = true
+
+-- Загрузка модулей с предметами, удочками и сокровищами
+local itemsModule = require(game:GetService("ReplicatedStorage").modules.library.items)
+local rodsModule = require(game:GetService("ReplicatedStorage").modules.library.rods)
+local treasuresModule = require(game:GetService("ReplicatedStorage").modules.library.treasures)
+
+-- Кастомный список исключений
+local customExcludedItems = {
+    ["Equipment Bag"] = true,
+    ["Bestiary"] = true,
+}
+
+-- Список приоритетных предметов (всегда передавать)
+local forcedItems = {
+    ["Enchant Relic"] = true,
+}
+
+
+
+-- Функция для вывода названия выбранного инструмента
+local function onToolChanged()
+    local tool = player.Character:FindFirstChildOfClass("Tool") -- Проверяем, есть ли инструмент в правой руке
+    if tool then
+		return tool.Name
+    end
+end
+
+-- Функция для отправки обмена
+local function sendTrade()
+
+	if targetPlayerName == player.Name then
+		print("иди нахуй ебланище которое само мебя выбирает")
+		targetPlayerName = nil
+	end
+
+	local FishInWorcspase = workspace:FindFirstChild(player.Name):FindFirstChild(onToolChanged())
+
+	-- Путь к удалённому событию offer
+	local offerEvent = FishInWorcspase:FindFirstChild("offer")
+
+	-- Проверяем, существует ли RemoteEvent
+	if not offerEvent or not offerEvent:IsA("RemoteEvent") then
+		warn("Удалённое событие offer не найдено или не является RemoteEvent")
+		return
+	end
+
+    -- Проверяем, существует ли игрок с указанным ником
+    local targetPlayer = game.Players:FindFirstChild(targetPlayerName)
+    if not targetPlayer then
+        warn("Игрок с ником " .. targetPlayerName .. " не найден.")
+        return
+    end
+
+    -- Отправляем обмен через RemoteEvent
+    offerEvent:FireServer(targetPlayer)
+    print("Трейд успешно отправлен игроку " .. targetPlayerName)
+end
+
+-- Создание списка ItemId для предметов с категорией "Item" из treasures
+local excludedTreasures = {}
+for _, loot in ipairs(treasuresModule.Loots.Default) do
+    if loot.Category == "Item" then
+        excludedTreasures[loot.ItemId] = true
+    end
+end
+
+-- Функция для проверки, исключён ли инструмент
+local function isExcluded(toolName)
+    -- Если предмет в списке приоритетных, он НЕ исключён
+    if forcedItems[toolName] then
+        return false
+    end
+
+    return itemsModule.Items[toolName] ~= nil or 
+           rodsModule[toolName] ~= nil or 
+           excludedTreasures[toolName] ~= nil or
+           customExcludedItems[toolName] ~= nil
+end
+
+local function TradingAll()
+    local tools = backpack:GetChildren()
+    TradeCancel = false
+
+    -- Проверка, есть ли инструменты
+    if #tools > 0 then
+        for i, tool in ipairs(tools) do
+            if not isExcluded(tool.Name) and tool:IsA("Tool") then
+                if favoriteCheck then
+                    local link = tool:FindFirstChild("link")
+                    if link and link.Value then
+                        local favourited = link.Value:FindFirstChild("Favourited")
+                        if favourited and favourited.Value == true then
+                            continue
+                        end
+                    end
+                end
+
+                -- Выбираем инструмент
+                humanoid:EquipTool(tool)
+                task.wait(0.0001) -- Небольшая задержка для обработки
+
+                -- Проверяем, активен ли инструмент
+                if onToolChanged() then
+					task.wait() -- Небольшая задержка для обработки
+                    sendTrade()
+					task.wait(0.00001) -- Небольшая задержка для обработки
+                end
+
+                -- Если это не последний инструмент, снимаем выделение
+                if i < #tools then
+                    humanoid:UnequipTools()
+                end
+            end
+        end
+    else
+        print("Инструменты не найдены в рюкзаке.")
+    end
+
+    TradeCancel = true
+    print("Все допустимые инструменты были переданы. Скрипт остановлен.")
+end
+
+
+while autoTrade do
+	if not autoTrade or TradeInHand and not onToolChanged() and not TradeAllLoop or targetPlayerName == nil then
+		print("Stoped")
+		break
+	end
+    
+    -- Если активированы все условия для торговли
+    if TradeAllLoop and TradeCancel then
+        TradingAll()
+        task.wait(5)
+    end
+
+    -- Если у игрока есть нужный инструмент и изменения его состояния произошли
+    if TradeInHand and onToolChanged() then
+        sendTrade()
+        task.wait(5)
+    end
+end

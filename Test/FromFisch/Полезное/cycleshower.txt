@@ -1,0 +1,35 @@
+-- Decompiler will be improved soon!
+-- Decompiled with Konstant V2.1, a fast Luau decompiler made in Luau by plusgiant5 (https://discord.gg/wyButjTMhM)
+-- Decompiled on 2025-02-01 07:46:36
+-- Luau version 6, Types version 3
+-- Time taken: 0.001130 seconds
+
+local world_upvr = game:GetService("ReplicatedStorage"):WaitForChild("world")
+local Parent_upvr = script.Parent
+function Check() -- Line 4
+    --[[ Upvalues[2]:
+        [1]: world_upvr (readonly)
+        [2]: Parent_upvr (readonly)
+    ]]
+    if world_upvr:WaitForChild("season").Value == "Autumn" then
+        Parent_upvr.Image = "rbxassetid://17746816954"
+    elseif world_upvr:WaitForChild("season").Value == "Summer" then
+        Parent_upvr.Image = "rbxassetid://17746817125"
+    elseif world_upvr:WaitForChild("season").Value == "Spring" then
+        Parent_upvr.Image = "rbxassetid://17746816696"
+    elseif world_upvr:WaitForChild("season").Value == "Winter" then
+        Parent_upvr.Image = "rbxassetid://17746816531"
+    end
+    script.Parent:WaitForChild("label").Text = world_upvr:WaitForChild("season").Value
+end
+world_upvr:WaitForChild("season").Changed:Connect(function() -- Line 18
+    Check()
+end)
+task.wait()
+Check()
+script.Parent.MouseEnter:Connect(function() -- Line 28
+    script.Parent:WaitForChild("label").Visible = true
+end)
+script.Parent.MouseLeave:Connect(function() -- Line 32
+    script.Parent:WaitForChild("label").Visible = false
+end)

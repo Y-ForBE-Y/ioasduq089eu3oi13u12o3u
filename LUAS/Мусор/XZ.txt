@@ -1,0 +1,49 @@
+local player = game.Players.LocalPlayer
+local character = player.Character or player.CharacterAdded:Wait()
+local workspace = game:GetService("Workspace")
+
+local FishingZones = {}
+
+for _, Zone in next, workspace:WaitForChild("zones"):WaitForChild("fishing"):GetChildren() do
+    if not FishingZones[Zone.Name] then
+        FishingZones[Zone.Name] = Zone
+    end
+end
+
+local tool = character:FindFirstChildOfClass("Tool") -- Находит инструмент в руках
+if tool then
+    print("Игрок держит инструмент:", tool.Name)
+else
+    print("Инструмент не найден")
+end
+
+local localPlayer = game:GetService("Players").LocalPlayer
+
+local CurrentTool = workspace:WaitForChild(localPlayer.Name):FindFirstChild(tool and tool.Name or "")
+if CurrentTool then
+    local Bobber = CurrentTool:FindFirstChild("bobber")
+    if Bobber then
+        print("Поплавок найден:", Bobber.Name)
+        
+        -- Функция, которая определяет, в какой зоне находится поплавок
+        local function getFishingZone(bobber)
+            for zoneName, zone in pairs(FishingZones) do
+                -- Проверяем, находится ли поплавок в пределах зоны
+                if (bobber.Position - zone.Position).Magnitude <= zone.Size.Magnitude / 2 then
+                    return zoneName
+                end
+            end
+            return nil
+        end
+
+        -- Присваиваем поплавку название зоны, в которой он находится
+        local zoneName = getFishingZone(Bobber)
+        if zoneName then
+            print("Поплавок находится в зоне:", zoneName)
+        else
+            print("Поплавок не находится в зоне, nil")
+        end
+    else
+        print("Поплавок не найден")
+    end
+end
