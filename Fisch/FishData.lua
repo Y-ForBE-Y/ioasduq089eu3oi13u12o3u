@@ -1,5 +1,3 @@
---123
-
 local fish = game:GetService("ReplicatedStorage"):WaitForChild("resources"):WaitForChild("animations"):WaitForChild("fish")
 --local module = require(script:WaitForChild("presents"))
 
