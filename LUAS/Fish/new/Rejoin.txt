@@ -1,0 +1,8 @@
+local TeleportService = game:GetService("TeleportService")
+local Players = game:GetService("Players")
+
+-- Автоматически получаем Place ID текущего места
+local placeId = game.PlaceId
+
+-- Выполняем телепортацию
+TeleportService:Teleport(placeId)

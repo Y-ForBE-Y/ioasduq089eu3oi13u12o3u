@@ -1,0 +1,45 @@
+local Players = game:GetService("Players")
+local localPlayer = Players.LocalPlayer
+local targetPlayerId = localPlayer.UserId
+
+-- Функция для получения позиции игрока
+local function getPlayerPositionById(userId)
+    for _, player in ipairs(Players:GetPlayers()) do
+        if player.UserId == userId and player.Character and player.Character.PrimaryPart then
+            return player.Character.PrimaryPart.Position
+        end
+    end
+    return nil -- Если игрока или его позиции нет
+end
+
+-- Функция для копирования позиции в клипборд
+local function copyToClipboard(text)
+    if setclipboard then
+        setclipboard(text)
+        print("Скопировано в буфер обмена: ", text)
+    else
+        print("setclipboard недоступен.")
+    end
+end
+
+local  function test()
+    local position = getPlayerPositionById(targetPlayerId)
+    if position then
+        local positionText = string.format("%.2f, %.2f, %.2f", position.X, position.Y, position.Z)
+        print("Позиция игрока с ID", targetPlayerId, ": ", positionText)
+        copyToClipboard(positionText)
+    else
+        print("Игрок с ID", targetPlayerId, "не найден или его позиция недоступна.")
+    end
+end
+
+wait(1)
+
+test()
+
+--[[
+-- Проверяем позицию игрока каждые 2 секунды
+while task.wait(2) do
+
+end
+]]

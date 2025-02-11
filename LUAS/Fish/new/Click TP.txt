@@ -1,0 +1,47 @@
+local player = game.Players.LocalPlayer
+local mouse = player:GetMouse()
+local userInputService = game:GetService("UserInputService")
+
+local isHoldingB = false
+
+-- Отслеживание нажатия клавиши B
+userInputService.InputBegan:Connect(function(input)
+    if input.KeyCode == Enum.KeyCode.B then
+        isHoldingB = true
+    end
+end)
+
+-- Отслеживание отпускания клавиши B
+userInputService.InputEnded:Connect(function(input)
+    if input.KeyCode == Enum.KeyCode.B then
+        isHoldingB = false
+    end
+end)
+
+-- Обработчик нажатия ЛКМ
+mouse.Button1Down:Connect(function()
+    if isHoldingB then
+        local character = player.Character
+        if character and character:FindFirstChild("HumanoidRootPart") then
+            -- Настройка RaycastParams для игнорирования игроков
+            local raycastParams = RaycastParams.new()
+            raycastParams.FilterType = Enum.RaycastFilterType.Blacklist
+            raycastParams.FilterDescendantsInstances = {character} -- Игнорируем собственного персонажа
+
+            -- Создаем луч, чтобы найти цель
+            local rayOrigin = mouse.UnitRay.Origin
+            local rayDirection = mouse.UnitRay.Direction * 1000 -- Увеличиваем дальность луча
+            local result = workspace:Raycast(rayOrigin, rayDirection, raycastParams)
+
+            local targetPosition
+            if result then
+                targetPosition = result.Position
+            else
+                targetPosition = mouse.Hit.p -- Если луч не пересек объект, используем позицию курсора
+            end
+
+            -- Телепортируем персонажа
+            character.HumanoidRootPart.CFrame = CFrame.new(targetPosition + Vector3.new(0, 5, 0))
+        end
+    end
+end)

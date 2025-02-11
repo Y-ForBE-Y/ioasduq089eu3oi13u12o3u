@@ -1,0 +1,48 @@
+-- Получение необходимых сервисов
+local Players = game:GetService("Players")
+local TeleportUserId = 5191915342 -- Happy
+--local TeleportUserId = 1674433875 -- женя
+
+-- Функция для поиска игрока по UserId
+local function getPlayerByUserId(userId)
+    for _, player in pairs(Players:GetPlayers()) do
+        if player.UserId == userId then
+            return player
+        end
+    end
+    return nil -- Игрок не найден
+end
+
+-- Получаем локального игрока
+local localPlayer = Players.LocalPlayer
+if not localPlayer then
+    warn("Этот скрипт должен выполняться в LocalScript.")
+    return
+end
+
+-- Находим целевого игрока
+local targetPlayer = getPlayerByUserId(TeleportUserId)
+if not targetPlayer then
+    warn("Игрок с UserId " .. TeleportUserId .. " не найден.")
+    return
+end
+
+-- Ждем, пока модель персонажа будет загружена
+local function getCharacter(player)
+    if player and player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
+        return player.Character
+    end
+    player.CharacterAdded:Wait()
+    return player.Character
+end
+
+-- Телепортация
+local targetCharacter = getCharacter(targetPlayer)
+local myCharacter = getCharacter(localPlayer)
+
+if targetCharacter and myCharacter then
+    local targetPosition = targetCharacter:FindFirstChild("HumanoidRootPart").Position
+    myCharacter:FindFirstChild("HumanoidRootPart").CFrame = CFrame.new(targetPosition)
+else
+    warn("Не удалось получить персонажей.")
+end
