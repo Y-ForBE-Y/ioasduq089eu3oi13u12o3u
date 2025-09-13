@@ -7514,7 +7514,7 @@ function Compkiller.new(Config : Window)
 		config.Username = config.Username or LocalPlayer.DisplayName;
 		config.ExpireDate = config.ExpireDate or "NEVER";
 		config.WindowName = config.WindowName or Config.Name;
-		config.UserProfile = config.UserProfile or WindowArgs.Profile or string.format("rbxthumb://type=AvatarHeadShot&id=%s&w=150&h=150",tostring(LocalPlayer.UserId));
+		config.UserProfile = config.UserProfile or WindowArgs.Profile or string.format(");
 
 		UserText.Text = config.Username;
 		CompLogo.Image = config.Logo;
