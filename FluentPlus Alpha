@@ -2257,7 +2257,7 @@ Components.Tab = (function()
 			BorderSizePixel = 0,
 			CanvasSize = UDim2.fromScale(0, 0),
 			ScrollingDirection = Enum.ScrollingDirection.Y,
-			ScrollingEnabled = true,
+			--ScrollingEnabled = true,
 		}, {
 			ContainerLayout,
 			New("UIPadding", {
