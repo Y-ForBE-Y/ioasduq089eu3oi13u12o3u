@@ -6,6 +6,30 @@ local url = "https://raw.githubusercontent.com/Y-ForBE-Y/ioasduq089eu3oi13u12o3u
 local scriptContent = game:HttpGet(url)
 local module = loadstring(scriptContent)()  -- Загружаем данные из GitHub 
 
+local tbl = {
+    ["Desolate Deep"] = {
+        Trash = 22;
+        Common = 22;
+        Uncommon = 18;
+        Unusual = 17;
+        Rare = 14;
+    };
+    ["Brine Pool"] = {
+        Trash = 29;
+        Common = 29;
+        Uncommon = 25;
+        Unusual = 23;
+        Rare = 15;
+    };
+    ["Crystal Cove"] = {
+        Trash = 29;
+        Common = 29;
+        Uncommon = 25;
+        Unusual = 23;
+        Rare = 15;
+    };
+}
+
 local module_upvr = {
     ["Corrupted Floppy"] = {
         Icon = "rbxassetid://138896437082404";
