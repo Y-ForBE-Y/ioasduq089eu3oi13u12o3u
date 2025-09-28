@@ -1,7 +1,11 @@
 local longstring1 = "An immortal stone filled with the essence of a Divine Lantern Keeper.. Returning it to it's throne under the Statue of Sovereignty will result in your currently equipped rod being blessed with its immense power."
 local longstring2 = "Lobsters are valuable crustaceans known for their rich, succulent meat. Lobsters are most active in the summer to autumn, and are commonly caught in crab cages during calm clear days."
 local fish = game:GetService("ReplicatedStorage"):WaitForChild("resources"):WaitForChild("animations"):WaitForChild("fish")
-local module = require(script:WaitForChild("presents"))
+
+local url = "https://raw.githubusercontent.com/Y-ForBE-Y/ioasduq089eu3oi13u12o3u/refs/heads/main/1/presents.txt"
+local scriptContent = game:HttpGet(url)
+local module = loadstring(scriptContent)()  -- Загружаем данные из GitHub 
+
 local module_upvr = {
     ["Corrupted Floppy"] = {
         Icon = "rbxassetid://138896437082404";
