@@ -1,6 +1,29 @@
 local longstring1 = "An immortal stone filled with the essence of a Divine Lantern Keeper.. Returning it to it's throne under the Statue of Sovereignty will result in your currently equipped rod being blessed with its immense power."
 local longstring2 = "Lobsters are valuable crustaceans known for their rich, succulent meat. Lobsters are most active in the summer to autumn, and are commonly caught in crab cages during calm clear days."
 local fish = game:GetService("ReplicatedStorage"):WaitForChild("resources"):WaitForChild("animations"):WaitForChild("fish")
+local tbl = {
+    ["Desolate Deep"] = {
+        Trash = 22;
+        Common = 22;
+        Uncommon = 18;
+        Unusual = 17;
+        Rare = 14;
+    };
+    ["Brine Pool"] = {
+        Trash = 29;
+        Common = 29;
+        Uncommon = 25;
+        Unusual = 23;
+        Rare = 15;
+    };
+    ["Crystal Cove"] = {
+        Trash = 29;
+        Common = 29;
+        Uncommon = 25;
+        Unusual = 23;
+        Rare = 15;
+    };
+}
 local module_upvr = {
     ["Corrupted Floppy"] = {
         Icon = "rbxassetid://138896437082404";
@@ -11,7 +34,6 @@ local module_upvr = {
         Resilience = -100;
         ForcedProgressEfficiency = 0.05;
         Description = "Something seems to have corrupted it...";
-
         Hint = "???";
         FavouriteBait = nil;
         FavouriteTime = nil;
