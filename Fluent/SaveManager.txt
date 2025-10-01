@@ -213,7 +213,7 @@ local SaveManager = {} do
 	    section:AddDropdown("SaveManager_ConfigList", { 
 			Title = "Config list", 
 			Values = self:RefreshConfigList(), 
-			AllowNull = true 
+			AllowNull = true,
 	        Multi = false,
 	        Search = false, -- optional; default true
 	        Default = nil,
@@ -327,5 +327,6 @@ local SaveManager = {} do
 end
 
 return SaveManager
+
 
 
