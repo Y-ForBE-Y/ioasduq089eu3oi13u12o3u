@@ -217,6 +217,33 @@ do
     -- Вкладка Server для сервер хопа
     local ServerSection = Tabs.Server:AddSection("Server Hop", "refresh-cw")
 
+	local ReLoadScriptAfterChengeServer = Tabs.Server:AddToggle("ReLoadScriptAfterChengeServer", {
+		Title = "Re Load Script After Chenge Server", 
+		Description = "Need Save in settings after chenge",
+		Default = true
+	})
+
+	-- Функция для обновления queue_on_teleport
+	local function updateTeleportScript(enable)
+		if enable then
+			queue_on_teleport([[
+				wait(3)
+				loadstring(game:HttpGet("https://raw.githubusercontent.com/Y-ForBE-Y/ioasduq089eu3oi13u12o3u/refs/heads/main/My%20Script/Loader.txt"))()
+			]])
+			--print("✅ Автозагрузка скрипта включена")
+		else
+			queue_on_teleport("")
+			--print("❌ Автозагрузка скрипта выключена")
+		end
+	end
+
+	ReLoadScriptAfterChengeServer:OnChanged(function(value)
+		updateTeleportScript(value)
+	end)
+
+	--Инициализация при старте
+	updateTeleportScript(ReLoadScriptAfterChengeServer.Value)
+
     Tabs.Server:AddButton({
         Title = "Server Hop",
         Description = "Join a different server",
