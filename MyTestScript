@@ -1,0 +1,601 @@
+local Fluent = loadstring(game:HttpGet("https://raw.githubusercontent.com/discoart/FluentPlus/refs/heads/main/Beta.lua"))()
+local SaveManager = loadstring(game:HttpGet("https://raw.githubusercontent.com/Y-ForBE-Y/ioasduq089eu3oi13u12o3u/refs/heads/main/Fluent/SaveManager.txt"))()
+local InterfaceManager = loadstring(game:HttpGet("https://raw.githubusercontent.com/dawid-scripts/Fluent/master/Addons/InterfaceManager.lua"))()
+
+-- Variables --
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
+local RunService = game:GetService("RunService")
+local TeleportService = game:GetService("TeleportService")
+local TweenService = game:GetService("TweenService")
+
+-- Переменные для сервер хопа
+local PlaceId = game.PlaceId
+local JobId = game.JobId
+
+-- Будем хранить текущие ссылки на персонажа и humanoid
+local LCharacter
+local LHumanoid
+
+-- Переменные для чекбоксов и циклов
+local JumpPowerLoop = nil
+local WalkSpeedLoop = nil
+local TimeLoop = nil
+local originalJumpPower = 50
+local originalWalkSpeed = 16
+local originalTime = "12:00:00"
+
+-- Флаг для отслеживания телепортации
+local IsTeleporting = false
+
+-- Функция для обновления ссылок на персонажа
+local function updateCharacterReferences(character)
+    LCharacter = character
+    LHumanoid = character:WaitForChild("Humanoid")
+    
+    -- Сохраняем оригинальные значения при появлении персонажа
+    originalJumpPower = LHumanoid.JumpPower
+    originalWalkSpeed = LHumanoid.WalkSpeed
+    
+    -- Обновляем значения слайдеров, если они уже созданы
+    if Options and Options.SetJumpPower then
+        Options.SetJumpPower:Set(LHumanoid.JumpPower)
+    end
+    if Options and Options.SetWalkSpeed then
+        Options.SetWalkSpeed:Set(LHumanoid.WalkSpeed)
+    end
+    
+    -- Применяем настройки только если тогглы включены
+    if Options and Options.JumpPowerToggle and Options.JumpPowerToggle.Value == true then
+        SetJumpPower(Options.SetJumpPower.Value)
+    end
+    if Options and Options.WalkSpeedToggle and Options.WalkSpeedToggle.Value == true then
+        SetWalkSpeed(Options.SetWalkSpeed.Value)
+    end
+end
+
+-- Functions --
+local function SetWalkSpeed(Value)
+    if LHumanoid and LHumanoid.Parent then
+        LHumanoid.WalkSpeed = Value
+    end
+end 
+
+local function SetJumpPower(Value)
+    if LHumanoid and LHumanoid.Parent then
+        LHumanoid.JumpPower = Value
+    end
+end
+
+local function sit_down(Value)
+    if LHumanoid and LHumanoid.Parent then
+        LHumanoid.Sit = Value
+    end
+end
+
+local function Suicide()
+    if LHumanoid and LHumanoid.Parent then
+        LHumanoid.Health = 0
+    end
+end
+
+local function SuicideV2()
+    if LHumanoid and LHumanoid.Parent then
+        LHumanoid:SetStateEnabled(Enum.HumanoidStateType.Dead, false)
+        LHumanoid:ChangeState(Enum.HumanoidStateType.Dead)
+    end
+end
+
+-- Функции для сервер хопа
+local function getServers()
+    local servers = {}
+    local success, result = pcall(function()
+        return game:GetService("HttpService"):JSONDecode(game:HttpGet("https://games.roblox.com/v1/games/"..PlaceId.."/servers/Public?sortOrder=Asc&limit=100"))
+    end)
+    
+    if success and result and result.data then
+        for _, server in pairs(result.data) do
+            if server.playing < server.maxPlayers and server.id ~= JobId then
+                table.insert(servers, server)
+            end
+        end
+    end
+    return servers
+end
+
+local function serverHop()
+    IsTeleporting = true
+    --SaveManager:SaveConfig() -- Сохраняем настройки перед телепортом
+    
+    local servers = getServers()
+    if #servers > 0 then
+        local randomServer = servers[math.random(1, #servers)]
+        TeleportService:TeleportToPlaceInstance(PlaceId, randomServer.id, LocalPlayer)
+    else
+        Fluent:Notify({
+            Title = "Server Hop",
+            Content = "No available servers found!",
+            Duration = 5
+        })
+        IsTeleporting = false
+    end
+end
+
+local function rejoin()
+    IsTeleporting = true
+    --SaveManager:SaveConfig() -- Сохраняем настройки перед телепортом
+    TeleportService:TeleportToPlaceInstance(PlaceId, JobId, LocalPlayer)
+end
+
+-- Функция для восстановления GUI после телепортации
+local function restoreGUI()
+    if not IsTeleporting then return end
+    
+    -- Ждем полной загрузки игры
+    wait(3)
+    
+    -- Пересоздаем GUI
+    if Fluent and not Fluent.Unloaded then
+        Fluent:Unload()
+    end
+    
+    -- Загружаем сохраненную конфигурацию
+    SaveManager:LoadAutoloadConfig()
+    
+    IsTeleporting = false
+    Fluent:Notify({
+        Title = "Fluent",
+        Content = "GUI restored after server hop!",
+        Duration = 5
+    })
+end
+
+-- Обработчик появления нового персонажа
+LocalPlayer.CharacterAdded:Connect(function(character)
+    updateCharacterReferences(character)
+end)
+
+-- Автоматическое восстановление GUI при загрузке
+game:GetService("Players").LocalPlayer.OnTeleport:Connect(function(State)
+    if State == Enum.TeleportState.Started then
+        --SaveManager:SaveConfig()
+        syn.queue_on_teleport([[
+            wait(3)
+            loadstring(game:HttpGet("https://raw.githubusercontent.com/discoart/FluentPlus/refs/heads/main/Beta.lua"))()
+			wait("TEST123")
+		]])
+    end
+end)
+
+-- Инициализация текущего персонажа
+if LocalPlayer.Character then
+    updateCharacterReferences(LocalPlayer.Character)
+else
+    LocalPlayer.CharacterAdded:Wait()
+    updateCharacterReferences(LocalPlayer.Character)
+end
+
+local Window = Fluent:CreateWindow({
+    Title = "Fluent " .. Fluent.Version,
+    SubTitle = "by dawid",
+    Search = true,
+    Icon = "home",
+    TabWidth = 160,
+    Size = UDim2.fromOffset(580, 460),
+    Acrylic = true,
+    Theme = "Dark",
+    MinimizeKey = Enum.KeyCode.LeftControl,
+
+    UserInfo = true,
+    UserInfoTop = false,
+    UserInfoTitle = game:GetService("Players").LocalPlayer.DisplayName,
+    UserInfoSubtitle = "User",
+    UserInfoSubtitleColor = Color3.fromRGB(71, 123, 255)
+})
+
+local Tabs = {
+    Main = Window:AddTab({ Title = "Main", Icon = "" }),
+    Settings = Window:AddTab({ Title = "Settings", Icon = "settings" }),
+    Player = Window:AddTab({ Title = "Player", Icon = "settings" }),
+    Server = Window:AddTab({ Title = "Server", Icon = "server" })
+}
+
+local Minimizer = Fluent:CreateMinimizer({
+    Icon = "home",
+    Size = UDim2.fromOffset(44, 44),
+    Position = UDim2.new(0, 320, 0, 24),
+    Acrylic = true,
+    Corner = 10,
+    Transparency = 1,
+    Draggable = true,
+    Visible = true
+})
+
+local Options = Fluent.Options
+
+do
+    -- Вкладка Server для сервер хопа
+    local ServerSection = Tabs.Server:AddSection("Server Hop", "refresh-cw")
+
+    Tabs.Server:AddButton({
+        Title = "Server Hop",
+        Description = "Join a different server",
+        Callback = function()
+            serverHop()
+        end
+    })
+
+    Tabs.Server:AddButton({
+        Title = "Rejoin Server",
+        Description = "Rejoin current server",
+        Callback = function()
+            rejoin()
+        end
+    })
+
+    Tabs.Server:AddButton({
+        Title = "Copy Job ID",
+        Description = "Copy current server ID",
+        Callback = function()
+            setclipboard(JobId)
+            Fluent:Notify({
+                Title = "Server",
+                Content = "Job ID copied to clipboard!",
+                Duration = 3
+            })
+        end
+    })
+
+    Tabs.Server:AddButton({
+        Title = "Copy Connect Link",
+        Description = "Copy current server ID",
+        Callback = function()
+			local ServerConnectLink = "https://ubhubjoiner.vercel.app/?placeid=".. game.PlaceId .."&jobid=".. game.JobId
+
+			print(ServerConnectLink)
+            setclipboard(ServerConnectLink)
+
+            Fluent:Notify({
+                Title = "Server",
+                Content = "Connect Link copied to clipboard!",
+                Duration = 3
+            })
+
+        end
+    })
+
+--[[
+    -- Автоматический сервер хоп
+    local AutoServerHopToggle = Tabs.Server:AddToggle("AutoServerHop", {
+        Title = "Auto Server Hop",
+        Description = "Automatically hop servers every 30 seconds",
+        Default = false
+    })
+
+    local autoHopConnection = nil
+    AutoServerHopToggle:OnChanged(function()
+        if Options.AutoServerHop.Value then
+            Fluent:Notify({
+                Title = "Auto Server Hop",
+                Content = "Enabled - Will hop in 30 seconds",
+                Duration = 5
+            })
+            
+            autoHopConnection = RunService.Heartbeat:Connect(function()
+                if tick() % 30 < 0.1 then -- Каждые 30 секунд
+                    if Options.AutoServerHop.Value then
+                        serverHop()
+                    end
+                end
+            end)
+        else
+            if autoHopConnection then
+                autoHopConnection:Disconnect()
+                autoHopConnection = nil
+            end
+            Fluent:Notify({
+                Title = "Auto Server Hop",
+                Content = "Disabled",
+                Duration = 3
+            })
+        end
+    end)
+]]
+    -- Информация о сервере
+    local InfoSection = Tabs.Server:AddSection("Server Info", "info")
+
+    Tabs.Server:AddParagraph({
+        Title = "Current Server",
+        Content = "Place ID: " .. PlaceId .. "\nJob ID: " .. JobId .. "\nPlayers: " .. #Players:GetPlayers()
+    })
+
+    -- Остальной код остается без изменений...
+    local Teleports = Tabs.Player:AddSection("Teleports", "map-pin")
+
+    local Old_pos
+
+    Tabs.Player:AddButton({
+        Title = "Create Safe Place",
+        Description = "Create a safe zone high in the sky",
+        Callback = function()
+            local Players = game:GetService("Players")
+            local LocalPlayer = Players.LocalPlayer
+            local playerName = LocalPlayer.Name
+
+            Old_pos = workspace[playerName].HumanoidRootPart.Position
+
+            local targetCharacter = workspace:WaitForChild(playerName)
+            local HumanoidRootPart = targetCharacter:WaitForChild("HumanoidRootPart")
+
+            local currentRotation = HumanoidRootPart.CFrame.Rotation
+
+            local SafeZone = Instance.new("Part")
+            SafeZone.Size = Vector3.new(30, 1, 30)
+            SafeZone.Position = Vector3.new(math.random(-2000,2000), math.random(50000,90000), math.random(-2000,2000))
+            SafeZone.Anchored = true
+            SafeZone.BrickColor = BrickColor.new("Bright purple")
+            SafeZone.Material = Enum.Material.ForceField
+            SafeZone.Parent = game.Workspace
+            
+            HumanoidRootPart.CFrame = CFrame.new(SafeZone.Position + Vector3.new(0, 5, 0)) * currentRotation
+        end
+    })
+
+    Tabs.Player:AddButton({
+        Title = "Return",
+        Description = "Return to original position",
+        Callback = function()
+            if Old_pos then
+                local character = workspace[game:GetService("Players").LocalPlayer.Name]
+                local humanoidRootPart = character:WaitForChild("HumanoidRootPart")
+                humanoidRootPart.CFrame = CFrame.new(Old_pos) * humanoidRootPart.CFrame.Rotation
+            end
+        end
+    })
+
+    Tabs.Player:AddButton({
+        Title = "Copy XYZ",
+        Description = "Copy position to clipboard",
+        Callback = function()
+            local XYZ = tostring(game.Players.LocalPlayer.Character.HumanoidRootPart.Position)
+            setclipboard("game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(" .. XYZ .. ")")
+            Fluent:Notify({
+                Title = "Position",
+                Content = "XYZ coordinates copied!",
+                Duration = 3
+            })
+        end
+    })
+
+    local siting = Tabs.Player:AddSection("Sit Settings", "chair")
+
+    Tabs.Player:AddButton({
+        Title = "Sit Down",
+        Description = "Make your character sit",
+        Callback = function()
+            sit_down(true)
+        end
+    })
+
+    Tabs.Player:AddButton({
+        Title = "Stand Up",
+        Description = "Make your character stand",
+        Callback = function()
+            sit_down(false)
+        end
+    })
+
+    local suicide = Tabs.Player:AddSection("Suicide", "skull")
+
+    Tabs.Player:AddButton({
+        Title = "Suicide V1",
+        Description = "Standard suicide",
+        Callback = function()
+            Suicide()
+        end
+    })
+
+    Tabs.Player:AddButton({
+        Title = "Suicide V2",
+        Description = "Alternative suicide method",
+        Callback = function()
+            SuicideV2()
+        end
+    })
+
+    local SetHumValues = Tabs.Player:AddSection("Humanoid Values", "activity")
+
+    -- Чекбокс для JumpPower
+    local JumpPowerToggle = Tabs.Player:AddToggle("JumpPowerToggle", {
+        Title = "Enable Custom JumpPower",
+        Default = false
+    })
+
+    JumpPowerToggle:OnChanged(function()
+        if Options.JumpPowerToggle.Value == true then
+            if LHumanoid then
+                originalJumpPower = LHumanoid.JumpPower
+                LHumanoid.JumpPower = Options.SetJumpPower.Value
+            end
+            
+            JumpPowerLoop = RunService.Heartbeat:Connect(function()
+                if Fluent.Unloaded then 
+                    if JumpPowerLoop then
+                        JumpPowerLoop:Disconnect()
+                        JumpPowerLoop = nil
+                    end
+                    if LHumanoid then
+                        LHumanoid.JumpPower = originalJumpPower
+                    end
+                    return
+                end
+
+                if LHumanoid and LHumanoid.Parent then
+                    LHumanoid.JumpPower = Options.SetJumpPower.Value
+                end
+            end)
+        else
+            if JumpPowerLoop then
+                JumpPowerLoop:Disconnect()
+                JumpPowerLoop = nil
+            end
+            
+            if LHumanoid then
+                LHumanoid.JumpPower = originalJumpPower
+            end
+        end
+    end)
+
+    -- Слайдер прыжка
+    local SetJumpPower = Tabs.Player:AddSlider("SetJumpPower", {
+        Title = "Jump Power",
+        Default = 50,
+        Min = 0,
+        Max = 120,
+        Rounding = 1,
+        Callback = function(Value)
+            if Options.JumpPowerToggle.Value == true and LHumanoid and LHumanoid.Parent then
+                LHumanoid.JumpPower = Value
+            end
+        end
+    })
+
+    -- Чекбокс для WalkSpeed
+    local WalkSpeedToggle = Tabs.Player:AddToggle("WalkSpeedToggle", {
+        Title = "Enable Custom WalkSpeed",
+        Default = false
+    })
+
+    WalkSpeedToggle:OnChanged(function()
+        if Options.WalkSpeedToggle.Value == true then
+            if LHumanoid then
+                originalWalkSpeed = LHumanoid.WalkSpeed
+                LHumanoid.WalkSpeed = Options.SetWalkSpeed.Value
+            end
+            
+            WalkSpeedLoop = RunService.Heartbeat:Connect(function()
+                if Fluent.Unloaded then 
+                    if WalkSpeedLoop then
+                        WalkSpeedLoop:Disconnect()
+                        WalkSpeedLoop = nil
+                    end
+                    if LHumanoid then
+                        LHumanoid.WalkSpeed = originalWalkSpeed
+                    end
+                    return
+                end
+
+                if LHumanoid and LHumanoid.Parent then
+                    LHumanoid.WalkSpeed = Options.SetWalkSpeed.Value
+                end
+            end)
+        else
+            if WalkSpeedLoop then
+                WalkSpeedLoop:Disconnect()
+                WalkSpeedLoop = nil
+            end
+            
+            if LHumanoid then
+                LHumanoid.WalkSpeed = originalWalkSpeed
+            end
+        end
+    end)
+
+    -- Слайдер скорости
+    local SetWalkSpeed = Tabs.Player:AddSlider("SetWalkSpeed", {
+        Title = "Walk Speed",
+        Default = 16,
+        Min = 0,
+        Max = 550,
+        Rounding = 1,
+        Callback = function(Value)
+            if Options.WalkSpeedToggle.Value == true and LHumanoid and LHumanoid.Parent then
+                LHumanoid.WalkSpeed = Value
+            end
+        end
+    })
+
+    local TimeChenger = Tabs.Player:AddToggle("TimeChenger", {
+        Title = "Time Changer", 
+        Default = false 
+    })
+
+    TimeChenger:OnChanged(function()
+        if Options.TimeChenger.Value == true then
+            originalTime = game:GetService("Lighting").TimeOfDay
+            
+            local hours = math.floor(Options.SetTime.Value)
+            local minutes = math.floor((Options.SetTime.Value % 1) * 60)
+            local timeStr = string.format("%02d:%02d:00", hours, minutes)
+            game:GetService("Lighting").TimeOfDay = timeStr
+            
+            TimeLoop = RunService.Heartbeat:Connect(function()
+                if Fluent.Unloaded then 
+                    if TimeLoop then
+                        TimeLoop:Disconnect()
+                        TimeLoop = nil
+                    end
+                    game:GetService("Lighting").TimeOfDay = originalTime
+                    return
+                end
+                
+                local hours = math.floor(Options.SetTime.Value)
+                local minutes = math.floor((Options.SetTime.Value % 1) * 60)
+                local timeStr = string.format("%02d:%02d:00", hours, minutes)
+                game:GetService("Lighting").TimeOfDay = timeStr
+            end)
+        else
+            if TimeLoop then
+                TimeLoop:Disconnect()
+                TimeLoop = nil
+            end
+            game:GetService("Lighting").TimeOfDay = originalTime
+        end
+    end)
+
+    local SetTime = Tabs.Player:AddSlider("SetTime", {
+        Title = "Set Time",
+        Description = "Set custom time of day",
+        Default = 12.0,
+        Min = 0,
+        Max = 23.59,
+        Rounding = 2,
+        Callback = function(Value)
+            if Options.TimeChenger.Value == true then
+                local hours = math.floor(Value)
+                local minutes = math.floor((Value % 1) * 60)
+                local timeStr = string.format("%02d:%02d:00", hours, minutes)
+                game:GetService("Lighting").TimeOfDay = timeStr
+            end
+        end
+    })
+end
+
+-- Addons:
+SaveManager:SetLibrary(Fluent)
+InterfaceManager:SetLibrary(Fluent)
+
+SaveManager:IgnoreThemeSettings()
+SaveManager:SetIgnoreIndexes({})
+
+InterfaceManager:SetFolder("FluentScriptHub")
+SaveManager:SetFolder("FluentScriptHub/specific-game")
+
+InterfaceManager:BuildInterfaceSection(Tabs.Settings)
+SaveManager:BuildConfigSection(Tabs.Settings)
+
+Window:SelectTab(1)
+
+Fluent:Notify({
+    Title = "Fluent",
+    Content = "The script has been loaded with Server Hop features!",
+    Duration = 8
+})
+
+-- Автоматическое восстановление при загрузке
+task.spawn(function()
+    wait(5) -- Даем время на полную загрузку
+    SaveManager:LoadAutoloadConfig()
+end)
+
+SaveManager:LoadAutoloadConfig()
