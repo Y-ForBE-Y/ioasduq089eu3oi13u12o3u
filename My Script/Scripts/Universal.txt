@@ -18,10 +18,10 @@ local LCharacter
 local LHumanoid
 
 -- Переменные для чекбоксов и циклов
-local JumpPowerLoop = nil
+local JumpHeightLoop = nil
 local WalkSpeedLoop = nil
 local TimeLoop = nil
-local originalJumpPower = 50
+local originalJumpHeight = 7.199999809265137
 local originalWalkSpeed = 16
 local originalTime = "12:00:00"
 
@@ -34,20 +34,20 @@ local function updateCharacterReferences(character)
     LHumanoid = character:WaitForChild("Humanoid")
     
     -- Сохраняем оригинальные значения при появлении персонажа
-    originalJumpPower = LHumanoid.JumpPower
+    originalJumpHeight = LHumanoid.JumpHeight
     originalWalkSpeed = LHumanoid.WalkSpeed
     
     -- Обновляем значения слайдеров, если они уже созданы
-    if Options and Options.SetJumpPower then
-        Options.SetJumpPower:Set(LHumanoid.JumpPower)
+    if Options and Options.SetJumpHeight then
+        Options.SetJumpHeight:Set(LHumanoid.JumpHeight)
     end
     if Options and Options.SetWalkSpeed then
         Options.SetWalkSpeed:Set(LHumanoid.WalkSpeed)
     end
     
     -- Применяем настройки только если тогглы включены
-    if Options and Options.JumpPowerToggle and Options.JumpPowerToggle.Value == true then
-        SetJumpPower(Options.SetJumpPower.Value)
+    if Options and Options.JumpHeightToggle and Options.JumpHeightToggle.Value == true then
+        SetJumpHeight(Options.SetJumpHeight.Value)
     end
     if Options and Options.WalkSpeedToggle and Options.WalkSpeedToggle.Value == true then
         SetWalkSpeed(Options.SetWalkSpeed.Value)
@@ -61,9 +61,9 @@ local function SetWalkSpeed(Value)
     end
 end 
 
-local function SetJumpPower(Value)
+local function SetJumpHeight(Value)
     if LHumanoid and LHumanoid.Parent then
-        LHumanoid.JumpPower = Value
+        LHumanoid.JumpHeight = Value
     end
 end
 
@@ -432,57 +432,57 @@ do
 
     local SetHumValues = Tabs.Player:AddSection("Humanoid Values", "activity")
 
-    -- Чекбокс для JumpPower
-    local JumpPowerToggle = Tabs.Player:AddToggle("JumpPowerToggle", {
-        Title = "Enable Custom JumpPower",
+    -- Чекбокс для JumpHeight
+    local JumpHeightToggle = Tabs.Player:AddToggle("JumpHeightToggle", {
+        Title = "Enable Custom JumpHeight",
         Default = false
     })
 
-    JumpPowerToggle:OnChanged(function()
-        if Options.JumpPowerToggle.Value == true then
+    JumpHeightToggle:OnChanged(function()
+        if Options.JumpHeightToggle.Value == true then
             if LHumanoid then
-                originalJumpPower = LHumanoid.JumpPower
-                LHumanoid.JumpPower = Options.SetJumpPower.Value
+                originalJumpHeight = LHumanoid.JumpHeight
+                LHumanoid.JumpHeight = Options.SetJumpHeight.Value
             end
             
-            JumpPowerLoop = RunService.Heartbeat:Connect(function()
+            JumpHeightLoop = RunService.Heartbeat:Connect(function()
                 if Fluent.Unloaded then 
-                    if JumpPowerLoop then
-                        JumpPowerLoop:Disconnect()
-                        JumpPowerLoop = nil
+                    if JumpHeightLoop then
+                        JumpHeightLoop:Disconnect()
+                        JumpHeightLoop = nil
                     end
                     if LHumanoid then
-                        LHumanoid.JumpPower = originalJumpPower
+                        LHumanoid.JumpHeight = originalJumpHeight
                     end
                     return
                 end
 
                 if LHumanoid and LHumanoid.Parent then
-                    LHumanoid.JumpPower = Options.SetJumpPower.Value
+                    LHumanoid.JumpHeight = Options.SetJumpHeight.Value
                 end
             end)
         else
-            if JumpPowerLoop then
-                JumpPowerLoop:Disconnect()
-                JumpPowerLoop = nil
+            if JumpHeightLoop then
+                JumpHeightLoop:Disconnect()
+                JumpHeightLoop = nil
             end
             
             if LHumanoid then
-                LHumanoid.JumpPower = originalJumpPower
+                LHumanoid.JumpHeight = originalJumpHeight
             end
         end
     end)
 
     -- Слайдер прыжка
-    local SetJumpPower = Tabs.Player:AddSlider("SetJumpPower", {
+    local SetJumpHeight = Tabs.Player:AddSlider("SetJumpHeight", {
         Title = "Jump Power",
-        Default = 50,
+        Default = 7.2,
         Min = 0,
         Max = 120,
         Rounding = 1,
         Callback = function(Value)
-            if Options.JumpPowerToggle.Value == true and LHumanoid and LHumanoid.Parent then
-                LHumanoid.JumpPower = Value
+            if Options.JumpHeightToggle.Value == true and LHumanoid and LHumanoid.Parent then
+                LHumanoid.JumpHeight = Value
             end
         end
     })
