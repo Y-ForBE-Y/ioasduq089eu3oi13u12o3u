@@ -202,6 +202,66 @@ else
     updateCharacterReferences(LocalPlayer.Character)
 end
 
+
+local function GetAllRodsInGame()
+	local RodsFolder = game:GetService("ReplicatedStorage").resources.items.rods
+	-- Собираем названия удочек
+	local rodNames = {}
+	for _, folder in ipairs(RodsFolder:GetChildren()) do
+		if folder:IsA("Folder") then
+			rodNames[folder.Name:lower()] = folder.Name
+			--print("Удочка:", folder.Name)
+		end
+	end
+	return rodNames
+end
+
+local function isRod(tool)
+    if not tool:IsA('Tool') then return false end
+    local toolNameLower = tool.Name:lower()
+    
+    -- Проверяем совпадение с названиями удочек
+    for rodNameLower, originalName in pairs(GetAllRodsInGame()) do
+        if toolNameLower:find(rodNameLower) or toolNameLower:find('rod') then
+            return true, originalName
+        end
+    end
+    return false
+end
+
+local function GetPlayerRod()
+	local isEquipped, Rod
+	local Backpack = game:GetService('Players').LocalPlayer:FindFirstChild("Backpack")
+
+	for i, Item in ipairs(game:GetService('Players').LocalPlayer.Character:GetChildren()) do
+		local isRodTool, rodOriginalName = isRod(Item)
+		if isRodTool then
+			Rod = Item
+			isEquipped = true
+			--print(Rod.Name, isEquipped)
+			return Rod, isEquipped
+		end
+	end
+
+    if Backpack then
+        for _, tool in ipairs(Backpack:GetChildren()) do
+            local isRodTool, rodOriginalName = isRod(tool)
+            if isRodTool then
+                Rod = tool
+				isEquipped = false
+				--print(Rod.Name, isEquipped)
+                return Rod, isEquipped
+            end
+        end
+    end
+
+	warn("Удочка не найдена")
+	return nil
+end
+
+
+
+-- ================================================ GUI ================================================
 local Window = Fluent:CreateWindow({
     Title = "Fluent " .. Fluent.Version,
     SubTitle = "by dawid",
@@ -239,7 +299,7 @@ local Tabs = {
     Settings = Window:AddTab({ Title = "Settings", Icon = "settings" }),
 
     Debug = Window:AddTab({ Title = "Debug", Icon = "wrench" }),
-    Info = Window:AddTab({ Title = "Info", Icon = "book" }),
+    --Info = Window:AddTab({ Title = "Info", Icon = "book" }),
 }
 
 
@@ -719,6 +779,207 @@ do
 -- ===================== Teleport END =====================
 
 -- ==================== Debug Start ====================
+	local Fishing = Tabs.Debug:AddSection("Fishing", nil)
+    Tabs.Debug:AddButton({
+        Title = "Equip rod",
+        Description = "", --Make your character sit",
+        Callback = function()
+			local Rod, isEquip = GetPlayerRod()
+
+			if Rod then
+				if not isEquip then
+					Rod.Parent = game:GetService('Players').LocalPlayer.Character
+				else
+					print("Удочка уже екиперована")
+				end
+			end
+        end
+    })
+
+    Tabs.Debug:AddButton({
+        Title = "Cast",
+        Description = "", --Make your character sit",
+        Callback = function()
+			local Rod, isEquip = GetPlayerRod()
+
+			if Rod then
+				if isEquip then
+					local remote = Rod.events.castAsync
+					local arguments = {
+						[1] = 95,
+						[2] = 1
+					}
+					local results = remote:InvokeServer(unpack(arguments))
+				else
+					print("Удочка не екиперована")
+				end
+			end
+        end
+    })
+
+	Tabs.Debug:AddButton({
+        Title = "Rell",
+        Description = "", --Make your character sit",
+        Callback = function()
+			local Rod, isEquip = GetPlayerRod()
+
+			if Rod then
+				if isEquip then
+					local remote = game:GetService("ReplicatedStorage").events.reelfinished
+					local arguments = {
+						[1] = 100,
+						[2] = false
+					}
+					remote:FireServer(unpack(arguments))
+				else
+					print("Удочка не екиперована")
+				end
+			end
+        end
+    })
+
+    Tabs.Debug:AddButton({
+        Title = "Reset",
+        Description = "", --Make your character sit",
+        Callback = function()
+			local Rod, isEquip = GetPlayerRod()
+
+			if Rod then
+				if isEquip then
+					local remote = Rod.events.reset
+					local arguments = {}
+					remote:FireServer(unpack(arguments))
+				else
+					print("Удочка не екиперована")
+				end
+			end
+        end
+    })
+
+	local Misc = Tabs.Debug:AddSection("Misc", nil)
+
+    Tabs.Debug:AddButton({
+        Title = "Discover all location",
+        Description = "", --Make your character sit",
+        Callback = function()
+			for k, v in pairs(workspace.zones.player:GetChildren()) do
+				print(v.Name)
+				game:GetService("ReplicatedStorage").events.discoverlocation:FireServer(v.Name)
+			end
+        end
+    })
+
+	local function ActivetePromo() 
+		local argsList = loadstring(game:HttpGet("https://raw.githubusercontent.com/Y-ForBE-Y/ioasduq089eu3oi13u12o3u/refs/heads/main/Fisch/promo"))()
+		for _, args in ipairs(argsList) do
+			game:GetService("ReplicatedStorage"):WaitForChild("events"):WaitForChild("runcode"):FireServer(unpack(args))
+			print(tostring(unpack(args)))
+		end
+	end
+
+    Tabs.Debug:AddButton({
+        Title = "Activate all promocodes",
+        Description = "", --Make your character sit",
+        Callback = function()
+			ActivetePromo() 
+        end
+    })
+
+    Tabs.Debug:AddButton({
+        Title = "Title Spam",
+        Description = "", --Make your character sit",
+        Callback = function()
+			local titlesScroll = game:GetService("Players").LocalPlayer.PlayerGui.hud.safezone.menu.menu_safezone.scroll["4User"].Titles.scroll
+			--print("=== СПИСОК ТИТУЛОВ ===")
+			for _, child in ipairs(titlesScroll:GetChildren()) do
+				if not child:IsA("UIListLayout") and not child:IsA("UIPadding") and child.Name ~= "stroke" then
+					--print("• " .. child.Name)
+
+					game:GetService("ReplicatedStorage").packages.Net["RE/Titles/Equip"]:FireServer(child.Name)
+					task.wait(0.01)
+				end
+			end
+        end
+    })
+
+
+	local World = Tabs.Debug:AddSection("World", nil)
+
+    Tabs.Debug:AddButton({
+        Title = "Walk on wather On",
+        Description = "", --Make your character sit",
+        Callback = function()
+			--workspace.zones.player
+			for _, zone in pairs(workspace.zones.fishing:GetChildren()) do
+				zone.CanCollide = true
+			end
+        end
+    })
+
+    Tabs.Debug:AddButton({
+        Title = "Walk on wather Off",
+        Description = "", --Make your character sit",
+        Callback = function()
+			--workspace.zones.player
+			for _, zone in pairs(workspace.zones.fishing:GetChildren()) do
+				zone.CanCollide = false
+			end
+        end
+    })
+
+	Tabs.Debug:AddButton({
+        Title = "Walk Under wather On",
+        Description = "", --Make your character sit",
+        Callback = function()
+			local player = game.Players.LocalPlayer
+			local character = player.Character or player.CharacterAdded:Wait()
+			local humanoid = character:WaitForChild("Humanoid")
+
+			-- Полное отключение плавания
+			humanoid:SetStateEnabled(Enum.HumanoidStateType.Swimming, false)
+        end
+    })
+
+    Tabs.Debug:AddButton({
+        Title = "Walk Under wather Off",
+        Description = "", --Make your character sit",
+        Callback = function()
+			local player = game.Players.LocalPlayer
+			local character = player.Character or player.CharacterAdded:Wait()
+			local humanoid = character:WaitForChild("Humanoid")
+
+			-- Полное отключение плавания
+			humanoid:SetStateEnabled(Enum.HumanoidStateType.Swimming, true)
+        end
+    })
+
+	local Player = Tabs.Debug:AddSection("Player", nil)
+
+    local DisableOxigenSwim = Tabs.Debug:AddToggle("DisableOxigenSwim", {Title = "DisableOxigenSwim",Default = false })
+    DisableOxigenSwim:OnChanged(function()
+		game.Players.LocalPlayer.Character.Resources.oxygen.Enabled = not DisableOxigenSwim.Value
+    end)
+
+    local DisableOxigenPeaks = Tabs.Debug:AddToggle("DisableOxigenPeaks", {Title = "DisableOxigenPeaks",Default = false })
+    DisableOxigenPeaks:OnChanged(function()
+		game.Players.LocalPlayer.Character.Resources["oxygen(peaks)"].Enabled = not DisableOxigenPeaks.Value
+    end)
+
+    local DisableOxigenRefactor = Tabs.Debug:AddToggle("DisableOxigenRefactor", {Title = "DisableOxigenRefactor",Default = false })
+    DisableOxigenRefactor:OnChanged(function()
+		game.Players.LocalPlayer.Character.Resources.oxygenRefactor_WIP.Enabled = not DisableOxigenRefactor.Value
+    end)
+
+
+    local DisableTemperaturePeaks = Tabs.Debug:AddToggle("DisableTemperaturePeaks", {Title = "DisableTemperaturePeaks",Default = false })
+    DisableTemperaturePeaks:OnChanged(function()
+		game.Players.LocalPlayer.Character.Resources.temperature.Enabled = not DisableTemperaturePeaks.Value
+    end)
+
+    local DisableTemperatureHeat = Tabs.Debug:AddToggle("DisableTemperatureHeat", {Title = "DisableTemperatureHeat",Default = false })
+    DisableTemperatureHeat:OnChanged(function()
+		game.Players.LocalPlayer.Character.Resources["temperature(heat)"].Enabled = not DisableTemperatureHeat.Value
+    end)
 
 -- ===================== Debug END =====================
 end
