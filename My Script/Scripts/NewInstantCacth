@@ -1,1 +1,276 @@
+--local Players = game:GetService('Players')
+--local LocalPlayer = Players.LocalPlayer
 
+--[[]]
+local function GetAllRodsInGame()
+	local RodsFolder = game:GetService("ReplicatedStorage").resources.items.rods
+	-- Собираем названия удочек
+	local rodNames = {}
+	for _, folder in ipairs(RodsFolder:GetChildren()) do
+		if folder:IsA("Folder") then
+			rodNames[folder.Name:lower()] = folder.Name
+			--print("Удочка:", folder.Name)
+		end
+	end
+	return rodNames
+end
+
+local function isRod(tool)
+    if not tool:IsA('Tool') then return false end
+    local toolNameLower = tool.Name:lower()
+    
+    -- Проверяем совпадение с названиями удочек
+    for rodNameLower, originalName in pairs(GetAllRodsInGame()) do
+        if toolNameLower:find(rodNameLower) or toolNameLower:find('rod') then
+            return true, originalName
+        end
+    end
+    return false
+end
+
+local function GetPlayerRod()
+	local isEquipped, Rod
+	local Backpack = game:GetService('Players').LocalPlayer:FindFirstChild("Backpack")
+
+	for i, Item in ipairs(game:GetService('Players').LocalPlayer.Character:GetChildren()) do
+		local isRodTool, rodOriginalName = isRod(Item)
+		if isRodTool then
+			Rod = Item
+			isEquipped = true
+			--print(Rod.Name, isEquipped)
+			return Rod, isEquipped
+		end
+	end
+
+    if Backpack then
+        for _, tool in ipairs(Backpack:GetChildren()) do
+            local isRodTool, rodOriginalName = isRod(tool)
+            if isRodTool then
+                Rod = tool
+				isEquipped = false
+				--print(Rod.Name, isEquipped)
+                return Rod, isEquipped
+            end
+        end
+    end
+
+	warn("Удочка не найдена")
+	return nil
+end
+
+
+
+print("==========================================")
+
+--[[]]
+local function EquipRud()
+	local Rod, isEquip = GetPlayerRod()
+	if Rod then
+		if not isEquip then
+			print("Удочка екиперована")
+			Rod.Parent = game:GetService('Players').LocalPlayer.Character
+		else
+			print("Удочка уже екиперована")
+			Rod.Parent = game:GetService('Players').LocalPlayer:FindFirstChild("Backpack")
+		end
+	end
+end
+
+
+local function CustRod(Power)
+	local Rod, isEquip = GetPlayerRod()
+	local Cast = Rod.events.castAsync
+	Cast:InvokeServer(Power, 1)
+end
+
+local function GetRodValies()
+	local Rod, isEquip = GetPlayerRod()
+	if isEquip then
+		return Rod.values
+	else
+		warn("Удочкуа не екиперована")
+	end
+end
+
+local function RodIsCasted()
+	local values = GetRodValies()
+	if values.casted.Value == true then
+		--print("Удочка Скастована")
+		return true
+	else
+		--print("Удочка не скастована")
+		return false
+	end
+end
+
+local function WaitCasting(Power)
+    while true do
+        if RodIsCasted() then
+            -- Ждем пока удочка заброшена
+            wait(0.1)
+        else
+            break
+        end
+    end
+    
+    -- Ждем немного перед кастом
+    task.wait(0.75)
+    print("Кастуем удочку")
+    CustRod(Power)
+    
+    -- Добавляем проверку таймаута
+    local startTime = tick()
+    local timeout = 1 -- секунда
+    
+    while tick() - startTime < timeout do
+        if GetRodValies() and GetRodValies().casted.Value == true then
+            print("Удочка успешно скастована")
+            return -- Успех, выходим из функции
+        end
+        task.wait(0.05) -- Короткие интервалы проверки
+    end
+    
+    -- Если дошли сюда - таймаут, выполняем reset
+    print("Таймаут! Выполняем сброс")
+    local Rod = GetPlayerRod()
+    if Rod then
+        Rod.events.reset:FireServer()
+    end
+end
+
+local function InstRell()
+	task.wait(0.1)
+	--task.wait(0.35+0.25)
+	local Rell = game:GetService("ReplicatedStorage").events.reelfinished
+	Rell:FireServer(100, false)
+	task.wait(0.1)
+	EquipRud()
+	EquipRud()
+
+	--wait(0.25)
+	--WaitCasting()
+end
+
+--game:GetService("Players").LocalPlayer.PlayerGui.reel
+--InstRell()
+
+
+local folder = game:GetService("Players").LocalPlayer.PlayerGui
+
+folder.ChildAdded:Connect(function(child)
+    if child:IsA("ScreenGui") and child.Name == "reel" then
+        print("Reeling")
+        InstRell()
+    end
+end)
+
+--[[
+while true do
+	WaitCasting(1)
+	task.wait(0.1)
+end]]
+
+
+
+
+
+
+
+
+
+--[[
+wait(0.1)
+local remote = workspace.Gillespie1232["Great Rod of Oscar"].events.castAsync
+local arguments = {
+	[1] = 1,
+	[2] = 1
+}
+local results = remote:InvokeServer(unpack(arguments))
+]]
+
+--[[
+if Rod then
+    print("✅ Удочка найдена:", Rod.Name)
+	if isEquip then
+		print("✅ Найденая удочка екиперована")
+	else
+		print("❌ Найденая не удочка екиперована")
+	end
+else
+    warn("❌ Удочка не найдена!")
+end]]
+
+--[[
+local function GetEqupedRod()
+	for i, v in ipairs(game:GetService('Players').LocalPlayer.Character:GetChildren()) do
+		local isRodTool, rodOriginalName = isRod(v)
+		if isRodTool then
+			Rod = v
+			print("Экеперованная удочка: "..v.Name)
+			break
+		end
+	end
+end
+
+local function GetRodInBackPack()
+    local Backpack = game:GetService('Players').LocalPlayer:FindFirstChild("Backpack")
+    if Backpack then
+        for _, tool in ipairs(Backpack:GetChildren()) do
+            local isRodTool, rodOriginalName = isRod(tool)
+            if isRodTool then
+                --tool.Parent = LocalPlayer.Character
+                Rod = tool
+                --print("Экипирована из рюкзака:", rodOriginalName)
+                break
+            end
+        end
+    end
+end
+]]
+
+--[[
+local function EquioRud()
+	if Rod then
+		Rod.Parent = game:GetService('Players').LocalPlayer.Character
+	end
+end
+
+GetRodInBackPack()
+EquioRud()
+]]
+
+
+
+
+
+
+
+
+--[[
+-- Поиск удочки в персонаже
+for _, tool in ipairs(LocalPlayer.Character:GetChildren()) do
+    local isRodTool, rodOriginalName = isRod(tool)
+    if isRodTool then
+        Rod = tool
+        print("Экипирована:", rodOriginalName)
+        break
+    end
+end
+
+
+-- Поиск в рюкзаке если не найдена
+if not Rod then
+    local Backpack = LocalPlayer:FindFirstChild("Backpack")
+    if Backpack then
+        for _, tool in ipairs(Backpack:GetChildren()) do
+            local isRodTool, rodOriginalName = isRod(tool)
+            if isRodTool then
+                --tool.Parent = LocalPlayer.Character
+                Rod = tool
+                --print("Экипирована из рюкзака:", rodOriginalName)
+                break
+            end
+        end
+    end
+end
+]]
