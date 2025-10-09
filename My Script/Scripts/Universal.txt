@@ -1141,6 +1141,15 @@ local isCasting = false
         end
     })
 
+    Tabs.Debug:AddButton({
+        Title = "Buy Original No-Life Rod",
+        Description = "Cost 5kk", --Make your character sit",
+        Callback = function()
+			local purchaseEvent = game:GetService("ReplicatedStorage").events.purchase
+			purchaseEvent:FireServer("Original No-Life Rod", "Rod", nil, 1)
+        end
+    })
+
 -- ===================== Debug END =====================
 end
 
