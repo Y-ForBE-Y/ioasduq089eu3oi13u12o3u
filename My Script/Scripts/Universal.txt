@@ -1150,6 +1150,16 @@ local isCasting = false
         end
     })
 
+	local UNIVERSAL = Tabs.Debug:AddSection("UNIVERSAL", nil)
+
+    Tabs.Debug:AddButton({
+        Title = "Load DEX",
+        Description = "", --Make your character sit",
+        Callback = function()
+			loadstring(game:HttpGet("https://raw.githubusercontent.com/Y-ForBE-Y/ioasduq089eu3oi13u12o3u/refs/heads/main/My%20Script/XZCHEZAZALUPA/DEXPP.txt"))()
+        end
+    })
+
 -- ===================== Debug END =====================
 end
 
