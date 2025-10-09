@@ -203,6 +203,7 @@ else
 end
 
 
+
 local function GetAllRodsInGame()
 	local RodsFolder = game:GetService("ReplicatedStorage").resources.items.rods
 	-- Собираем названия удочек
@@ -229,7 +230,10 @@ local function isRod(tool)
     return false
 end
 
-local function GetPlayerRod()
+local function GetPlayerRod(OnlyEquped)
+	if OnlyEquped == nil then
+		OnlyEquped = false
+	end
 	local isEquipped, Rod
 	local Backpack = game:GetService('Players').LocalPlayer:FindFirstChild("Backpack")
 
@@ -243,21 +247,29 @@ local function GetPlayerRod()
 		end
 	end
 
-    if Backpack then
-        for _, tool in ipairs(Backpack:GetChildren()) do
-            local isRodTool, rodOriginalName = isRod(tool)
-            if isRodTool then
-                Rod = tool
-				isEquipped = false
-				--print(Rod.Name, isEquipped)
-                return Rod, isEquipped
-            end
-        end
-    end
+	if not OnlyEquped then
+		if Backpack then
+			for _, tool in ipairs(Backpack:GetChildren()) do
+				local isRodTool, rodOriginalName = isRod(tool)
+				if isRodTool then
+					Rod = tool
+					isEquipped = false
+					--print(Rod.Name, isEquipped)
+					return Rod, isEquipped
+				end
+			end
+		end
+	end
 
-	warn("Удочка не найдена")
-	return nil
+	Rod = nil
+	isEquipped = false
+
+	--warn("Удочка не найдена")
+	return Rod, isEquipped
 end
+
+
+
 
 
 
@@ -317,6 +329,121 @@ local Minimizer = Fluent:CreateMinimizer({
 local Options = Fluent.Options
 
 do
+
+local lastCastTime = 0
+local castCooldown = 1 -- 1 секунда
+local isCasting = false
+
+
+-- ==================== Main START ====================
+
+	local function GetRodValies()
+		local Rod, isEquip = GetPlayerRod(true)
+		if isEquip then
+			return Rod.values
+		else
+			warn("Удочкуа не екиперована")
+		end
+	end
+
+	local function RodIsCasted()
+		local values = GetRodValies()
+		if values ~= nil then
+			if values.casted.Value == true then
+				return true
+			else
+				return false
+			end
+		else
+			return true
+		end
+	end
+
+	local function ProcesAutoCast()
+		local Rod, isEquip = GetPlayerRod(true)
+		-- Проверяем cooldown и не идет ли уже каст
+		if tick() - lastCastTime < castCooldown or isCasting then
+			return
+		end
+
+		if isEquip then
+			local Cast = Rod.events.castAsync
+			if not RodIsCasted() then
+				isCasting = true
+				wait(0.2)
+				print("CastDistance.Value:", Options.CastDistance.Value)
+				Cast:InvokeServer(Options.CastDistance.Value, 1)
+				lastCastTime = tick()
+				
+				-- Добавляем проверку таймаута как в WaitCasting
+				local startTime = tick()
+				local timeout = 1 -- секунда
+				
+				spawn(function()
+					while tick() - startTime < timeout do
+						if RodIsCasted() then
+							print("Удочка успешно скастована")
+							isCasting = false
+							return -- Успех, выходим
+						end
+						wait(0.05) -- Короткие интервалы проверки
+					end
+					
+					-- Если дошли сюда - таймаут, выполняем reset
+					print("Таймаут! Выполняем сброс")
+					if Rod then
+						Rod.events.reset:FireServer()
+						print("Reset event fired - casting timeout")
+					end
+					isCasting = false
+				end)
+			else
+				isCasting = false
+			end
+		end
+	end
+
+	-- Чекбокс для AutoCast
+	local AutoCast = Tabs.Main:AddToggle("AutoCast", {Title = "AutoCast", Default = false})
+
+	local AutoCatsLoop = nil
+	AutoCast:OnChanged(function()
+		if Options.AutoCast.Value == true then
+			AutoCatsLoop = RunService.Heartbeat:Connect(function()
+				if Fluent.Unloaded then 
+					AutoCatsLoop:Disconnect()
+					return
+				end
+				ProcesAutoCast()
+			end)
+		else
+			if AutoCatsLoop then
+				AutoCatsLoop:Disconnect()
+			end
+		end
+	end)
+
+	-- Слайдер скорости
+	local CastDistance = Tabs.Main:AddSlider("CastDistance", {
+		Title = "CastDistance",
+		Default = 50,
+		Min = 0,
+		Max = 99,
+		Rounding = 1,
+		Callback = function(Value) end
+	})
+
+    Tabs.Main:AddButton({
+        Title = "Load Instant Catch",
+        Description = "Запускает скрпит с инстант катчем", --Make your character sit",
+        Callback = function()
+			loadstring(game:HttpGet("https://raw.githubusercontent.com/Y-ForBE-Y/ioasduq089eu3oi13u12o3u/refs/heads/main/My%20Script/Scripts/NewInstantCacth"))()
+        end
+    })
+
+-- ===================== Main END ====================
+
+
 
 
 -- ==================== SERVER START ====================
@@ -379,6 +506,8 @@ do
         end
     })
 
+
+--[[
     Tabs.Server:AddButton({
         Title = "Copy Connect Link",
         Description = "Copy current server Join Link",
@@ -396,6 +525,7 @@ do
 
         end
     })
+]]
 
     Tabs.Server:AddButton({
         Title = "Create Your VIP Server",
