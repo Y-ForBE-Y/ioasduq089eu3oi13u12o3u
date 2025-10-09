@@ -139,7 +139,7 @@ local function WaitCasting(Power)
 end
 
 local function InstRell()
-	task.wait(0.1)
+	task.wait(0.27)
 	--task.wait(0.35+0.25)
 	local Rell = game:GetService("ReplicatedStorage").events.reelfinished
 	Rell:FireServer(100, false)
