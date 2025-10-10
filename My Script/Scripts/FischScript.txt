@@ -1,0 +1,1344 @@
+local Fluent = loadstring(game:HttpGet("https://raw.githubusercontent.com/discoart/FluentPlus/refs/heads/main/Beta.lua"))()
+local SaveManager = loadstring(game:HttpGet("https://raw.githubusercontent.com/Y-ForBE-Y/ioasduq089eu3oi13u12o3u/refs/heads/main/Fluent/SaveManager.txt"))()
+local InterfaceManager = loadstring(game:HttpGet("https://raw.githubusercontent.com/dawid-scripts/Fluent/master/Addons/InterfaceManager.lua"))()
+
+-- Variables --
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
+local RunService = game:GetService("RunService")
+local TeleportService = game:GetService("TeleportService")
+local TweenService = game:GetService("TweenService")
+
+-- Переменные для сервер хопа
+local PlaceId = game.PlaceId
+local JobId = game.JobId
+
+-- Будем хранить текущие ссылки на персонажа и humanoid
+local LCharacter
+local LHumanoid
+
+-- Переменные для чекбоксов и циклов
+local JumpHeightLoop = nil
+local JumpPowerLoop = nil
+local WalkSpeedLoop = nil
+local TimeLoop = nil
+
+local originalJumpHeight = 7.2
+local originalJumpPower = 50
+
+local originalWalkSpeed = 16
+local originalTime = "12:00:00"
+
+-- Флаг для отслеживания телепортации
+local IsTeleporting = false
+
+-- Функция для обновления ссылок на персонажа
+local function updateCharacterReferences(character)
+    LCharacter = character
+    LHumanoid = character:WaitForChild("Humanoid")
+    
+    -- Сохраняем оригинальные значения при появлении персонажа
+    originalJumpHeight = LHumanoid.JumpHeight
+    originalWalkSpeed = LHumanoid.WalkSpeed
+	originalJumpPower = LHumanoid.JumpPower
+    
+    -- Обновляем значения слайдеров, если они уже созданы
+    if Options and Options.SetJumpHeight then
+        Options.SetJumpHeight:Set(LHumanoid.JumpHeight)
+    end
+    if Options and Options.SetWalkSpeed then
+        Options.SetWalkSpeed:Set(LHumanoid.WalkSpeed)
+    end
+	if Options and Options.SetJumpPower then
+        Options.SetJumpPower:Set(LHumanoid.JumpPower)
+    end
+    
+    -- Применяем настройки только если тогглы включены
+    if Options and Options.JumpHeightToggle and Options.JumpHeightToggle.Value == true then
+        SetJumpHeight(Options.SetJumpHeight.Value)
+    end
+
+    -- Применяем настройки только если тогглы включены
+    if Options and Options.JumpPowerToggle and Options.JumpPowerToggle.Value == true then
+        SetJumpPower(Options.SetJumpPower.Value)
+    end
+
+    if Options and Options.WalkSpeedToggle and Options.WalkSpeedToggle.Value == true then
+        SetWalkSpeed(Options.SetWalkSpeed.Value)
+    end
+end
+
+-- Functions --
+local function SetWalkSpeed(Value)
+    if LHumanoid and LHumanoid.Parent then
+        LHumanoid.WalkSpeed = Value
+    end
+end 
+
+local function SetJumpHeight(Value)
+    if LHumanoid and LHumanoid.Parent then
+        LHumanoid.JumpHeight = Value
+    end
+end
+
+local function SetJumpPower(Value)
+    if LHumanoid and LHumanoid.Parent then
+        LHumanoid.JumpPower = Value
+    end
+end
+
+local function sit_down(Value)
+    if LHumanoid and LHumanoid.Parent then
+        LHumanoid.Sit = Value
+    end
+end
+
+local function Suicide()
+    if LHumanoid and LHumanoid.Parent then
+        LHumanoid.Health = 0
+    end
+end
+
+local function SuicideV2()
+    if LHumanoid and LHumanoid.Parent then
+        LHumanoid:SetStateEnabled(Enum.HumanoidStateType.Dead, false)
+        LHumanoid:ChangeState(Enum.HumanoidStateType.Dead)
+    end
+end
+
+-- Функции для сервер хопа
+local function getServers()
+    local servers = {}
+    local success, result = pcall(function()
+        return game:GetService("HttpService"):JSONDecode(game:HttpGet("https://games.roblox.com/v1/games/"..PlaceId.."/servers/Public?sortOrder=Asc&limit=100"))
+    end)
+    
+    if success and result and result.data then
+        for _, server in pairs(result.data) do
+            if server.playing < server.maxPlayers and server.id ~= JobId then
+                table.insert(servers, server)
+            end
+        end
+    end
+    return servers
+end
+
+local function serverHop()
+    IsTeleporting = true
+    --SaveManager:SaveConfig() -- Сохраняем настройки перед телепортом
+    
+    local servers = getServers()
+    if #servers > 0 then
+        local randomServer = servers[math.random(1, #servers)]
+        TeleportService:TeleportToPlaceInstance(PlaceId, randomServer.id, LocalPlayer)
+    else
+        Fluent:Notify({
+            Title = "Server Hop",
+            Content = "No available servers found!",
+            Duration = 5
+        })
+        IsTeleporting = false
+    end
+end
+
+local function rejoin()
+    IsTeleporting = true
+    --SaveManager:SaveConfig() -- Сохраняем настройки перед телепортом
+    TeleportService:TeleportToPlaceInstance(PlaceId, JobId, LocalPlayer)
+end
+
+-- Функция для восстановления GUI после телепортации
+local function restoreGUI()
+    if not IsTeleporting then return end
+    
+    -- Ждем полной загрузки игры
+    wait(3)
+    
+    -- Пересоздаем GUI
+    if Fluent and not Fluent.Unloaded then
+        Fluent:Unload()
+    end
+    
+    -- Загружаем сохраненную конфигурацию
+    SaveManager:LoadAutoloadConfig()
+    
+    IsTeleporting = false
+    Fluent:Notify({
+        Title = "Fluent",
+        Content = "GUI restored after server hop!",
+        Duration = 5
+    })
+end
+
+-- Обработчик появления нового персонажа
+LocalPlayer.CharacterAdded:Connect(function(character)
+    updateCharacterReferences(character)
+end)
+
+-- Автоматическое восстановление GUI при загрузке
+game:GetService("Players").LocalPlayer.OnTeleport:Connect(function(State)
+    if State == Enum.TeleportState.Started then
+        --SaveManager:SaveConfig()
+        syn.queue_on_teleport([[
+            wait(3)
+            loadstring(game:HttpGet("https://raw.githubusercontent.com/discoart/FluentPlus/refs/heads/main/Beta.lua"))()
+			
+			wait(0.5)
+
+			Fluent:Notify({
+				Title = "Fluent",
+				Content = "The script has been loaded with Server Hop features!",
+				Duration = 8
+			})
+		]])
+    end
+end)
+
+-- Инициализация текущего персонажа
+if LocalPlayer.Character then
+    updateCharacterReferences(LocalPlayer.Character)
+else
+    LocalPlayer.CharacterAdded:Wait()
+    updateCharacterReferences(LocalPlayer.Character)
+end
+
+
+--[[
+local function GetAllRodsInGame()
+	local RodsFolder = game:GetService("ReplicatedStorage").resources.items.rods
+	-- Собираем названия удочек
+	local rodNames = {}
+	for _, folder in ipairs(RodsFolder:GetChildren()) do
+		if folder:IsA("Folder") then
+			rodNames[folder.Name:lower()] = folder.Name
+			--print("Удочка:", folder.Name)
+		end
+	end
+	return rodNames
+end
+
+local function isRod(tool)
+    if not tool:IsA('Tool') then return false end
+    local toolNameLower = tool.Name:lower()
+    
+    -- Проверяем совпадение с названиями удочек
+    for rodNameLower, originalName in pairs(GetAllRodsInGame()) do
+        if toolNameLower:find(rodNameLower) or toolNameLower:find('rod') then
+            return true, originalName
+        end
+    end
+    return false
+end]]
+
+	local function GetPlayerRod(OnlyEquped)
+		
+		if not OnlyEquped then
+			OnlyEquped = false
+		end
+
+		local isEquipped, Rod
+		local Backpack = game:GetService('Players').LocalPlayer:FindFirstChild("Backpack")
+
+		local WPlayer = game:GetService('Players').LocalPlayer.Character
+
+		local LocalPlayer = game:GetService('Players').LocalPlayer
+		local playerName = LocalPlayer.Name
+		local Selected_rod_Name = workspace.PlayerStats[playerName].T[playerName].Stats.rod.Value
+
+		if WPlayer:FindFirstChild(Selected_rod_Name) then
+			Rod = WPlayer:FindFirstChild(Selected_rod_Name)
+			isEquipped = true
+			return Rod, isEquipped
+		elseif Backpack and Backpack:FindFirstChild(Selected_rod_Name) and not OnlyEquped then
+			Rod = Backpack:FindFirstChild(Selected_rod_Name)
+			isEquipped = false
+			return Rod, isEquipped
+		else
+			return nil, false        
+		end
+	end
+
+
+
+
+
+
+-- ================================================ GUI ================================================
+local Window = Fluent:CreateWindow({
+    Title = "Fluent " .. Fluent.Version,
+    SubTitle = "by dawid",
+    Search = true,
+    Icon = "home",
+    TabWidth = 160,
+    Size = UDim2.fromOffset(580, 460),
+    Acrylic = false,
+    Theme = "Dark",
+    MinimizeKey = Enum.KeyCode.LeftControl,
+
+    UserInfo = true,
+    UserInfoTop = false,
+    UserInfoTitle = game:GetService("Players").LocalPlayer.DisplayName,
+    UserInfoSubtitle = "User",
+    UserInfoSubtitleColor = Color3.fromRGB(71, 123, 255)
+})
+
+-- Вариант 4 (минималистичный)
+local Tabs = {
+    Main = Window:AddTab({ Title = "Main", Icon = "home" }),
+    Misc = Window:AddTab({ Title = "Misc", Icon = "layers" }),
+	Automatic = Window:AddTab({ Title = "Automatic", Icon = "refresh-cw" }),
+	Market = Window:AddTab({ Title = "Market", Icon = "store" }),
+    
+    Player = Window:AddTab({ Title = "Player", Icon = "user-plus" }),
+    Teleport = Window:AddTab({ Title = "Teleport", Icon = "map-pin" }),
+    
+    --Visuals = Window:AddTab({ Title = "Visuals", Icon = "eye" }),
+    --View = Window:AddTab({ Title = "View", Icon = "camera" }),
+	--Protect = Window:AddTab({ Title = "Protect", Icon = "shield" }),
+    World = Window:AddTab({ Title = "World", Icon = "cloud" }),
+    
+    Server = Window:AddTab({ Title = "Server", Icon = "hard-drive" }),
+    Settings = Window:AddTab({ Title = "Settings", Icon = "settings" }),
+
+    Debug = Window:AddTab({ Title = "Debug", Icon = "wrench" }),
+    --Info = Window:AddTab({ Title = "Info", Icon = "book" }),
+}
+
+
+local Minimizer = Fluent:CreateMinimizer({
+    Icon = "home",
+    Size = UDim2.fromOffset(44, 44),
+    Position = UDim2.new(0, 320, 0, 24),
+    Acrylic = false,
+    Corner = 10,
+    Transparency = 1,
+    Draggable = true,
+    Visible = true
+})
+
+local Options = Fluent.Options
+
+do
+
+local lastCastTime = 0
+local castCooldown = 1 -- 1 секунда
+local isCasting = false
+
+
+-- ==================== Main START ====================
+
+	local function GetRodValies()
+		local Rod, isEquip = GetPlayerRod(true)
+		if isEquip then
+			return Rod.values
+		else
+			warn("Удочкуа не екиперована")
+		end
+	end
+
+	local function RodIsCasted()
+		local values = GetRodValies()
+		if values ~= nil then
+			if values.casted.Value == true then
+				return true
+			else
+				return false
+			end
+		else
+			return true
+		end
+	end
+
+	local function ProcesAutoCast()
+		local Rod, isEquip = GetPlayerRod(true)
+		-- Проверяем cooldown и не идет ли уже каст
+		if tick() - lastCastTime < castCooldown or isCasting then
+			return
+		end
+
+		if isEquip then
+			local Cast = Rod.events.castAsync
+			if not RodIsCasted() then
+				isCasting = true
+				wait(0.2)
+				print("CastDistance.Value:", Options.CastDistance.Value)
+				Cast:InvokeServer(Options.CastDistance.Value, 1)
+				lastCastTime = tick()
+				
+				-- Добавляем проверку таймаута как в WaitCasting
+				local startTime = tick()
+				local timeout = 1 -- секунда
+				
+				spawn(function()
+					while tick() - startTime < timeout do
+						if RodIsCasted() then
+							print("Удочка успешно скастована")
+							isCasting = false
+							return -- Успех, выходим
+						end
+						wait(0.05) -- Короткие интервалы проверки
+					end
+					
+					-- Если дошли сюда - таймаут, выполняем reset
+					print("Таймаут! Выполняем сброс")
+					if Rod then
+						Rod.events.reset:FireServer()
+						print("Reset event fired - casting timeout")
+					end
+					isCasting = false
+				end)
+			else
+				isCasting = false
+			end
+		end
+	end
+
+	-- Чекбокс для AutoCast
+	local AutoCast = Tabs.Main:AddToggle("AutoCast", {Title = "AutoCast", Default = false})
+
+	local AutoCatsLoop = nil
+	AutoCast:OnChanged(function()
+		if Options.AutoCast.Value == true then
+			AutoCatsLoop = RunService.Heartbeat:Connect(function()
+				if Fluent.Unloaded then 
+					AutoCatsLoop:Disconnect()
+					return
+				end
+				ProcesAutoCast()
+			end)
+		else
+			if AutoCatsLoop then
+				AutoCatsLoop:Disconnect()
+			end
+		end
+	end)
+
+	-- Слайдер скорости
+	local CastDistance = Tabs.Main:AddSlider("CastDistance", {
+		Title = "CastDistance",
+		Default = 50,
+		Min = 0,
+		Max = 99,
+		Rounding = 1,
+		Callback = function(Value) end
+	})
+
+    Tabs.Main:AddButton({
+        Title = "Load Instant Catch",
+        Description = "Запускает скрпит с инстант катчем", --Make your character sit",
+        Callback = function()
+			loadstring(game:HttpGet("https://raw.githubusercontent.com/Y-ForBE-Y/ioasduq089eu3oi13u12o3u/refs/heads/main/My%20Script/Scripts/NewInstantCacth"))()
+        end
+    })
+
+
+	local function GetPlayerRod(OnlyEquped)
+		
+		if not OnlyEquped then
+			OnlyEquped = false
+		end
+
+		local isEquipped, Rod
+		local Backpack = game:GetService('Players').LocalPlayer:FindFirstChild("Backpack")
+
+		local WPlayer = game:GetService('Players').LocalPlayer.Character
+
+		local LocalPlayer = game:GetService('Players').LocalPlayer
+		local playerName = LocalPlayer.Name
+		local Selected_rod_Name = workspace.PlayerStats[playerName].T[playerName].Stats.rod.Value
+
+		if WPlayer:FindFirstChild(Selected_rod_Name) then
+			Rod = WPlayer:FindFirstChild(Selected_rod_Name)
+			isEquipped = true
+			return Rod, isEquipped
+		elseif Backpack and Backpack:FindFirstChild(Selected_rod_Name) and not OnlyEquped then
+			Rod = Backpack:FindFirstChild(Selected_rod_Name)
+			isEquipped = false
+			return Rod, isEquipped
+		else
+			return nil, false        
+		end
+	end
+
+	local function EquipRud()
+		local Rod, isEquip = GetPlayerRod()
+		if Rod then
+			if not isEquip then
+				print("Удочка екиперована")
+				Rod.Parent = game:GetService('Players').LocalPlayer.Character
+			else
+				print("Удочка уже екиперована")
+				Rod.Parent = game:GetService('Players').LocalPlayer:FindFirstChild("Backpack")
+			end
+		end
+	end
+
+	local lastChildCount = 0
+	local alreadyTriggered = false
+	local cooldown = false
+
+	local function GetBober()
+		local Rod, isEquip = GetPlayerRod()
+		if not Rod then
+			return nil
+		end
+		
+		local Bober = Rod:FindFirstChild("bobber")
+		if Bober then
+			return Bober
+		else
+			return nil
+		end
+	end
+
+	local function InstRell()
+		if cooldown then return end
+		
+		local player = game:GetService("Players").LocalPlayer
+		if not player then return end
+		
+		local playerGui = player:FindFirstChild("PlayerGui")
+		if not playerGui then return end
+		
+		local Reel = playerGui:FindFirstChild("reel")
+		local Bober = GetBober()
+
+		if not Reel or not Bober then 
+			lastChildCount = 0
+			alreadyTriggered = false
+			return 
+		end
+
+		local currentChildCount = #Bober:GetChildren()
+		
+		-- Срабатываем только когда появляется ПЕРВЫЙ ребенок (переход с 0 на >0)
+		if currentChildCount > 0 and lastChildCount == 0 and not alreadyTriggered then
+			print("Обнаружен ребенок в поплавке! Количество:", currentChildCount)
+			
+			local events = game:GetService("ReplicatedStorage"):FindFirstChild("events")
+			if events then
+				local reelfinished = events:FindFirstChild("reelfinished")
+				if reelfinished then
+					-- Ставим кулдаун чтобы предотвратить повторное срабатывание
+					cooldown = true
+					task.wait(0.6)
+					reelfinished:FireServer(100, true)
+					task.wait(0.34)
+					EquipRud()  -- Только один раз!
+					EquipRud()  -- Только один раз!
+					
+					alreadyTriggered = true
+					
+					-- Снимаем кулдаун через небольшое время
+					--task.wait(0.5)
+					cooldown = false
+				end
+			end
+		end
+		
+		-- Сбрасываем когда поплавок очищается
+		if currentChildCount == 0 then
+			alreadyTriggered = false
+		end
+		
+		lastChildCount = currentChildCount
+	end
+
+
+	-- Чекбокс для InstantCatch
+	local InstantCatch = Tabs.Main:AddToggle("InstantCatch", {Title = "InstantCatch", Default = false})
+
+	local InstantReelLoop = nil
+	InstantCatch:OnChanged(function()
+		if Options.InstantCatch.Value == true then
+			InstantReelLoop = RunService.Heartbeat:Connect(function()
+				if Fluent.Unloaded then 
+					InstantReelLoop:Disconnect()
+					return
+				end
+				InstRell()
+			end)
+		else
+			if InstantReelLoop then
+				InstantReelLoop:Disconnect()
+			end
+		end
+	end)
+
+
+-- ===================== Main END ====================
+
+
+
+
+-- ==================== SERVER START ====================
+    -- Вкладка Server для сервер хопа
+    local ServerSection = Tabs.Server:AddSection("Server Hop", "refresh-cw")
+
+	local ReLoadScriptAfterChengeServer = Tabs.Server:AddToggle("ReLoadScriptAfterChengeServer", {
+		Title = "Re Load Script After Chenge Server", 
+		Description = "Need Save in settings after chenge",
+		Default = true
+	})
+
+	-- Функция для обновления queue_on_teleport
+	local function updateTeleportScript(enable)
+		if enable then
+			queue_on_teleport([[
+				wait(3)
+				loadstring(game:HttpGet("https://raw.githubusercontent.com/Y-ForBE-Y/ioasduq089eu3oi13u12o3u/refs/heads/main/My%20Script/Loader.txt"))()
+			]])
+			--print("✅ Автозагрузка скрипта включена")
+		else
+			queue_on_teleport("")
+			--print("❌ Автозагрузка скрипта выключена")
+		end
+	end
+
+	ReLoadScriptAfterChengeServer:OnChanged(function(value)
+		updateTeleportScript(value)
+	end)
+
+	--Инициализация при старте
+	updateTeleportScript(ReLoadScriptAfterChengeServer.Value)
+
+    Tabs.Server:AddButton({
+        Title = "Server Hop",
+        Description = "Join a different server",
+        Callback = function()
+            serverHop()
+        end
+    })
+
+    Tabs.Server:AddButton({
+        Title = "Rejoin Server",
+        Description = "Rejoin current server",
+        Callback = function()
+            rejoin()
+        end
+    })
+
+    Tabs.Server:AddButton({
+        Title = "Copy Job ID",
+        Description = "Copy current server ID",
+        Callback = function()
+            setclipboard(JobId)
+            Fluent:Notify({
+                Title = "Server",
+                Content = "Job ID copied to clipboard!",
+                Duration = 3
+            })
+        end
+    })
+
+
+--[[
+    Tabs.Server:AddButton({
+        Title = "Copy Connect Link",
+        Description = "Copy current server Join Link",
+        Callback = function()
+			local ServerConnectLink = "https://ubhubjoiner.vercel.app/?placeid=".. game.PlaceId .."&jobid=".. game.JobId
+
+			print(ServerConnectLink)
+            setclipboard(ServerConnectLink)
+
+            Fluent:Notify({
+                Title = "Server",
+                Content = "Join Link copied to clipboard!",
+                Duration = 3
+            })
+
+        end
+    })
+]]
+
+    Tabs.Server:AddButton({
+        Title = "Create Your VIP Server",
+        Description = "", --"Rejoin current server",
+        Callback = function()
+            loadstring(game:HttpGet("https://pastebin.com/raw/Ru4UQDpN"))()
+        end
+    })
+
+--[[
+    -- Автоматический сервер хоп
+    local AutoServerHopToggle = Tabs.Server:AddToggle("AutoServerHop", {
+        Title = "Auto Server Hop",
+        Description = "Automatically hop servers every 30 seconds",
+        Default = false
+    })
+
+    local autoHopConnection = nil
+    AutoServerHopToggle:OnChanged(function()
+        if Options.AutoServerHop.Value then
+            Fluent:Notify({
+                Title = "Auto Server Hop",
+                Content = "Enabled - Will hop in 30 seconds",
+                Duration = 5
+            })
+            
+            autoHopConnection = RunService.Heartbeat:Connect(function()
+                if tick() % 30 < 0.1 then -- Каждые 30 секунд
+                    if Options.AutoServerHop.Value then
+                        serverHop()
+                    end
+                end
+            end)
+        else
+            if autoHopConnection then
+                autoHopConnection:Disconnect()
+                autoHopConnection = nil
+            end
+            Fluent:Notify({
+                Title = "Auto Server Hop",
+                Content = "Disabled",
+                Duration = 3
+            })
+        end
+    end)
+]]
+    -- Информация о сервере
+    local InfoSection = Tabs.Server:AddSection("Server Info", "info")
+
+    Tabs.Server:AddParagraph({
+        Title = "Current Server",
+        Content = "Place ID: " .. PlaceId .. "\nJob ID: " .. JobId .. "\nPlayers: " .. #Players:GetPlayers()
+    })
+
+-- ==================== SERVER END ====================
+
+
+-- ==================== Player Start ====================
+    local WalkSpeed = Tabs.Player:AddSection("WalkSpeed", "fast-forward")
+
+
+    -- Чекбокс для WalkSpeed
+    local WalkSpeedToggle = Tabs.Player:AddToggle("WalkSpeedToggle", {
+        Title = "Enable Custom WalkSpeed",
+        Default = false
+    })
+
+    WalkSpeedToggle:OnChanged(function()
+        if Options.WalkSpeedToggle.Value == true then
+            if LHumanoid then
+                originalWalkSpeed = LHumanoid.WalkSpeed
+                LHumanoid.WalkSpeed = Options.SetWalkSpeed.Value
+            end
+            
+            WalkSpeedLoop = RunService.Heartbeat:Connect(function()
+                if Fluent.Unloaded then 
+                    if WalkSpeedLoop then
+                        WalkSpeedLoop:Disconnect()
+                        WalkSpeedLoop = nil
+                    end
+                    if LHumanoid then
+                        LHumanoid.WalkSpeed = originalWalkSpeed
+                    end
+                    return
+                end
+
+                if LHumanoid and LHumanoid.Parent then
+                    LHumanoid.WalkSpeed = Options.SetWalkSpeed.Value
+                end
+            end)
+        else
+            if WalkSpeedLoop then
+                WalkSpeedLoop:Disconnect()
+                WalkSpeedLoop = nil
+            end
+            
+            if LHumanoid then
+                LHumanoid.WalkSpeed = originalWalkSpeed
+            end
+        end
+    end)
+
+    -- Слайдер скорости
+    local SetWalkSpeed = Tabs.Player:AddSlider("SetWalkSpeed", {
+        Title = "Walk Speed",
+        Default = 16,
+        Min = 0,
+        Max = 550,
+        Rounding = 1,
+        Callback = function(Value)
+            if Options.WalkSpeedToggle.Value == true and LHumanoid and LHumanoid.Parent then
+                LHumanoid.WalkSpeed = Value
+            end
+        end
+    })
+
+
+	local JumpHeight = Tabs.Player:AddSection("JupHeight", "trending-up")
+    -- Чекбокс для JumpHeight
+    local JumpHeightToggle = Tabs.Player:AddToggle("JumpHeightToggle", {
+        Title = "Enable Custom JumpHeight",
+        Default = false
+    })
+
+    JumpHeightToggle:OnChanged(function()
+        if Options.JumpHeightToggle.Value == true then
+            if LHumanoid then
+                originalJumpHeight = LHumanoid.JumpHeight
+                LHumanoid.JumpHeight = Options.SetJumpHeight.Value
+            end
+            
+            JumpHeightLoop = RunService.Heartbeat:Connect(function()
+                if Fluent.Unloaded then 
+                    if JumpHeightLoop then
+                        JumpHeightLoop:Disconnect()
+                        JumpHeightLoop = nil
+                    end
+                    if LHumanoid then
+                        LHumanoid.JumpHeight = originalJumpHeight
+                    end
+                    return
+                end
+
+                if LHumanoid and LHumanoid.Parent then
+                    LHumanoid.JumpHeight = Options.SetJumpHeight.Value
+                end
+            end)
+        else
+            if JumpHeightLoop then
+                JumpHeightLoop:Disconnect()
+                JumpHeightLoop = nil
+            end
+            
+            if LHumanoid then
+                LHumanoid.JumpHeight = originalJumpHeight
+            end
+        end
+    end)
+
+    -- Слайдер прыжка
+    local SetJumpHeight = Tabs.Player:AddSlider("SetJumpHeight", {
+        Title = "Jump Height",
+        Default = 7.2,
+        Min = 0,
+        Max = 300,
+        Rounding = 1,
+        Callback = function(Value)
+            if Options.JumpHeightToggle.Value == true and LHumanoid and LHumanoid.Parent then
+                LHumanoid.JumpHeight = Value
+            end
+        end
+    })
+
+
+	local JumpPower = Tabs.Player:AddSection("JupPower", "award")
+
+    -- Чекбокс для JumpPower
+    local JumpPowerToggle = Tabs.Player:AddToggle("JumpPowerToggle", {
+        Title = "Enable Custom JumpPower",
+        Default = false
+    })
+
+    JumpPowerToggle:OnChanged(function()
+        if Options.JumpPowerToggle.Value == true then
+            if LHumanoid then
+                originalJumpPower = LHumanoid.JumpPower
+                LHumanoid.JumpPower = Options.SetJumpPower.Value
+            end
+            
+            JumpPowerLoop = RunService.Heartbeat:Connect(function()
+                if Fluent.Unloaded then 
+                    if JumpPowerLoop then
+                        JumpPowerLoop:Disconnect()
+                        JumpPowerLoop = nil
+                    end
+                    if LHumanoid then
+                        LHumanoid.JumpPower = originalJumpPower
+                    end
+                    return
+                end
+
+                if LHumanoid and LHumanoid.Parent then
+                    LHumanoid.JumpPower = Options.SetJumpPower.Value
+                end
+            end)
+        else
+            if JumpPowerLoop then
+                JumpPowerLoop:Disconnect()
+                JumpPowerLoop = nil
+            end
+            
+            if LHumanoid then
+                LHumanoid.JumpPower = originalJumpPower
+            end
+        end
+    end)
+
+    -- Слайдер прыжка
+    local SetJumpPower = Tabs.Player:AddSlider("SetJumpPower", {
+        Title = "Jump Power",
+        Default = 50,
+        Min = 0,
+        Max = 300,
+        Rounding = 1,
+        Callback = function(Value)
+            if Options.JumpPowerToggle.Value == true and LHumanoid and LHumanoid.Parent then
+                LHumanoid.JumpPower = Value
+            end
+        end
+    })
+
+
+
+    local siting = Tabs.Player:AddSection("Sit Settings", nil)
+
+    Tabs.Player:AddButton({
+        Title = "Sit Down",
+        Description = "Make your character sit",
+        Callback = function()
+            sit_down(true)
+        end
+    })
+
+    Tabs.Player:AddButton({
+        Title = "Stand Up",
+        Description = "Make your character stand",
+        Callback = function()
+            sit_down(false)
+        end
+    })
+
+    local suicide = Tabs.Player:AddSection("Suicide", "skull")
+
+    Tabs.Player:AddButton({
+        Title = "Suicide V1",
+        Description = "Set hp 0",
+        Callback = function()
+            Suicide()
+        end
+    })
+
+    Tabs.Player:AddButton({
+        Title = "Suicide V2",
+        Description = "Set player state Deach",
+        Callback = function()
+            SuicideV2()
+        end
+    })
+-- ===================== Payer END =====================
+
+-- ==================== World Start ====================
+	local WorldSettings = Tabs.World:AddSection("WorldSettings", "wrench")
+
+    local TimeChenger = Tabs.World:AddToggle("TimeChenger", {
+        Title = "Time Changer", 
+        Default = false 
+    })
+
+    TimeChenger:OnChanged(function()
+        if Options.TimeChenger.Value == true then
+            originalTime = game:GetService("Lighting").TimeOfDay
+            
+            local hours = math.floor(Options.SetTime.Value)
+            local minutes = math.floor((Options.SetTime.Value % 1) * 60)
+            local timeStr = string.format("%02d:%02d:00", hours, minutes)
+            game:GetService("Lighting").TimeOfDay = timeStr
+            
+            TimeLoop = RunService.Heartbeat:Connect(function()
+                if Fluent.Unloaded then 
+                    if TimeLoop then
+                        TimeLoop:Disconnect()
+                        TimeLoop = nil
+                    end
+                    game:GetService("Lighting").TimeOfDay = originalTime
+                    return
+                end
+                
+                local hours = math.floor(Options.SetTime.Value)
+                local minutes = math.floor((Options.SetTime.Value % 1) * 60)
+                local timeStr = string.format("%02d:%02d:00", hours, minutes)
+                game:GetService("Lighting").TimeOfDay = timeStr
+            end)
+        else
+            if TimeLoop then
+                TimeLoop:Disconnect()
+                TimeLoop = nil
+            end
+            game:GetService("Lighting").TimeOfDay = originalTime
+        end
+    end)
+
+    local SetTime = Tabs.World:AddSlider("SetTime", {
+        Title = "Set Time",
+        Description = "Set custom time of day",
+        Default = 12.0,
+        Min = 0,
+        Max = 23.59,
+        Rounding = 2,
+        Callback = function(Value)
+            if Options.TimeChenger.Value == true then
+                local hours = math.floor(Value)
+                local minutes = math.floor((Value % 1) * 60)
+                local timeStr = string.format("%02d:%02d:00", hours, minutes)
+                game:GetService("Lighting").TimeOfDay = timeStr
+            end
+        end
+    })
+
+-- ===================== World END =====================
+
+-- ==================== Teleport Start ====================
+    -- Остальной код остается без изменений...
+    local Teleports = Tabs.Teleport:AddSection("Teleports", "map-pin")
+
+    local Old_pos
+    Tabs.Teleport:AddButton({
+        Title = "Create Safe Place",
+        Description = "Create a safe zone high in the sky",
+        Callback = function()
+            local Players = game:GetService("Players")
+            local LocalPlayer = Players.LocalPlayer
+            local playerName = LocalPlayer.Name
+
+            Old_pos = workspace[playerName].HumanoidRootPart.Position
+
+            local targetCharacter = workspace:WaitForChild(playerName)
+            local HumanoidRootPart = targetCharacter:WaitForChild("HumanoidRootPart")
+
+            local currentRotation = HumanoidRootPart.CFrame.Rotation
+
+            local SafeZone = Instance.new("Part")
+            SafeZone.Size = Vector3.new(30, 1, 30)
+            SafeZone.Position = Vector3.new(math.random(-2000,2000), math.random(50000,90000), math.random(-2000,2000))
+            SafeZone.Anchored = true
+            SafeZone.BrickColor = BrickColor.new("Bright purple")
+            SafeZone.Material = Enum.Material.ForceField
+            SafeZone.Parent = game.Workspace
+            
+            HumanoidRootPart.CFrame = CFrame.new(SafeZone.Position + Vector3.new(0, 5, 0)) * currentRotation
+        end
+    })
+
+    Tabs.Teleport:AddButton({
+        Title = "Return",
+        Description = "Return to original position",
+        Callback = function()
+            if Old_pos then
+                local character = workspace[game:GetService("Players").LocalPlayer.Name]
+                local humanoidRootPart = character:WaitForChild("HumanoidRootPart")
+                humanoidRootPart.CFrame = CFrame.new(Old_pos) * humanoidRootPart.CFrame.Rotation
+            end
+        end
+    })
+
+    Tabs.Teleport:AddButton({
+        Title = "Copy XYZ",
+        Description = "Copy position to clipboard",
+        Callback = function()
+            local XYZ = tostring(game.Players.LocalPlayer.Character.HumanoidRootPart.Position)
+            setclipboard("game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(" .. XYZ .. ")")
+            Fluent:Notify({
+                Title = "Position",
+                Content = "XYZ coordinates copied!",
+                Duration = 3
+            })
+        end
+    })
+
+    local Cordinats = Tabs.Teleport:AddInput("Cords", {
+        Title = "Cords",
+        Default = "0, 0, 0",
+        Placeholder = "Placeholder",
+        Numeric = false, -- Only allows numbers
+        Finished = false, -- Only calls callback when you press enter
+        --Callback = function(Value)
+        --    print("Input changed:", Value)
+        --end
+    })
+
+    --Cordinats:OnChanged(function()
+    --    print("Input updated:", Cordinats.Value)
+    --end)
+
+
+    Tabs.Teleport:AddButton({
+        Title = "Teleport to Cords",
+        Description = "Писать через запятую", --"Copy position to clipboard",
+        Callback = function()
+			local XYZ = Cordinats.Value
+			local x, y, z = string.match(XYZ, "([%d%.]+),%s*([%d%.]+),%s*([%d%.]+)")
+			game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(tonumber(x), tonumber(y), tonumber(z))
+
+            Fluent:Notify({
+                Title = "Teleported",
+                Content = "Teleported to".. XYZ,
+                Duration = 3
+            })
+        end
+    })
+-- ===================== Teleport END =====================
+
+-- ==================== Debug Start ====================
+	local Fishing = Tabs.Debug:AddSection("Fishing", nil)
+    Tabs.Debug:AddButton({
+        Title = "Equip rod",
+        Description = "", --Make your character sit",
+        Callback = function()
+			local Rod, isEquip = GetPlayerRod()
+
+			if Rod then
+				if not isEquip then
+					Rod.Parent = game:GetService('Players').LocalPlayer.Character
+				else
+					print("Удочка уже екиперована")
+				end
+			end
+        end
+    })
+
+	local PerfectCats = Tabs.Debug:AddToggle("PerfectCats", {Title = "PerfectCats",Default = false })
+
+    Tabs.Debug:AddButton({
+        Title = "Cast",
+        Description = "", --Make your character sit",
+        Callback = function()
+			local Rod, isEquip = GetPlayerRod()
+
+			if Rod then
+				if isEquip then
+					local remote = Rod.events.castAsync
+					local CastDist = 1
+					if PerfectCats.Value == true then
+						CastDist = 99
+					else
+						CastDist = 53
+					end
+
+					local arguments = {
+						[1] = CastDist,
+						[2] = 1
+					}
+					local results = remote:InvokeServer(unpack(arguments))
+				else
+					print("Удочка не екиперована")
+				end
+			end
+        end
+    })
+
+	local PerfectReel = Tabs.Debug:AddToggle("PerfectReel", {Title = "PerfectReel",Default = false })
+	Tabs.Debug:AddButton({
+        Title = "Rell",
+        Description = "", --Make your character sit",
+        Callback = function()
+			local Rod, isEquip = GetPlayerRod()
+
+			if Rod then
+				if isEquip then
+					local remote = game:GetService("ReplicatedStorage").events.reelfinished
+					local arguments = {
+						[1] = 100,
+						[2] = PerfectReel.Value
+					}
+					remote:FireServer(unpack(arguments))
+				else
+					print("Удочка не екиперована")
+				end
+			end
+        end
+    })
+
+    Tabs.Debug:AddButton({
+        Title = "Reset",
+        Description = "", --Make your character sit",
+        Callback = function()
+			local Rod, isEquip = GetPlayerRod()
+
+			if Rod then
+				if isEquip then
+					local remote = Rod.events.reset
+					local arguments = {}
+					remote:FireServer(unpack(arguments))
+				else
+					print("Удочка не екиперована")
+				end
+			end
+        end
+    })
+
+	local Misc = Tabs.Debug:AddSection("Misc", nil)
+
+    Tabs.Debug:AddButton({
+        Title = "Discover all location",
+        Description = "", --Make your character sit",
+        Callback = function()
+			for k, v in pairs(workspace.zones.player:GetChildren()) do
+				print(v.Name)
+				game:GetService("ReplicatedStorage").events.discoverlocation:FireServer(v.Name)
+			end
+        end
+    })
+
+	local function ActivetePromo() 
+		local argsList = loadstring(game:HttpGet("https://raw.githubusercontent.com/Y-ForBE-Y/ioasduq089eu3oi13u12o3u/refs/heads/main/Fisch/promo"))()
+		for _, args in ipairs(argsList) do
+			game:GetService("ReplicatedStorage"):WaitForChild("events"):WaitForChild("runcode"):FireServer(unpack(args))
+			print(tostring(unpack(args)))
+		end
+	end
+
+    Tabs.Debug:AddButton({
+        Title = "Activate all promocodes",
+        Description = "", --Make your character sit",
+        Callback = function()
+			ActivetePromo() 
+        end
+    })
+
+    Tabs.Debug:AddButton({
+        Title = "Title Spam",
+        Description = "", --Make your character sit",
+        Callback = function()
+			local titlesScroll = game:GetService("Players").LocalPlayer.PlayerGui.hud.safezone.menu.menu_safezone.scroll["4User"].Titles.scroll
+			--print("=== СПИСОК ТИТУЛОВ ===")
+			for _, child in ipairs(titlesScroll:GetChildren()) do
+				if not child:IsA("UIListLayout") and not child:IsA("UIPadding") and child.Name ~= "stroke" then
+					--print("• " .. child.Name)
+
+					game:GetService("ReplicatedStorage").packages.Net["RE/Titles/Equip"]:FireServer(child.Name)
+					task.wait(0.01)
+				end
+			end
+        end
+    })
+
+
+	local World = Tabs.Debug:AddSection("World", nil)
+
+    Tabs.Debug:AddButton({
+        Title = "Walk on wather On",
+        Description = "", --Make your character sit",
+        Callback = function()
+			--workspace.zones.player
+			for _, zone in pairs(workspace.zones.fishing:GetChildren()) do
+				zone.CanCollide = true
+			end
+        end
+    })
+
+    Tabs.Debug:AddButton({
+        Title = "Walk on wather Off",
+        Description = "", --Make your character sit",
+        Callback = function()
+			--workspace.zones.player
+			for _, zone in pairs(workspace.zones.fishing:GetChildren()) do
+				zone.CanCollide = false
+			end
+        end
+    })
+
+	Tabs.Debug:AddButton({
+        Title = "Walk Under wather On",
+        Description = "", --Make your character sit",
+        Callback = function()
+			local player = game.Players.LocalPlayer
+			local character = player.Character or player.CharacterAdded:Wait()
+			local humanoid = character:WaitForChild("Humanoid")
+
+			-- Полное отключение плавания
+			humanoid:SetStateEnabled(Enum.HumanoidStateType.Swimming, false)
+        end
+    })
+
+    Tabs.Debug:AddButton({
+        Title = "Walk Under wather Off",
+        Description = "", --Make your character sit",
+        Callback = function()
+			local player = game.Players.LocalPlayer
+			local character = player.Character or player.CharacterAdded:Wait()
+			local humanoid = character:WaitForChild("Humanoid")
+
+			-- Полное отключение плавания
+			humanoid:SetStateEnabled(Enum.HumanoidStateType.Swimming, true)
+        end
+    })
+
+	local Player = Tabs.Debug:AddSection("Player", nil)
+
+    local DisableOxigenSwim = Tabs.Debug:AddToggle("DisableOxigenSwim", {Title = "DisableOxigenSwim",Default = false })
+    DisableOxigenSwim:OnChanged(function()
+		game.Players.LocalPlayer.Character.Resources.oxygen.Enabled = not DisableOxigenSwim.Value
+    end)
+
+    local DisableOxigenPeaks = Tabs.Debug:AddToggle("DisableOxigenPeaks", {Title = "DisableOxigenPeaks",Default = false })
+    DisableOxigenPeaks:OnChanged(function()
+		game.Players.LocalPlayer.Character.Resources["oxygen(peaks)"].Enabled = not DisableOxigenPeaks.Value
+    end)
+
+    local DisableOxigenRefactor = Tabs.Debug:AddToggle("DisableOxigenRefactor", {Title = "DisableOxigenRefactor",Default = false })
+    DisableOxigenRefactor:OnChanged(function()
+		game.Players.LocalPlayer.Character.Resources.oxygenRefactor_WIP.Enabled = not DisableOxigenRefactor.Value
+    end)
+
+
+    local DisableTemperaturePeaks = Tabs.Debug:AddToggle("DisableTemperaturePeaks", {Title = "DisableTemperaturePeaks",Default = false })
+    DisableTemperaturePeaks:OnChanged(function()
+		game.Players.LocalPlayer.Character.Resources.temperature.Enabled = not DisableTemperaturePeaks.Value
+    end)
+
+    local DisableTemperatureHeat = Tabs.Debug:AddToggle("DisableTemperatureHeat", {Title = "DisableTemperatureHeat",Default = false })
+    DisableTemperatureHeat:OnChanged(function()
+		game.Players.LocalPlayer.Character.Resources["temperature(heat)"].Enabled = not DisableTemperatureHeat.Value
+    end)
+
+
+	local Market = Tabs.Debug:AddSection("Market", nil)
+	
+    Tabs.Debug:AddButton({
+        Title = "Buy Oscar Rod",
+        Description = "Cost 5kk", --Make your character sit",
+        Callback = function()
+			local purchaseEvent = game:GetService("ReplicatedStorage").events.purchase
+			purchaseEvent:FireServer("Great Rod of Oscar", "Rod", nil, 1)
+        end
+    })
+
+    Tabs.Debug:AddButton({
+        Title = "Buy Original No-Life Rod",
+        Description = "Cost 1C", --Make your character sit",
+        Callback = function()
+			local purchaseEvent = game:GetService("ReplicatedStorage").events.purchase
+			purchaseEvent:FireServer("Original No-Life Rod", "Rod", nil, 1)
+        end
+    })
+
+	local UNIVERSAL = Tabs.Debug:AddSection("UNIVERSAL", nil)
+
+    Tabs.Debug:AddButton({
+        Title = "Load DEX",
+        Description = "", --Make your character sit",
+        Callback = function()
+			loadstring(game:HttpGet("https://raw.githubusercontent.com/Y-ForBE-Y/ioasduq089eu3oi13u12o3u/refs/heads/main/My%20Script/XZCHEZAZALUPA/DEXPP.txt"))()
+        end
+    })
+
+-- ===================== Debug END =====================
+end
+
+-- Addons:
+SaveManager:SetLibrary(Fluent)
+InterfaceManager:SetLibrary(Fluent)
+
+SaveManager:IgnoreThemeSettings()
+SaveManager:SetIgnoreIndexes({})
+
+InterfaceManager:SetFolder("FluentScriptHub")
+SaveManager:SetFolder("FluentScriptHub/specific-game")
+
+InterfaceManager:BuildInterfaceSection(Tabs.Settings)
+SaveManager:BuildConfigSection(Tabs.Settings)
+
+Window:SelectTab(1)
+
+-- Автоматическое восстановление при загрузке
+
+task.spawn(function()
+    --wait(5) -- Даем время на полную загрузку
+    SaveManager:LoadAutoloadConfig()
+end)
+
+--SaveManager:LoadAutoloadConfig()
