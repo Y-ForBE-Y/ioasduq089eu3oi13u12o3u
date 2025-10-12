@@ -261,6 +261,101 @@ end]]
 
 
 
+local function teleportBobberVerticalToZone()
+    local workspace = game:GetService("Workspace")
+    local player = game.Players.LocalPlayer
+    local character = player.Character or player.CharacterAdded:Wait()
+    
+	local LocalPlayer = game:GetService('Players').LocalPlayer
+	local playerName = LocalPlayer.Name
+	local BobberName = workspace.PlayerStats[playerName].T[playerName].Stats.bobber.Value
+
+    -- Находим поплавок
+    local tool = character:FindFirstChildOfClass("Tool")
+    if not tool then
+        --print("Инструмент не найден")
+        return false
+    end
+
+    local CurrentTool = workspace:WaitForChild(player.Name):FindFirstChild(tool.Name)
+    if not CurrentTool then
+        --print("Инструмент не найден в workspace игрока")
+        return false
+    end
+
+    local Bobber = CurrentTool:FindFirstChild("bobber")
+    if not Bobber then
+        --print("Поплавок не найден")
+        return false
+    end
+
+    --print("Игрок держит инструмент:", tool.Name)
+    --print("Поплавок найден:", Bobber.Name)
+    --print("Текущая позиция поплавка:", Bobber.Position)
+
+    -- Получаем ВСЕ рыболовные зоны для проверки
+    local fishingZones = {}
+    for _, zone in pairs(workspace:WaitForChild("zones"):WaitForChild("fishing"):GetDescendants()) do
+        if zone:IsA("BasePart") then
+            table.insert(fishingZones, zone)
+        end
+    end
+
+    -- Параметры рейкаста - ИГНОРИРУЕМ ВСЕ КРОМЕ РЫБОЛОВНЫХ ЗОН
+    local raycastParams = RaycastParams.new()
+    raycastParams.FilterType = Enum.RaycastFilterType.Whitelist  -- ТОЛЬКО эти объекты
+    raycastParams.FilterDescendantsInstances = fishingZones  -- ТОЛЬКО рыболовные зоны
+
+    -- Рейкаст вертикально вниз от текущей позиции поплавка
+    local raycastOrigin = Bobber.Position + Vector3.new(0, 5, 0)  -- Начинаем чуть выше
+    local raycastDirection = Vector3.new(0, -500, 0)  -- Луч вниз
+    
+    local raycastResult = workspace:Raycast(raycastOrigin, raycastDirection, raycastParams)
+    
+    if not raycastResult then
+        print("Рейкаст не нашел рыболовную зону под поплавком")
+        return false
+    end
+
+    local hitPosition = raycastResult.Position
+    local hitInstance = raycastResult.Instance
+    
+    --print("Рейкаст попал в зону:", hitInstance.Name)
+    --print("Позиция поверхности воды:", hitPosition)
+
+    -- Проверяем длину лески
+    local ropeConstraint = Bobber:FindFirstChild("RopeConstraint")
+    if ropeConstraint then
+        local verticalDistance = math.abs(Bobber.Position.Y - hitPosition.Y)
+        --print("Вертикальное расстояние:", verticalDistance)
+        --print("Длина лески:", ropeConstraint.Length)
+        
+        if ropeConstraint.Length < verticalDistance then
+            print("Длина лески недостаточна для телепортации")
+            return false
+        end
+    end
+
+    -- Телепортируем поплавок на поверхность воды
+    local newPosition = Vector3.new(
+        Bobber.Position.X,  -- Сохраняем X
+        hitPosition.Y + 0.5, -- Чуть выше поверхности воды
+        Bobber.Position.Z   -- Сохраняем Z
+    )
+    
+    Bobber.Position = newPosition
+
+	if Bobber:FindFirstChild(BobberName) then
+		Bobber:FindFirstChild(BobberName):Destroy()
+	end
+
+    --print("Поплавок телепортирован на поверхность воды!")
+    --print("Новая позиция:", newPosition)
+    return true
+end
+
+
+
 
 
 -- ================================================ GUI ================================================
@@ -321,77 +416,105 @@ local Options = Fluent.Options
 do
 
 local lastCastTime = 0
-local castCooldown = 1 -- 1 секунда
+local castCooldown = 0.95 -- 1 секунда
 local isCasting = false
 
 
 -- ==================== Main START ====================
 
-	local function GetRodValies()
-		local Rod, isEquip = GetPlayerRod(true)
-		if isEquip then
-			return Rod.values
-		else
-			warn("Удочкуа не екиперована")
-		end
+local function GetBober()
+	local Rod, isEquip = GetPlayerRod()
+	if not Rod then
+		return nil
 	end
+	
+	local Bober = Rod:FindFirstChild("bobber")
+	if Bober then
+		return Bober
+	else
+		return nil
+	end
+end
 
-	local function RodIsCasted()
-		local values = GetRodValies()
-		if values ~= nil then
-			if values.casted.Value == true then
-				return true
-			else
-				return false
-			end
-		else
+local function GetRodValies()
+	local Rod, isEquip = GetPlayerRod(true)
+	if isEquip then
+		return Rod.values
+	else
+		warn("Удочкуа не екиперована")
+	end
+end
+
+local function RodIsCasted()
+	local values = GetRodValies()
+	if values ~= nil then
+		if values.casted.Value == true then
 			return true
+		else
+			return false
 		end
+	else
+		return true
+	end
+end
+
+local function ProcesAutoCast(InInstantReel)
+	local Rod, isEquip = GetPlayerRod(true)
+
+	if InInstantReel == nil then
+		InInstantReel = false
 	end
 
-	local function ProcesAutoCast()
-		local Rod, isEquip = GetPlayerRod(true)
+	if not InInstantReel then
 		-- Проверяем cooldown и не идет ли уже каст
 		if tick() - lastCastTime < castCooldown or isCasting then
 			return
 		end
+	end
 
-		if isEquip then
-			local Cast = Rod.events.castAsync
-			if not RodIsCasted() then
-				isCasting = true
-				wait(0.2)
-				print("CastDistance.Value:", Options.CastDistance.Value)
-				Cast:InvokeServer(Options.CastDistance.Value, 1)
-				lastCastTime = tick()
-				
-				-- Добавляем проверку таймаута как в WaitCasting
-				local startTime = tick()
-				local timeout = 1 -- секунда
-				
-				spawn(function()
-					while tick() - startTime < timeout do
-						if RodIsCasted() then
-							print("Удочка успешно скастована")
-							isCasting = false
-							return -- Успех, выходим
-						end
-						wait(0.05) -- Короткие интервалы проверки
+
+	if isEquip then
+		local Cast = Rod.events.castAsync
+		if not RodIsCasted() then
+			isCasting = true
+			wait(0.2)
+			print("CastDistance.Value:", Options.CastDistance.Value)
+			Cast:InvokeServer(Options.CastDistance.Value, 1)
+			lastCastTime = tick()
+			
+			-- Добавляем проверку таймаута как в WaitCasting
+			local startTime = tick()
+			local timeout = 1 -- секунда
+			
+			spawn(function()
+				while tick() - startTime < timeout do
+					if RodIsCasted() then
+						print("Удочка успешно скастована")
+						isCasting = false
+						return -- Успех, выходим
 					end
-					
-					-- Если дошли сюда - таймаут, выполняем reset
-					print("Таймаут! Выполняем сброс")
-					if Rod then
-						Rod.events.reset:FireServer()
-						print("Reset event fired - casting timeout")
-					end
-					isCasting = false
-				end)
-			else
+					wait(0.05) -- Короткие интервалы проверки
+				end
+				
+				-- Если дошли сюда - таймаут, выполняем reset
+				print("Таймаут! Выполняем сброс")
+				if Rod then
+					Rod.events.reset:FireServer()
+					print("Reset event fired - casting timeout")
+				end
 				isCasting = false
+			end)
+		else
+			-- ДОБАВЛЕНА ПРОВЕРКА НА БОБЕРА
+			-- Если удочка кастована, но бобра нет - вызываем reset
+			if RodIsCasted() and not GetBober() then
+				print("Удочка кастована, но бобер отсутствует. Выполняем reset")
+				Rod.events.reset:FireServer()
 			end
+			isCasting = false
 		end
 	end
+end
 
 	-- Чекбокс для AutoCast
 	local AutoCast = Tabs.Main:AddToggle("AutoCast", {Title = "AutoCast", Default = false})
@@ -423,6 +546,8 @@ local isCasting = false
 		Callback = function(Value) end
 	})
 
+	
+--[[
     Tabs.Main:AddButton({
         Title = "Load Instant Catch",
         Description = "Запускает скрпит с инстант катчем", --Make your character sit",
@@ -430,52 +555,21 @@ local isCasting = false
 			loadstring(game:HttpGet("https://raw.githubusercontent.com/Y-ForBE-Y/ioasduq089eu3oi13u12o3u/refs/heads/main/My%20Script/Scripts/NewInstantCacth"))()
         end
     })
+]]
 
-
-	local function GetPlayerRod(OnlyEquped)
-		
-		if not OnlyEquped then
-			OnlyEquped = false
-		end
-
-		local isEquipped, Rod
-		local Backpack = game:GetService('Players').LocalPlayer:FindFirstChild("Backpack")
-
-		local WPlayer = game:GetService('Players').LocalPlayer.Character
-
-		local LocalPlayer = game:GetService('Players').LocalPlayer
-		local playerName = LocalPlayer.Name
-		local Selected_rod_Name = workspace.PlayerStats[playerName].T[playerName].Stats.rod.Value
-
-		if WPlayer:FindFirstChild(Selected_rod_Name) then
-			Rod = WPlayer:FindFirstChild(Selected_rod_Name)
-			isEquipped = true
-			return Rod, isEquipped
-		elseif Backpack and Backpack:FindFirstChild(Selected_rod_Name) and not OnlyEquped then
-			Rod = Backpack:FindFirstChild(Selected_rod_Name)
-			isEquipped = false
-			return Rod, isEquipped
-		else
-			return nil, false        
-		end
-	end
 
 	local function EquipRud()
 		local Rod, isEquip = GetPlayerRod()
 		if Rod then
 			if not isEquip then
-				print("Удочка екиперована")
+				--print("Удочка екиперована")
 				Rod.Parent = game:GetService('Players').LocalPlayer.Character
 			else
-				print("Удочка уже екиперована")
+				--print("Удочка уже екиперована")
 				Rod.Parent = game:GetService('Players').LocalPlayer:FindFirstChild("Backpack")
 			end
 		end
 	end
-
-	local lastChildCount = 0
-	local alreadyTriggered = false
-	local cooldown = false
 
 	local function GetBober()
 		local Rod, isEquip = GetPlayerRod()
@@ -491,80 +585,76 @@ local isCasting = false
 		end
 	end
 
-	local function InstRell()
-		if cooldown then return end
-		
-		local player = game:GetService("Players").LocalPlayer
-		if not player then return end
-		
-		local playerGui = player:FindFirstChild("PlayerGui")
-		if not playerGui then return end
-		
-		local Reel = playerGui:FindFirstChild("reel")
-		local Bober = GetBober()
+local Reelling = false
+local ReelConnection = nil
+local AditionalDelay = 0.160
 
-		if not Reel or not Bober then 
-			lastChildCount = 0
-			alreadyTriggered = false
-			return 
-		end
+-- Чекбокс для InstantCatch
+local InstantCatch = Tabs.Main:AddToggle("InstantCatch", {Title = "InstantCatch", Default = false})
 
-		local currentChildCount = #Bober:GetChildren()
-		
-		-- Срабатываем только когда появляется ПЕРВЫЙ ребенок (переход с 0 на >0)
-		if currentChildCount > 0 and lastChildCount == 0 and not alreadyTriggered then
-			print("Обнаружен ребенок в поплавке! Количество:", currentChildCount)
-			
-			local events = game:GetService("ReplicatedStorage"):FindFirstChild("events")
-			if events then
-				local reelfinished = events:FindFirstChild("reelfinished")
-				if reelfinished then
-					-- Ставим кулдаун чтобы предотвратить повторное срабатывание
-					cooldown = true
-					task.wait(0.6)
-					reelfinished:FireServer(100, true)
-					task.wait(0.34)
-					EquipRud()  -- Только один раз!
-					EquipRud()  -- Только один раз!
-					
-					alreadyTriggered = true
-					
-					-- Снимаем кулдаун через небольшое время
-					--task.wait(0.5)
-					cooldown = false
-				end
-			end
-		end
-		
-		-- Сбрасываем когда поплавок очищается
-		if currentChildCount == 0 then
-			alreadyTriggered = false
-		end
-		
-		lastChildCount = currentChildCount
-	end
+InstantCatch:OnChanged(function()
+    if Options.InstantCatch.Value == true then
+        -- Проверка на выгрузку
+        if Fluent.Unloaded then return end
+        
+        ReelConnection = game:GetService("Players").LocalPlayer.PlayerGui.ChildAdded:Connect(function(child)
+            -- Двойная проверка
+            if Fluent.Unloaded or not Options.InstantCatch.Value then
+                return
+            end
+            
+            if child.Name == "reel" then
+                Reelling = true
+                child:Destroy()
+                local Rod, isEquip = GetPlayerRod()
+                if Rod then
+                    print("✓ НАЙДЕН REEL!")
+                    
+                    task.wait(0.5 + AditionalDelay)
+                    
+                    game:GetService("ReplicatedStorage"):FindFirstChild("events"):FindFirstChild("reelfinished"):FireServer(100, true)
+                    EquipRud()
+                    EquipRud()
+                    if Options.AutoCast.Value == true then
+						lastCastTime = tick()
+                        task.wait(0.85)
+                        ProcesAutoCast(true)
+                    end
+                end
+                
+                Reelling = false
+            end
+        end)
+        print("InstantCatch включен")
+    else
+        if ReelConnection then
+            ReelConnection:Disconnect()
+            ReelConnection = nil
+        end
+        Reelling = false
+        print("InstantCatch выключен")
+    end
+end)
 
+	-- Чекбокс для InstantBobber
+	local InstantBobber = Tabs.Main:AddToggle("InstantBobber", {Title = "InstantBobber", Default = false})
 
-	-- Чекбокс для InstantCatch
-	local InstantCatch = Tabs.Main:AddToggle("InstantCatch", {Title = "InstantCatch", Default = false})
-
-	local InstantReelLoop = nil
-	InstantCatch:OnChanged(function()
-		if Options.InstantCatch.Value == true then
-			InstantReelLoop = RunService.Heartbeat:Connect(function()
+	local InstantBobberLoop = nil
+	InstantBobber:OnChanged(function()
+		if Options.InstantBobber.Value == true then
+			InstantBobberLoop = RunService.Heartbeat:Connect(function()
 				if Fluent.Unloaded then 
-					InstantReelLoop:Disconnect()
+					InstantBobberLoop:Disconnect()
 					return
 				end
-				InstRell()
+				teleportBobberVerticalToZone()
 			end)
 		else
-			if InstantReelLoop then
-				InstantReelLoop:Disconnect()
+			if InstantBobberLoop then
+				InstantBobberLoop:Disconnect()
 			end
 		end
 	end)
-
 
 -- ===================== Main END ====================
 
@@ -586,7 +676,7 @@ local isCasting = false
 		if enable then
 			queue_on_teleport([[
 				wait(3)
-				loadstring(game:HttpGet("https://raw.githubusercontent.com/Y-ForBE-Y/ioasduq089eu3oi13u12o3u/refs/heads/main/My%20Script/Scripts/FischScript.txt"))()
+				loadstring(game:HttpGet("https://raw.githubusercontent.com/Y-ForBE-Y/ioasduq089eu3oi13u12o3u/refs/heads/main/My%20Script/Loader.txt"))()
 			]])
 			--print("✅ Автозагрузка скрипта включена")
 		else
@@ -920,6 +1010,67 @@ local isCasting = false
         end
     })
 -- ===================== Payer END =====================
+
+-- ==================== Misc START ====================
+local GUIsSection = Tabs.Misc:AddSection("GUIs", nil)
+Tabs.Misc:AddButton({
+        Title = "Black Market",
+        Description = "Opening BlackMarket GUI",
+        Callback = function()
+            game:GetService("Players").LocalPlayer.PlayerGui.hud.safezone.BlackMarket.Visible = not game:GetService("Players").LocalPlayer.PlayerGui.hud.safezone.BlackMarket.Visible
+        end
+    })
+
+Tabs.Misc:AddButton({
+        Title = "Daily shop",
+        Description = "Opening Daily shop GUI",
+        Callback = function()
+            game:GetService("Players").LocalPlayer.PlayerGui.hud.safezone.DailyShop.Visible = not game:GetService("Players").LocalPlayer.PlayerGui.hud.safezone.DailyShop.Visible
+        end
+    })
+
+
+Tabs.Misc:AddButton({
+        Title = "Challanges",
+        Description = "Opening Challanges GUI",
+        Callback = function()
+            game:GetService("Players").LocalPlayer.PlayerGui.hud.safezone.Challenges.Visible = not game:GetService("Players").LocalPlayer.PlayerGui.hud.safezone.Challenges.Visible
+        end
+    })
+
+Tabs.Misc:AddButton({
+        Title = "Aquarium",
+        Description = "Opening Aquarium GUI",
+        Callback = function()
+            game:GetService("Players").LocalPlayer.PlayerGui.hud.safezone.PersonalAquarium.Visible = not game:GetService("Players").LocalPlayer.PlayerGui.hud.safezone.PersonalAquarium.Visible
+        end
+    })
+
+Tabs.Misc:AddButton({
+        Title = "Boat PopUP",
+        Description = "Opening Boat PopUP GUI",
+        Callback = function()
+			game:GetService("Players").LocalPlayer.PlayerGui.hud.safezone.BoatPopup.Visible = not game:GetService("Players").LocalPlayer.PlayerGui.hud.safezone.BoatPopup.Visible
+        end
+    })
+
+
+Tabs.Misc:AddButton({
+        Title = "Spear Crafting",
+        Description = "Opening Spear Craft GUI",
+        Callback = function()
+            game:GetService("Players").LocalPlayer.PlayerGui.hud.safezone.SpearCrafting.Visible = not game:GetService("Players").LocalPlayer.PlayerGui.hud.safezone.SpearCrafting.Visible
+        end
+    })
+
+Tabs.Misc:AddButton({
+        Title = "Starter pack",
+        Description = "Opening Starter Pack buying GUI",
+        Callback = function()
+            game:GetService("Players").LocalPlayer.PlayerGui.hud.safezone.starterpack.Visible = not game:GetService("Players").LocalPlayer.PlayerGui.hud.safezone.starterpack.Visible
+        end
+    })
+-- ===================== Misc END ====================
 
 -- ==================== World Start ====================
 	local WorldSettings = Tabs.World:AddSection("WorldSettings", "wrench")
@@ -1342,4 +1493,3 @@ task.spawn(function()
 end)
 
 --SaveManager:LoadAutoloadConfig()
-
