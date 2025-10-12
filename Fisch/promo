@@ -1,6 +1,4 @@
 local PromoList = {
-	{"FISCHANNIVERSARY"},
-    {"LOSTJUNGLE"},
     {"CARBON"},
     {"TemporarySubmarine"},
 }
