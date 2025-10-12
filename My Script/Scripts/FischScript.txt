@@ -676,7 +676,7 @@ end)
 		if enable then
 			queue_on_teleport([[
 				wait(3)
-				loadstring(game:HttpGet("https://raw.githubusercontent.com/Y-ForBE-Y/ioasduq089eu3oi13u12o3u/refs/heads/main/My%20Script/Loader.txt"))()
+				loadstring(game:HttpGet("https://raw.githubusercontent.com/Y-ForBE-Y/ioasduq089eu3oi13u12o3u/refs/heads/main/My%20Script/Scripts/FischScript.txt"))()
 			]])
 			--print("✅ Автозагрузка скрипта включена")
 		else
