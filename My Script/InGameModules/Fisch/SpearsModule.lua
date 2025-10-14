@@ -51,9 +51,5 @@ local module = {
     };
     Craftable = {};
 }
-for i, v in module do
-    if v.Recipe then
-        table.insert(module.Craftable, i)
-    end
-end
+
 return module
