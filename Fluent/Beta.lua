@@ -4122,13 +4122,13 @@ ElementsTable.Dropdown = (function()
 
 		local DropdownHolderCanvas = New("Frame", {
 			BackgroundTransparency = 1,
-			Size = UDim2.fromOffset(170*2, 300),
+			Size = UDim2.fromOffset(170*5, 500),
 			Parent = Library.GUI,
 			Visible = false,
 		}, {
 			DropdownHolderFrame,
 			New("UISizeConstraint", {
-				MinSize = Vector2.new(170, 0),
+				MinSize = Vector2.new(170*5, 0),
 			}),
 		})
 		table.insert(Library.OpenFrames, DropdownHolderCanvas)
