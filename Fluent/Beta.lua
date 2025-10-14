@@ -3904,6 +3904,8 @@ ElementsTable.Toggle = (function()
 
 	return Element
 end)()
+
+
 ElementsTable.Dropdown = (function()
 	local Element = {}
 	Element.__index = Element
@@ -4122,13 +4124,13 @@ ElementsTable.Dropdown = (function()
 
 		local DropdownHolderCanvas = New("Frame", {
 			BackgroundTransparency = 1,
-			Size = UDim2.fromOffset(170*5, 500),
+			Size = UDim2.fromOffset(170, 600),
 			Parent = Library.GUI,
 			Visible = false,
 		}, {
 			DropdownHolderFrame,
 			New("UISizeConstraint", {
-				MinSize = Vector2.new(170*5, 0),
+				MinSize = Vector2.new(170, 0),
 			}),
 		})
 		table.insert(Library.OpenFrames, DropdownHolderCanvas)
@@ -4147,14 +4149,24 @@ ElementsTable.Dropdown = (function()
 
 		local ListSizeX = 0
 		local function RecalculateListSize()
-			local totalCount = #Dropdown.Values
+			-- Подсчитываем видимые элементы
+			local visibleCount = 0
+			for _, element in next, DropdownScrollFrame:GetChildren() do
+				if not element:IsA("UIListLayout") and element.Visible then
+					visibleCount = visibleCount + 1
+				end
+			end
+			
 			local itemHeight = 32
 			local padding = 3
 			local innerMargins = 10
-			local estimatedContent = (totalCount > 0) and (totalCount * itemHeight + (totalCount - 1) * padding + innerMargins) or innerMargins
+			local searchHeight = Dropdown.Search and 38 or 0
+			
+			local estimatedContent = (visibleCount > 0) and (visibleCount * itemHeight + (visibleCount - 1) * padding + innerMargins + searchHeight) or (innerMargins + searchHeight)
 			local maxHeight = 392
-			local many = totalCount > 10
+			local many = visibleCount > 10
 			local targetHeight = math.min(estimatedContent, maxHeight)
+			
 			DropdownHolderCanvas.Size = UDim2.fromOffset(ListSizeX, targetHeight)
 			DropdownHolderFrame.Size = UDim2.fromScale(1, many and 0.6 or 1)
 		end
@@ -4240,6 +4252,9 @@ ElementsTable.Dropdown = (function()
 				TweenInfo.new(0.3, Enum.EasingStyle.Quart, Enum.EasingDirection.Out),
 				{ Rotation = 0 }
 			):Play()
+			
+			-- Принудительно пересчитываем размер при открытии
+			RecalculateListSize()
 		end
 
 		function Dropdown:Close()
@@ -4408,7 +4423,7 @@ ElementsTable.Dropdown = (function()
 					SelectorSizeMotor:setGoal(Flipper.Spring.new(Selected and 14 or 6, { frequency = 6 }))
 					SetSelTransparency(Selected and 0 or 1)
 				end
-				AddSignal(Button.Activated, function()
+				Creator.AddSignal(Button.Activated, function()
 					local Try = not Selected
 
 					if Dropdown:GetActiveValues() == 1 and not Try and not Config.AllowNull then
@@ -4451,7 +4466,7 @@ ElementsTable.Dropdown = (function()
 			ListSizeX = ListSizeX + 30
 
 			RecalculateCanvasSize()
-			RecalculateListSize()
+			RecalculateListSize() -- Добавлен вызов здесь
 		end
 
 		function Dropdown:SetValues(NewValues)
@@ -4542,6 +4557,8 @@ ElementsTable.Dropdown = (function()
 
 	return Element
 end)()
+						
+						
 ElementsTable.Paragraph = (function()
 	local Paragraph = {}
 	Paragraph.__index = Paragraph
