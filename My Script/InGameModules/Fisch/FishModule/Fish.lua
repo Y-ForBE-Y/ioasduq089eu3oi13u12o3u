@@ -3,7 +3,7 @@ local longstring2 = "Lobsters are valuable crustaceans known for their rich, suc
 
 local fish = game:GetService("ReplicatedStorage"):WaitForChild("resources"):WaitForChild("animations"):WaitForChild("fish")
 
-local module = require(script:WaitForChild("presents"))
+local module = loadstring(game:HttpGet("https://raw.githubusercontent.com/Y-ForBE-Y/ioasduq089eu3oi13u12o3u/refs/heads/main/My%20Script/InGameModules/Fisch/FishModule/presents.lua"))()
 
 local tbl = {
     ["Desolate Deep"] = {
@@ -19650,3 +19650,4 @@ function module_upvr.ToHex(arg1, arg2) -- Line 24134
     return '#'..string.reverse(var5250)
 end
 return module_upvr
+
