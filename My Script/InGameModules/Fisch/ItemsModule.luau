@@ -768,6 +768,7 @@ local module_upvr = {
         Nuclear = Color3.fromRGB(255, 255, 255);
     };
 }
+--[[
 function module_upvr.ToInteger(arg1, arg2) -- Line 932
     return math.floor(arg2.r * 255) * 65536 + math.floor(arg2.g * 255) * 256 + math.floor(arg2.b * 255)
 end
@@ -787,4 +788,6 @@ function module_upvr.ToHex(arg1, arg2) -- Line 936
     until math.floor(any_ToInteger_result1 / 16) <= 0
     return '#'..string.reverse(var159)
 end
+]]
 return module_upvr
+
