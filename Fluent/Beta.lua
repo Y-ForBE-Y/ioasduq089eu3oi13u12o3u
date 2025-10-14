@@ -3906,6 +3906,7 @@ ElementsTable.Toggle = (function()
 end)()
 
 
+
 ElementsTable.Dropdown = (function()
 	local Element = {}
 	Element.__index = Element
@@ -4169,15 +4170,20 @@ ElementsTable.Dropdown = (function()
 			
 			DropdownHolderCanvas.Size = UDim2.fromOffset(ListSizeX, targetHeight)
 			DropdownHolderFrame.Size = UDim2.fromScale(1, many and 0.6 or 1)
+			
+			-- Пересчитываем позицию после изменения размера
+			task.defer(RecalculateListPosition)
 		end
 
 		local function RecalculateCanvasSize()
 			DropdownScrollFrame.CanvasSize = UDim2.fromOffset(0, DropdownListLayout.AbsoluteContentSize.Y)
 		end
 
-		RecalculateListPosition()
-		RecalculateListSize()
-		RecalculateCanvasSize()
+		-- Инициализация размеров
+		task.defer(function()
+			RecalculateCanvasSize()
+			RecalculateListSize()
+		end)
 
 		Creator.AddSignal(DropdownInner:GetPropertyChangedSignal("AbsolutePosition"), RecalculateListPosition)
 		Creator.AddSignal(DropdownListLayout:GetPropertyChangedSignal("AbsoluteContentSize"), function()
@@ -4242,6 +4248,12 @@ ElementsTable.Dropdown = (function()
 				SearchBox.Text = ""
 			end
 			DropdownHolderCanvas.Visible = true
+			
+			-- ПРИНУДИТЕЛЬНЫЙ ПЕРЕСЧЕТ ПРИ ОТКРЫТИИ
+			RecalculateCanvasSize()
+			RecalculateListSize()
+			RecalculateListPosition()
+			
 			TweenService:Create(
 				DropdownHolderFrame,
 				TweenInfo.new(0.3, Enum.EasingStyle.Quart, Enum.EasingDirection.Out),
@@ -4252,9 +4264,6 @@ ElementsTable.Dropdown = (function()
 				TweenInfo.new(0.3, Enum.EasingStyle.Quart, Enum.EasingDirection.Out),
 				{ Rotation = 0 }
 			):Play()
-			
-			-- Принудительно пересчитываем размер при открытии
-			RecalculateListSize()
 		end
 
 		function Dropdown:Close()
@@ -4465,8 +4474,10 @@ ElementsTable.Dropdown = (function()
 			end
 			ListSizeX = ListSizeX + 30
 
+			-- ПРИНУДИТЕЛЬНЫЙ ПЕРЕСЧЕТ ПОСЛЕ ПОСТРОЕНИЯ СПИСКА
 			RecalculateCanvasSize()
-			RecalculateListSize() -- Добавлен вызов здесь
+			RecalculateListSize()
+			RecalculateListPosition()
 		end
 
 		function Dropdown:SetValues(NewValues)
@@ -4556,7 +4567,9 @@ ElementsTable.Dropdown = (function()
 	end
 
 	return Element
-end)()
+end)()						
+
+						
 						
 						
 ElementsTable.Paragraph = (function()
