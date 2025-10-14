@@ -4122,7 +4122,7 @@ ElementsTable.Dropdown = (function()
 
 		local DropdownHolderCanvas = New("Frame", {
 			BackgroundTransparency = 1,
-			Size = UDim2.fromOffset(170, 300),
+			Size = UDim2.fromOffset(170*2, 300),
 			Parent = Library.GUI,
 			Visible = false,
 		}, {
