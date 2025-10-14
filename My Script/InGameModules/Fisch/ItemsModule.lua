@@ -1,4 +1,4 @@
-local module_upvr = {
+local Items_Module = {
     Items = {
         Moneybag = {
             Rarity = "Special";
@@ -768,26 +768,6 @@ local module_upvr = {
         Nuclear = Color3.fromRGB(255, 255, 255);
     };
 }
---[[
-function module_upvr.ToInteger(arg1, arg2) -- Line 932
-    return math.floor(arg2.r * 255) * 65536 + math.floor(arg2.g * 255) * 256 + math.floor(arg2.b * 255)
-end
-function module_upvr.ToHex(arg1, arg2) -- Line 936
-    --[[ Upvalues[1]:
-        [1]: module_upvr (readonly)
-    ]]
-    local any_ToInteger_result1 = module_upvr:ToInteger(arg2)
-    local var159
-    repeat
-        local var160 = any_ToInteger_result1 % 16
-        local tostring_result1 = tostring(var160)
-        if 10 <= var160 then
-            tostring_result1 = ({'A', 'B', 'C', 'D', 'E', 'F'})[1 + var160 - 10]
-        end
-        var159 = var159..tostring_result1
-    until math.floor(any_ToInteger_result1 / 16) <= 0
-    return '#'..string.reverse(var159)
-end
-]]
-return module_upvr
+
+return Items_Module
 
