@@ -431,7 +431,7 @@ do
 
 -- ==================== Main START ====================
 
-local Fishing = Tabs.Market:AddSection("Fishing", nil)
+local Fishing = Tabs.Main:AddSection("Fishing", nil)
 
 local lastCastTime = 0
 local castCooldown = 0.95 -- 1 секунда
@@ -683,7 +683,7 @@ end
 		end
 	end)
 
-local Misc = Tabs.Market:AddSection("Misc", nil)
+local Misc = Tabs.Main:AddSection("Misc", nil)
 	local oldCount = #game:GetService("Players").LocalPlayer.Backpack:GetChildren()
 	local merchantCloneCreated = false
 	local merchantClone = nil
