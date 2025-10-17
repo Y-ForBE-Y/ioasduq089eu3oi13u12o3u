@@ -18,6 +18,67 @@ end)
 local Spears_Module = loadstring(game:HttpGet("https://raw.githubusercontent.com/Y-ForBE-Y/ioasduq089eu3oi13u12o3u/refs/heads/main/My%20Script/InGameModules/Fisch/SpearsModule.lua"))()
 ----------------
 
+--[[
+	local merchantCloneCreated = false
+	local merchantClone = nil
+
+	-- Функция для поиска любого мерчанта
+	function findAnyMerchant()
+		if not workspace.world or not workspace.world.npcs then
+			return nil
+		end
+		
+		for _, npc in pairs(workspace.world.npcs:GetChildren()) do
+			if string.find(string.lower(npc.Name), "merchant") then
+				return npc
+			end
+		end
+		return nil
+	end
+
+	-- Функция для создания ОДНОГО клона
+	function createSingleMerchantClone()
+		if merchantCloneCreated then
+			print("Клон мерчанта уже создан")
+			return
+		end
+		
+		if not workspace:FindFirstChild(game:GetService("Players").LocalPlayer.Name) then
+			print("Игрок не в воркспейсе")
+			return
+		end
+		
+		coroutine.wrap(function()
+			print("Ожидание появления любого мерчанта...")
+			
+			-- Ждем любого мерчанта
+			local merchant = nil
+			while not merchant do
+				merchant = findAnyMerchant()
+				if not merchant then
+					RunService.Heartbeat:Wait()
+				end
+			end
+			
+			print("Найден мерчант: " .. merchant.Name)
+			
+			-- Создаем клон
+			local clone = merchant:Clone()
+			clone.Parent = workspace.world.npcs
+			clone.Name = "AutoSell Merchant Clone"
+			
+			merchantClone = clone
+			merchantCloneCreated = true
+			print("Клон мерчанта создан: " .. clone.Name)
+			clone.HumanoidRootPart.CFrame = CFrame.new(466.1600341796875, 5251.001953125, 224.49708557128906)
+		end)()
+	end
+
+-- Создаем одного клона при запуске
+createSingleMerchantClone()
+--]]
+
+
 -- Variables --
 local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
@@ -743,154 +804,6 @@ local Fishing = Tabs.Main:AddSection("Fishing", nil)
 			end
 		end
 	end)
-
-local Misc = Tabs.Main:AddSection("Misc", nil)
-	local oldCount = #game:GetService("Players").LocalPlayer.Backpack:GetChildren()
-	local merchantCloneCreated = false
-	local merchantClone = nil
-	local isSelling = false
-	local lastSaleTime = 0
-	local saleCooldown = 1
-
-	-- Функция для поиска любого мерчанта
-	function findAnyMerchant()
-		if not workspace.world or not workspace.world.npcs then
-			return nil
-		end
-		
-		for _, npc in pairs(workspace.world.npcs:GetChildren()) do
-			if string.find(string.lower(npc.Name), "merchant") then
-				return npc
-			end
-		end
-		return nil
-	end
-
-	-- Функция для создания ОДНОГО клона
-	function createSingleMerchantClone()
-		if merchantCloneCreated then
-			print("Клон мерчанта уже создан")
-			return
-		end
-		
-		if not workspace:FindFirstChild(game:GetService("Players").LocalPlayer.Name) then
-			print("Игрок не в воркспейсе")
-			return
-		end
-		
-		coroutine.wrap(function()
-			print("Ожидание появления любого мерчанта...")
-			
-			-- Ждем любого мерчанта
-			local merchant = nil
-			while not merchant do
-				merchant = findAnyMerchant()
-				if not merchant then
-					RunService.Heartbeat:Wait()
-				end
-			end
-			
-			print("Найден мерчант: " .. merchant.Name)
-			
-			-- Создаем клон
-			local clone = merchant:Clone()
-			clone.Parent = workspace.world.npcs
-			clone.Name = "AutoSell Merchant Clone"
-			
-			merchantClone = clone
-			merchantCloneCreated = true
-			print("Клон мерчанта создан: " .. clone.Name)
-			clone.HumanoidRootPart.CFrame = CFrame.new(466.1600341796875, 5251.001953125, 224.49708557128906)
-		end)()
-	end
-
-	-- Функция для поиска ТОЛЬКО нашего клона
-	function findMerchant()
-		-- Используем ТОЛЬКО нашего клона
-		if merchantClone and merchantClone.Parent then
-			return merchantClone
-		else
-			return nil
-		end
-	end
-
-	-- Функция продажи
-	function processAutoSell()
-		if isSelling then return end
-		
-		local currentTime = tick()
-		if currentTime - lastSaleTime < saleCooldown then
-			return
-		end
-		
-		local newCount = #game:GetService("Players").LocalPlayer.Backpack:GetChildren()
-		
-		if newCount > oldCount then
-			print("Изменение: " .. oldCount .. " -> " .. newCount)
-			oldCount = newCount
-			
-			-- Ищем ТОЛЬКО нашего клона
-			local targetMerchant = findMerchant()
-			
-			if not targetMerchant then
-				print("Клон мерчанта не найден")
-				return
-			end
-			
-			if not targetMerchant.description then
-				print("Ошибка: у клона нет description")
-				return
-			end
-			
-			isSelling = true
-			lastSaleTime = currentTime
-			
-			local success, errorMsg = pcall(function()
-				local remote = game:GetService("ReplicatedStorage").events.SellAll
-				remote:InvokeServer({
-					["npc"] = targetMerchant,
-					["idle"] = targetMerchant.description.idle,
-					["voice"] = 12
-				})
-				print("Продажа выполнена у клона мерчанта")
-			end)
-			
-			if not success then
-				print("Ошибка при продаже: " .. tostring(errorMsg))
-			end
-			
-			isSelling = false
-		else
-			oldCount = newCount
-		end
-	end
-
-	-- Создаем одного клона при запуске
-	createSingleMerchantClone()
-
-	-- Чекбокс для AutoSell
-	local AutoSell = Tabs.Main:AddToggle("AutoSell", {Title = "AutoSell", Default = false})
-
-	local AutoSellLoop = nil
-	AutoSell:OnChanged(function()
-		if Options.AutoSell.Value == true then
-			AutoSellLoop = RunService.Heartbeat:Connect(function()
-				if Fluent.Unloaded then 
-					AutoSellLoop:Disconnect()
-					return
-				end
-				processAutoSell()
-			end)
-			print("AutoSell включен")
-		else
-			if AutoSellLoop then
-				AutoSellLoop:Disconnect()
-				AutoSellLoop = nil
-			end
-			print("AutoSell выключен")
-		end
-	end)
-
 -- ===================== Main END ====================
 
 
@@ -2402,9 +2315,223 @@ local GUIsSection = Tabs.Misc:AddSection("GUIs", nil)
 
 
 -- ==================== Automatic START ====================
---[[ ]]
-	local Main = Tabs.Automatic:AddSection("Treasure", nil)
 
+local Enchanting = Tabs.Automatic:AddSection("Enchanting", nil)
+	Tabs.Automatic:AddButton({
+		Title = "Enchant Rod",
+		Callback = function()
+			Window:Dialog({
+				Title = "Are you sure?",
+				Content = "After agreeing, the lucky one will be re-enchanted (for this to work, you need to take the relic you need)",
+				Buttons = {
+					{
+						Title = "Confirm",
+						Callback = function()
+							game:GetService("ReplicatedStorage").events.enchantrod:InvokeServer()
+						end
+					},
+					{
+						Title = "Cancel",
+						Callback = function()
+							print("Cancelled")
+						end
+					}
+				}
+			})
+		end
+	})
+
+
+
+local Sell = Tabs.Automatic:AddSection("Sell", nil)
+	local oldCount = #game:GetService("Players").LocalPlayer.Backpack:GetChildren()
+	local isSelling = false
+	local lastSaleTime = 0
+	local saleCooldown = 1
+
+	--[[
+		-- Функция для поиска ТОЛЬКО нашего клона
+		function findMerchant()
+			-- Используем ТОЛЬКО нашего клона
+			if merchantClone and merchantClone.Parent then
+				return merchantClone
+			else
+				return nil
+			end
+		end
+	]]
+	local NewMwthod = true
+
+	local function SellALL()
+		if NewMwthod == false then
+			local success, errorMsg = pcall(function()
+				local remote = game:GetService("ReplicatedStorage").events.SellAll
+				remote:InvokeServer({
+					["npc"] = targetMerchant,
+					["idle"] = targetMerchant.description.idle,
+					["voice"] = 12
+				})
+				print("Продажа выполнена у клона мерчанта")
+			end)
+
+			if not success then
+				print("Ошибка при продаже: " .. tostring(errorMsg))
+			end
+		else
+			--SELL ALL NEW
+			local remote = game:GetService("ReplicatedStorage").events.SellAll
+			local arguments = {}
+			local results = remote:InvokeServer(unpack(arguments))
+		end
+	end
+
+	local function SellOne()
+		if NewMwthod == false then
+			local success, errorMsg = pcall(function()
+				local remote = game:GetService("ReplicatedStorage").events.Sell
+				remote:InvokeServer({
+					["npc"] = targetMerchant,
+					["idle"] = targetMerchant.description.idle,
+					["voice"] = 12
+				})
+				print("Продажа выполнена у клона мерчанта")
+			end)
+
+			if not success then
+				print("Ошибка при продаже: " .. tostring(errorMsg))
+			end
+		else
+			local remote = game:GetService("ReplicatedStorage").events.Sell
+			local arguments = {}
+			local results = remote:InvokeServer(unpack(arguments))
+		end
+	end
+
+	-- Функция продажи
+	function processAutoSell()
+		if isSelling then return end
+		
+		local currentTime = tick()
+		if currentTime - lastSaleTime < saleCooldown then
+			return
+		end
+		
+		local newCount = #game:GetService("Players").LocalPlayer.Backpack:GetChildren()
+		
+		if newCount > oldCount then
+			print("Изменение: " .. oldCount .. " -> " .. newCount)
+			oldCount = newCount
+
+			if NewMwthod == false then
+				-- Ищем ТОЛЬКО нашего клона
+				local targetMerchant = findMerchant()
+						
+				if not targetMerchant then
+						print("Клон мерчанта не найден")
+					return
+				end
+						
+				if not targetMerchant.description then
+					print("Ошибка: у клона нет description")
+					return
+				end
+			end
+
+			isSelling = true
+			lastSaleTime = currentTime
+			
+			SellALL()
+			
+			isSelling = false
+		else
+			oldCount = newCount
+		end
+	end
+
+	-- Чекбокс для AutoSell
+	local AutoSell = Tabs.Automatic:AddToggle("AutoSell", {Title = "AutoSell", Default = false})
+
+	local AutoSellLoop = nil
+	AutoSell:OnChanged(function()
+		if AutoSell.Value == true then
+			AutoSellLoop = RunService.Heartbeat:Connect(function()
+				if Fluent.Unloaded then 
+					AutoSellLoop:Disconnect()
+					return
+				end
+				processAutoSell()
+			end)
+			print("AutoSell включен")
+		else
+			if AutoSellLoop then
+				AutoSellLoop:Disconnect()
+				AutoSellLoop = nil
+			end
+			print("AutoSell выключен")
+		end
+	end)
+
+	-- Чекбокс для WarningMode
+	local WarningMode = Tabs.Automatic:AddToggle("WarningMode", {Title = "Warning Mode", Default = true})
+
+	Tabs.Automatic:AddButton({
+		Title = "Sell in Hand",
+		Callback = function()
+			if WarningMode.Value then
+				Window:Dialog({
+					Title = "Are you sure?",
+					Content = "Are you sure you want to sell fish directly from your hands?",
+					Buttons = {
+						{
+							Title = "Confirm",
+							Callback = function()
+								SellOne()
+							end
+						},
+						{
+							Title = "Cancel", 
+							Callback = function()
+								print("Cancelled")
+							end
+						}
+					}
+				})
+			else
+				SellOne()
+			end
+		end
+	})
+
+	Tabs.Automatic:AddButton({
+		Title = "Sell All",
+		Callback = function()
+			if WarningMode.Value then
+				Window:Dialog({
+					Title = "Are you sure?",
+					Content = "Are you sure you want to sell all the fish in your inventory (the fish will be sold according to your sale settings)",
+					Buttons = {
+						{
+							Title = "Confirm",
+							Callback = function()
+								SellALL()
+							end
+						},
+						{
+							Title = "Cancel",
+							Callback = function()
+								print("Cancelled")
+							end
+						}
+					}
+				})
+			else
+				SellALL()
+			end
+		end
+	})
+
+
+local Treasure = Tabs.Automatic:AddSection("Treasure", nil)
     -- // Treasure Tab // --
     Tabs.Automatic:AddButton({
         Title = "Teleport to Jack Marrow",
@@ -2421,32 +2548,32 @@ local GUIsSection = Tabs.Misc:AddSection("GUIs", nil)
 		wait(0.1)
 	end
 
-local function debugLookAt(target)
-    local camera = workspace.CurrentCamera
-    local currentPos = camera.CFrame.Position
-    
-    -- Находим подходящую часть для прицеливания
-    local targetPart
-    
-    if target:IsA("Model") then
-        targetPart = target:FindFirstChild("Head") or 
-                    target:FindFirstChild("HumanoidRootPart") or
-                    target:FindFirstChildWhichIsA("BasePart")
-    elseif target:IsA("BasePart") then
-        targetPart = target
-    end
-    
-    if targetPart then
-        local targetPos = targetPart.Position
-        -- Используем LookVector для более плавного поворота
-        local lookVector = (targetPos - currentPos).Unit
-        camera.CFrame = CFrame.new(currentPos, currentPos + lookVector)
-        return true
-    else
-        warn("Не найдена подходящая часть у модели: " .. target.Name)
-        return false
-    end
-end
+	local function debugLookAt(target)
+		local camera = workspace.CurrentCamera
+		local currentPos = camera.CFrame.Position
+		
+		-- Находим подходящую часть для прицеливания
+		local targetPart
+		
+		if target:IsA("Model") then
+			targetPart = target:FindFirstChild("Head") or 
+						target:FindFirstChild("HumanoidRootPart") or
+						target:FindFirstChildWhichIsA("BasePart")
+		elseif target:IsA("BasePart") then
+			targetPart = target
+		end
+		
+		if targetPart then
+			local targetPos = targetPart.Position
+			-- Используем LookVector для более плавного поворота
+			local lookVector = (targetPos - currentPos).Unit
+			camera.CFrame = CFrame.new(currentPos, currentPos + lookVector)
+			return true
+		else
+			warn("Не найдена подходящая часть у модели: " .. target.Name)
+			return false
+		end
+	end
 
     Tabs.Automatic:AddButton({
         Title = "Repair Map",
