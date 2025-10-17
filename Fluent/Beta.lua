@@ -4573,27 +4573,107 @@ end)()
 						
 						
 ElementsTable.Paragraph = (function()
-	local Paragraph = {}
-	Paragraph.__index = Paragraph
-	Paragraph.__type = "Paragraph"
+    local Paragraph = {}
+    Paragraph.__index = Paragraph
+    Paragraph.__type = "Paragraph"
 
-	function Paragraph:New(Config)
-		Config.Content = Config.Content or ""
+    function Paragraph:New(Config)
+        Config.Content = Config.Content or ""
 
-		local Paragraph = Components.Element(Config.Title, Config.Content, Paragraph.Container, false, Config)
-		Paragraph.Frame.BackgroundTransparency = 0.92
-		Paragraph.Border.Transparency = 0.6
+        local Paragraph = Components.Element(Config.Title, Config.Content, Paragraph.Container, false, Config)
+        Paragraph.Frame.BackgroundTransparency = 0.92
+        Paragraph.Border.Transparency = 0.6
 
-		Paragraph.SetTitle = Paragraph.SetTitle
-		Paragraph.SetDesc = Paragraph.SetDesc
-		Paragraph.Visible = Paragraph.Visible
-		Paragraph.Elements = Paragraph
+        Paragraph.SetTitle = Paragraph.SetTitle
+        Paragraph.SetDesc = Paragraph.SetDesc
+        Paragraph.Visible = Paragraph.Visible
+        Paragraph.Elements = Paragraph
 
-		return Paragraph
-	end
+        -- Add icon functionality
+        local iconImage
+        if Config.Icon then
+            local resolvedIcon = Config.Icon
+            pcall(function()
+                if Library and Library.GetIcon then
+                    local resolved = Library:GetIcon(Config.Icon)
+                    if resolved then resolvedIcon = resolved end
+                end
+            end)
+            
+            iconImage = New("ImageLabel", {
+                Image = resolvedIcon,
+                Size = UDim2.fromOffset(16, 16),
+                BackgroundTransparency = 1,
+                Position = UDim2.new(0, 10, 0, 13),
+                ThemeTag = {
+                    ImageColor3 = "Text",
+                },
+            })
+            iconImage.Parent = Paragraph.Frame
+            
+            -- Adjust label position to make space for icon
+            Paragraph.LabelHolder.Position = UDim2.fromOffset(34, 0)
+            Paragraph.LabelHolder.Size = UDim2.new(1, -44, 1, 0)
+        end
 
-	return Paragraph
+        -- Add SetIcon method
+        function Paragraph:SetIcon(iconPath)
+            if iconImage then
+                -- Update existing icon
+                local resolvedIcon = iconPath
+                pcall(function()
+                    if Library and Library.GetIcon then
+                        local resolved = Library:GetIcon(iconPath)
+                        if resolved then resolvedIcon = resolved end
+                    end
+                end)
+                iconImage.Image = resolvedIcon
+                iconImage.Visible = true
+                Paragraph.LabelHolder.Position = UDim2.fromOffset(34, 0)
+                Paragraph.LabelHolder.Size = UDim2.new(1, -44, 1, 0)
+            else
+                -- Create new icon
+                local resolvedIcon = iconPath
+                pcall(function()
+                    if Library and Library.GetIcon then
+                        local resolved = Library:GetIcon(iconPath)
+                        if resolved then resolvedIcon = resolved end
+                    end
+                end)
+                
+                iconImage = New("ImageLabel", {
+                    Image = resolvedIcon,
+                    Size = UDim2.fromOffset(16, 16),
+                    BackgroundTransparency = 1,
+                    Position = UDim2.new(0, 10, 0, 13),
+                    ThemeTag = {
+                        ImageColor3 = "Text",
+                    },
+                })
+                iconImage.Parent = Paragraph.Frame
+                
+                -- Adjust label position to make space for icon
+                Paragraph.LabelHolder.Position = UDim2.fromOffset(34, 0)
+                Paragraph.LabelHolder.Size = UDim2.new(1, -44, 1, 0)
+            end
+        end
+
+        -- Add RemoveIcon method for completeness
+        function Paragraph:RemoveIcon()
+            if iconImage then
+                iconImage.Visible = false
+                Paragraph.LabelHolder.Position = UDim2.fromOffset(10, 0)
+                Paragraph.LabelHolder.Size = UDim2.new(1, -28, 1, 0)
+            end
+        end
+
+        return Paragraph
+    end
+
+    return Paragraph
 end)()
+
+
 ElementsTable.Slider = (function()
 	local Element = {}
 	Element.__index = Element
