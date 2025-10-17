@@ -1,4 +1,6 @@
-local Fluent = loadstring(game:HttpGet("https://raw.githubusercontent.com/discoart/FluentPlus/refs/heads/main/Beta.lua"))()
+print("Injecting...")
+
+local Fluent = loadstring(game:HttpGet("https://raw.githubusercontent.com/Y-ForBE-Y/ioasduq089eu3oi13u12o3u/refs/heads/main/Fluent/Beta.lua"))()
 local SaveManager = loadstring(game:HttpGet("https://raw.githubusercontent.com/Y-ForBE-Y/ioasduq089eu3oi13u12o3u/refs/heads/main/Fluent/SaveManager.txt"))()
 local InterfaceManager = loadstring(game:HttpGet("https://raw.githubusercontent.com/dawid-scripts/Fluent/master/Addons/InterfaceManager.lua"))()
 
@@ -368,9 +370,7 @@ local function teleportBobberVerticalToZone()
     return true
 end
 
-
-
-
+print("Modules Loaded")
 
 -- ================================================ GUI ================================================
 local Window = Fluent:CreateWindow({
@@ -431,105 +431,166 @@ do
 
 -- ==================== Main START ====================
 
-local Fishing = Tabs.Main:AddSection("Fishing", nil)
+local Base = Tabs.Main:AddSection("Base", nil)
+	local lastUnequipTime = os.time()
+	local EQUIP_COOLDOWN = 3 -- 3 секунда
+	local wasEquipped = false
 
-local lastCastTime = 0
-local castCooldown = 0.95 -- 1 секунда
-local isCasting = false
-
-local function GetBober()
-	local Rod, isEquip = GetPlayerRod()
-	if not Rod then
-		return nil
-	end
-	
-	local Bober = Rod:FindFirstChild("bobber")
-	if Bober then
-		return Bober
-	else
-		return nil
-	end
-end
-
-local function GetRodValies()
-	local Rod, isEquip = GetPlayerRod(true)
-	if isEquip then
-		return Rod.values
-	else
-		warn("Удочкуа не екиперована")
-	end
-end
-
-local function RodIsCasted()
-	local values = GetRodValies()
-	if values ~= nil then
-		if values.casted.Value == true then
-			return true
-		else
-			return false
+	local function ProccesAutoEquipRod()
+		local Rod, isEquip = GetPlayerRod()
+		
+		-- Обновляем таймер когда удочка переходит из состояния "экипирована" в "не экипирована"
+		if wasEquipped and not isEquip then
+			lastUnequipTime = os.time()
+			print("Удочка убрана, таймер обновлен")
 		end
-	else
-		return true
-	end
-end
-
-local function ProcesAutoCast(InInstantReel)
-	local Rod, isEquip = GetPlayerRod(true)
-
-	if InInstantReel == nil then
-		InInstantReel = false
-	end
-
-	if not InInstantReel then
-		-- Проверяем cooldown и не идет ли уже каст
-		if tick() - lastCastTime < castCooldown or isCasting then
+		
+		-- Сохраняем текущее состояние для следующего кадра
+		wasEquipped = isEquip
+		
+		-- Проверяем кулдаун
+		if os.time() - lastUnequipTime < EQUIP_COOLDOWN then
 			return
 		end
-	end
-
-
-	if isEquip then
-		local Cast = Rod.events.castAsync
-		if not RodIsCasted() then
-			isCasting = true
-			wait(0.2)
-			--print("CastDistance.Value:", Options.CastDistance.Value)
-			Cast:InvokeServer(Options.CastDistance.Value, 1)
-			lastCastTime = tick()
-			
-			-- Добавляем проверку таймаута как в WaitCasting
-			local startTime = tick()
-			local timeout = 1 -- секунда
-			
-			spawn(function()
-				while tick() - startTime < timeout do
-					if RodIsCasted() then
-						print("Удочка успешно скастована: ", Options.CastDistance.Value)
-						isCasting = false
-						return -- Успех, выходим
-					end
-					wait(0.05) -- Короткие интервалы проверки
-				end
-				
-				-- Если дошли сюда - таймаут, выполняем reset
-				--print("Таймаут! Выполняем сброс")
-				if Rod then
-					Rod.events.reset:FireServer()
-					--print("Reset event fired - casting timeout")
-				end
-				isCasting = false
-			end)
-		else
-			-- ДОБАВЛЕНА ПРОВЕРКА НА БОБЕРА
-			-- Если удочка кастована, но бобра нет - вызываем reset
-			if RodIsCasted() and not GetBober() then
-				--print("Удочка кастована, но бобер отсутствует. Выполняем reset")
-				Rod.events.reset:FireServer()
-			end
-			isCasting = false
+		
+		-- Экипируем удочку если она не экипирована и прошел кулдаун
+		if not isEquip then
+			print("Удочка экипирована")
+			Rod.Parent = game:GetService('Players').LocalPlayer.Character
 		end
 	end
-end
+
+	-- Чекбокс для AutoEquipRod
+	local AutoEquipRod = Tabs.Main:AddToggle("AutoEquipRod", {Title = "Auto Equip Rod", Default = false})
+
+	local AutoEquipRodRod = nil
+	AutoEquipRod:OnChanged(function()
+		if Options.AutoEquipRod.Value == true then
+			AutoEquipRodRod = RunService.Heartbeat:Connect(function()
+				if Fluent.Unloaded then 
+					AutoEquipRodRod:Disconnect()
+					return
+				end
+				ProccesAutoEquipRod()
+			end)
+		else
+			if AutoEquipRodRod then
+				AutoEquipRodRod:Disconnect()
+			end
+		end
+	end)
+
+	-- Слайдер скорости
+	local EquipDalay = Tabs.Main:AddSlider("EquipDalay", {
+		Title = "Equip Dalay",
+		Default = 3,
+		Min = 0.5,
+		Max = 10,
+		Rounding = 1,
+		Callback = function(Value)
+			EQUIP_COOLDOWN = tonumber(Value)
+			--print(EQUIP_COOLDOWN)
+		end
+	})
+
+local Fishing = Tabs.Main:AddSection("Fishing", nil)
+	local lastCastTime = 0
+	local castCooldown = 0.95 -- 1 секунда
+	local isCasting = false
+
+	local function GetBober()
+		local Rod, isEquip = GetPlayerRod()
+		if not Rod then
+			return nil
+		end
+		
+		local Bober = Rod:FindFirstChild("bobber")
+		if Bober then
+			return Bober
+		else
+			return nil
+		end
+	end
+
+	local function GetRodValies()
+		local Rod, isEquip = GetPlayerRod(true)
+		if isEquip then
+			return Rod.values
+		else
+			warn("Удочкуа не екиперована")
+		end
+	end
+
+	local function RodIsCasted()
+		local values = GetRodValies()
+		if values ~= nil then
+			if values.casted.Value == true then
+				return true
+			else
+				return false
+			end
+		else
+			return true
+		end
+	end
+
+	local function ProcesAutoCast(InInstantReel)
+		local Rod, isEquip = GetPlayerRod(true)
+
+		if InInstantReel == nil then
+			InInstantReel = false
+		end
+
+		if not InInstantReel then
+			-- Проверяем cooldown и не идет ли уже каст
+			if tick() - lastCastTime < castCooldown or isCasting then
+				return
+			end
+		end
+
+
+		if isEquip then
+			local Cast = Rod.events.castAsync
+			if not RodIsCasted() then
+				isCasting = true
+				wait(0.2)
+				--print("CastDistance.Value:", Options.CastDistance.Value)
+				Cast:InvokeServer(Options.CastDistance.Value, 1)
+				lastCastTime = tick()
+				
+				-- Добавляем проверку таймаута как в WaitCasting
+				local startTime = tick()
+				local timeout = 1 -- секунда
+				
+				spawn(function()
+					while tick() - startTime < timeout do
+						if RodIsCasted() then
+							print("Удочка успешно скастована: ", Options.CastDistance.Value)
+							isCasting = false
+							return -- Успех, выходим
+						end
+						wait(0.05) -- Короткие интервалы проверки
+					end
+					
+					-- Если дошли сюда - таймаут, выполняем reset
+					--print("Таймаут! Выполняем сброс")
+					if Rod then
+						Rod.events.reset:FireServer()
+						--print("Reset event fired - casting timeout")
+					end
+					isCasting = false
+				end)
+			else
+				-- ДОБАВЛЕНА ПРОВЕРКА НА БОБЕРА
+				-- Если удочка кастована, но бобра нет - вызываем reset
+				if RodIsCasted() and not GetBober() then
+					--print("Удочка кастована, но бобер отсутствует. Выполняем reset")
+					Rod.events.reset:FireServer()
+				end
+				isCasting = false
+			end
+		end
+	end
 
 	-- Чекбокс для AutoCast
 	local AutoCast = Tabs.Main:AddToggle("AutoCast", {Title = "AutoCast", Default = false})
@@ -688,53 +749,66 @@ local Misc = Tabs.Main:AddSection("Misc", nil)
 	local merchantCloneCreated = false
 	local merchantClone = nil
 	local isSelling = false
-	local lastSaleTime = 0  -- Время последней продажи
-	local saleCooldown = 1  -- Задержка между продажами в секундах
+	local lastSaleTime = 0
+	local saleCooldown = 1
 
-	-- Функция для создания клона мерчанта
+	-- Функция для поиска любого мерчанта
+	function findAnyMerchant()
+		if not workspace.world or not workspace.world.npcs then
+			return nil
+		end
+		
+		for _, npc in pairs(workspace.world.npcs:GetChildren()) do
+			if string.find(string.lower(npc.Name), "merchant") then
+				return npc
+			end
+		end
+		return nil
+	end
+
+	-- Функция для создания ОДНОГО клона
 	function createSingleMerchantClone()
 		if merchantCloneCreated then
 			print("Клон мерчанта уже создан")
 			return
 		end
 		
-		-- Проверяем, находится ли игрок в воркспейсе
 		if not workspace:FindFirstChild(game:GetService("Players").LocalPlayer.Name) then
-			print("Игрок не в воркспейсе, клон не создан")
+			print("Игрок не в воркспейсе")
 			return
 		end
 		
-		-- Запускаем асинхронное ожидание мерчанта
 		coroutine.wrap(function()
-			print("Ожидание появления мерчанта...")
+			print("Ожидание появления любого мерчанта...")
 			
-			-- Ждем пока появится мерчант
-			while not workspace.world.npcs:FindFirstChild("Marc Merchant") do
-				RunService.Heartbeat:Wait()
+			-- Ждем любого мерчанта
+			local merchant = nil
+			while not merchant do
+				merchant = findAnyMerchant()
+				if not merchant then
+					RunService.Heartbeat:Wait()
+				end
 			end
 			
-			-- Находим мерчанта
-			local merchant = workspace.world.npcs["Marc Merchant"]
+			print("Найден мерчант: " .. merchant.Name)
 			
 			-- Создаем клон
 			local clone = merchant:Clone()
 			clone.Parent = workspace.world.npcs
-			clone.Name = "Marc Merchant Clone"
+			clone.Name = "AutoSell Merchant Clone"
 			
 			merchantClone = clone
 			merchantCloneCreated = true
-			print("Клон мерчанта успешно создан")
+			print("Клон мерчанта создан: " .. clone.Name)
+			clone.HumanoidRootPart.CFrame = CFrame.new(466.1600341796875, 5251.001953125, 224.49708557128906)
 		end)()
 	end
 
-	-- Функция для поиска мерчанта (используется только при включенном AutoSell)
+	-- Функция для поиска ТОЛЬКО нашего клона
 	function findMerchant()
-		-- Сначала пробуем использовать клон, если он создан
+		-- Используем ТОЛЬКО нашего клона
 		if merchantClone and merchantClone.Parent then
 			return merchantClone
-		-- Потом оригинального мерчанта
-		elseif workspace.world.npcs:FindFirstChild("Marc Merchant") then
-			return workspace.world.npcs["Marc Merchant"]
 		else
 			return nil
 		end
@@ -744,7 +818,6 @@ local Misc = Tabs.Main:AddSection("Misc", nil)
 	function processAutoSell()
 		if isSelling then return end
 		
-		-- Проверяем кулдаун
 		local currentTime = tick()
 		if currentTime - lastSaleTime < saleCooldown then
 			return
@@ -752,28 +825,25 @@ local Misc = Tabs.Main:AddSection("Misc", nil)
 		
 		local newCount = #game:GetService("Players").LocalPlayer.Backpack:GetChildren()
 		
-		-- Продаем только когда количество УВЕЛИЧИЛОСЬ
 		if newCount > oldCount then
 			print("Изменение: " .. oldCount .. " -> " .. newCount)
 			oldCount = newCount
 			
-			-- Ищем мерчанта только если включен AutoSell
+			-- Ищем ТОЛЬКО нашего клона
 			local targetMerchant = findMerchant()
 			
 			if not targetMerchant then
-				print("Мерчант не найден")
+				print("Клон мерчанта не найден")
 				return
 			end
 			
-			-- Проверяем наличие необходимых свойств
 			if not targetMerchant.description then
-				print("Ошибка: у мерчанта нет description")
+				print("Ошибка: у клона нет description")
 				return
 			end
 			
-			-- Продажа
 			isSelling = true
-			lastSaleTime = currentTime  -- Обновляем время последней продажи
+			lastSaleTime = currentTime
 			
 			local success, errorMsg = pcall(function()
 				local remote = game:GetService("ReplicatedStorage").events.SellAll
@@ -782,7 +852,7 @@ local Misc = Tabs.Main:AddSection("Misc", nil)
 					["idle"] = targetMerchant.description.idle,
 					["voice"] = 12
 				})
-				print("Продажа выполнена успешно")
+				print("Продажа выполнена у клона мерчанта")
 			end)
 			
 			if not success then
@@ -791,12 +861,11 @@ local Misc = Tabs.Main:AddSection("Misc", nil)
 			
 			isSelling = false
 		else
-			-- Обновляем счетчик, если количество уменьшилось или не изменилось
 			oldCount = newCount
 		end
 	end
 
-	-- Создаем клон при загрузке скрипта (если игрок в воркспейсе)
+	-- Создаем одного клона при запуске
 	createSingleMerchantClone()
 
 	-- Чекбокс для AutoSell
@@ -826,19 +895,18 @@ local Misc = Tabs.Main:AddSection("Misc", nil)
 
 
 -- ==================== Market START ====================
---[[ ]]
-
---local Rods_Module = require(game:GetService("ReplicatedStorage").shared.modules.library.rods)
-local Rods_Module = loadstring(game:HttpGet("https://raw.githubusercontent.com/Y-ForBE-Y/ioasduq089eu3oi13u12o3u/refs/heads/main/My%20Script/InGameModules/Fisch/RodsModule.luau"))()
---local Fish_Module = require(game:GetService("ReplicatedStorage").shared.modules.library.fish)
-local Fish_Module = loadstring(game:HttpGet("https://raw.githubusercontent.com/Y-ForBE-Y/ioasduq089eu3oi13u12o3u/refs/heads/main/My%20Script/InGameModules/Fisch/FishModule/Fish.lua"))()
---local Items_Module = require(game:GetService("ReplicatedStorage").shared.modules.library.items)
-local success, Items_Module = pcall(function()
-    return loadstring(game:HttpGet("https://raw.githubusercontent.com/Y-ForBE-Y/ioasduq089eu3oi13u12o3u/refs/heads/main/My%20Script/InGameModules/Fisch/ItemsModule.luau"))()
-end)
---local Spears_Module = require(game:GetService("ReplicatedStorage").shared.modules.library.spears)
-local Spears_Module = loadstring(game:HttpGet("https://raw.githubusercontent.com/Y-ForBE-Y/ioasduq089eu3oi13u12o3u/refs/heads/main/My%20Script/InGameModules/Fisch/SpearsModule.lua"))()
-
+--[[
+	--local Rods_Module = require(game:GetService("ReplicatedStorage").shared.modules.library.rods)
+	local Rods_Module = loadstring(game:HttpGet("https://raw.githubusercontent.com/Y-ForBE-Y/ioasduq089eu3oi13u12o3u/refs/heads/main/My%20Script/InGameModules/Fisch/RodsModule.luau"))()
+	--local Fish_Module = require(game:GetService("ReplicatedStorage").shared.modules.library.fish)
+	local Fish_Module = loadstring(game:HttpGet("https://raw.githubusercontent.com/Y-ForBE-Y/ioasduq089eu3oi13u12o3u/refs/heads/main/My%20Script/InGameModules/Fisch/FishModule/Fish.lua"))()
+	--local Items_Module = require(game:GetService("ReplicatedStorage").shared.modules.library.items)
+	local success, Items_Module = pcall(function()
+		return loadstring(game:HttpGet("https://raw.githubusercontent.com/Y-ForBE-Y/ioasduq089eu3oi13u12o3u/refs/heads/main/My%20Script/InGameModules/Fisch/ItemsModule.luau"))()
+	end)
+	--local Spears_Module = require(game:GetService("ReplicatedStorage").shared.modules.library.spears)
+	local Spears_Module = loadstring(game:HttpGet("https://raw.githubusercontent.com/Y-ForBE-Y/ioasduq089eu3oi13u12o3u/refs/heads/main/My%20Script/InGameModules/Fisch/SpearsModule.lua"))()
+]]
 local Rods = Tabs.Market:AddSection("Rods", nil)
 	local Rods = {"None",}
 	local RodsStats = {}
@@ -853,6 +921,7 @@ local Rods = Tabs.Market:AddSection("Rods", nil)
 			local Resilience = rodData.Resilience
 			local Control = rodData.Control
 			local Strength = rodData.Strength
+			local Icon = rodData.Icon
 
 			-- Если цена не число или равна math.huge, то заменяем на nil
 			if type(price) ~= "number" or price == math.huge then
@@ -877,7 +946,8 @@ local Rods = Tabs.Market:AddSection("Rods", nil)
 					Resilience = Resilience,
 					Strength = Strength,
 					Control = Control,
-					Price = price
+					Price = price,
+					Icon = Icon,
 				}
 			end
 		end
@@ -910,10 +980,22 @@ local Rods = Tabs.Market:AddSection("Rods", nil)
 							"Price: " .. RodsStats[Value].Price .. "C$"
 
 			Paragraph:SetTitle("Rod: ".. Value)
+			Paragraph:SetIcon(RodsStats[Value].Icon, "title-right")    -- Справа от заголовка
+
+			-- Различные варианты позиционирования:
+			--Paragraph:SetIcon("rbxassetid://70848292796768", "left")           -- Слева от всего контента
+			--Paragraph:SetIcon("rbxassetid://70848292796768", "right")          -- Справа от всего контента
+			--Paragraph:SetIcon("rbxassetid://70848292796768", "title-left")     -- Слева от заголовка
+			
+			--Paragraph:SetIcon("rbxassetid://70848292796768", "center-top")     -- По центру сверху
+			--Paragraph:SetIcon("rbxassetid://70848292796768", "center-bottom")  -- По центру снизу
+
+			--Paragraph:SetIcon("rbxassetid://70848292796768")
 			Paragraph:SetDesc(infoText)
 		else
 			Paragraph:SetTitle("Rod Information")
 			Paragraph:SetDesc("Select a Rod to see details")
+			Paragraph:RemoveIcon()  -- Полностью убираем иконку
 		end
 	end
 
@@ -1072,12 +1154,19 @@ local Items = Tabs.Market:AddSection("Items", nil)
 			if Dropdown.Value ~= nil and Dropdown.Value ~= "None" then
 				Window:Dialog({
 					Title = "You want to buy it?",
-					Content = "(if you already have this fishing rod, the money will be debited again)",
+					Content = "(if you already have this Item, the money will be debited again)",
 					Buttons = {
 						{
 							Title = "Confirm",
 							Callback = function()
-								BuyItem(Dropdown.Value, tonumber(CountInput.Value) or 1)
+								local OnlyOne = ItemsOnlyOne[Dropdown.Value] or false
+								local Count = 1
+								if OnlyOne then
+									Count = 1
+								else
+									Count = tonumber(CountInput.Value) or 1
+								end
+								BuyItem(Dropdown.Value, Count)
 							end
 						},
 						{
@@ -1191,7 +1280,7 @@ local Fishes = Tabs.Market:AddSection("Fishes", nil)
 			if Dropdown.Value ~= nil and Dropdown.Value ~= "None" then
 				Window:Dialog({
 					Title = "You want to buy it?",
-					Content = "(if you already have this fishing rod, the money will be debited again)",
+					Content = "(if you already have this Fish, the money will be debited again)",
 					Buttons = {
 						{
 							Title = "Confirm",
@@ -1292,7 +1381,7 @@ local Spears = Tabs.Market:AddSection("Spears", nil)
 			if Dropdown.Value ~= nil and Dropdown.Value ~= "None" then
 				Window:Dialog({
 					Title = "You want to buy it?",
-					Content = "(if you already have this fishing rod, the money will be debited again)",
+					Content = "(if you already have this Spear, the money will be debited again)",
 					Buttons = {
 						{
 							Title = "Confirm",
@@ -1835,7 +1924,415 @@ local Merlin = Tabs.Market:AddSection("Merlin", nil)
 -- ===================== Payer END =====================
 
 -- ==================== Misc START ====================
-	local GUIsSection = Tabs.Misc:AddSection("GUIs", nil)
+local Player = Tabs.Misc:AddSection("Player", nil)
+
+    local DisableOxigenSwim = Tabs.Misc:AddToggle("DisableOxigenSwim", {Title = "DisableOxigenSwim",Default = false })
+    DisableOxigenSwim:OnChanged(function()
+		game.Players.LocalPlayer.Character.Resources.oxygen.Enabled = not DisableOxigenSwim.Value
+    end)
+
+    local DisableOxigenPeaks = Tabs.Misc:AddToggle("DisableOxigenPeaks", {Title = "DisableOxigenPeaks",Default = false })
+    DisableOxigenPeaks:OnChanged(function()
+		game.Players.LocalPlayer.Character.Resources["oxygen(peaks)"].Enabled = not DisableOxigenPeaks.Value
+    end)
+
+    local DisableOxigenRefactor = Tabs.Misc:AddToggle("DisableOxigenRefactor", {Title = "DisableOxigenRefactor",Default = false })
+    DisableOxigenRefactor:OnChanged(function()
+		game.Players.LocalPlayer.Character.Resources.oxygenRefactor_WIP.Enabled = not DisableOxigenRefactor.Value
+    end)
+
+
+    local DisableTemperaturePeaks = Tabs.Misc:AddToggle("DisableTemperaturePeaks", {Title = "DisableTemperaturePeaks",Default = false })
+    DisableTemperaturePeaks:OnChanged(function()
+		game.Players.LocalPlayer.Character.Resources.temperature.Enabled = not DisableTemperaturePeaks.Value
+    end)
+
+    local DisableTemperatureHeat = Tabs.Misc:AddToggle("DisableTemperatureHeat", {Title = "DisableTemperatureHeat",Default = false })
+    DisableTemperatureHeat:OnChanged(function()
+		game.Players.LocalPlayer.Character.Resources["temperature(heat)"].Enabled = not DisableTemperatureHeat.Value
+    end)
+
+local Bypass = Tabs.Misc:AddSection("Bypass", nil)
+
+	local BypassGps = Tabs.Misc:AddToggle("BypassGps", {Title = "Bypass GPS", Default = false})
+
+	local RunService = game:GetService("RunService")
+	local Players = game:GetService("Players")
+	local ReplicatedStorage = game:GetService("ReplicatedStorage")
+
+	local LocalPlayer = Players.LocalPlayer
+
+	local XyzClone = nil
+	local BypassGpsLoop = nil
+
+	local GetPosition = rawget(_G, "GetPosition") or function()
+		local char = LocalPlayer.Character
+		if char and char:FindFirstChild("HumanoidRootPart") then
+			local p = char.HumanoidRootPart.Position
+			return {p.X, p.Y, p.Z}
+		end
+		return {0,0,0}
+	end
+
+	local ExportValue = rawget(_G, "ExportValue") or function(v)
+		return tostring(math.floor(tonumber(v) or 0))
+	end
+
+	local function GPSSpoof(state)
+		if state then
+			if XyzClone then return end
+
+			XyzClone = ReplicatedStorage.resources.items.items.GPS.GPS.gpsMain.xyz:Clone()
+
+			local container = LocalPlayer.PlayerGui.backpack.hotbar.Folder.Frame
+			XyzClone.Parent = container
+
+			local Pos = GetPosition()
+			local StringInput = string.format("%s, %s, %s", ExportValue(Pos[1]), ExportValue(Pos[2]), ExportValue(Pos[3]))
+			XyzClone.Text = "<font color='#ff4949'>X</font><font color = '#a3ff81'>Y</font><font color = '#626aff'>Z</font>: "..StringInput
+
+			BypassGpsLoop = RunService.Heartbeat:Connect(function()
+				if Fluent.Unloaded then 
+					if BypassGpsLoop then
+						BypassGpsLoop:Disconnect()
+					end
+					if XyzClone then
+						XyzClone:Destroy()
+						XyzClone = nil
+					end
+					return
+				end
+				local Pos = GetPosition()
+				local StringInput = string.format("%s, %s, %s", ExportValue(Pos[1]), ExportValue(Pos[2]), ExportValue(Pos[3]))
+				XyzClone.Text = "<font color='#ff4949'>X</font><font color = '#a3ff81'>Y</font><font color = '#626aff'>Z</font>: "..StringInput
+			end)
+		else
+			if XyzClone then
+				XyzClone:Destroy()
+				XyzClone = nil
+			end
+			if BypassGpsLoop then
+				BypassGpsLoop:Disconnect()
+				BypassGpsLoop = nil
+			end
+		end
+	end
+
+	-- Обработчик чекбокса
+	BypassGps:OnChanged(function()
+		if Options.BypassGps.Value == true then
+			GPSSpoof(true)
+		else
+			GPSSpoof(false)
+		end
+	end)
+
+	-- Обработчик выхода из игры
+	game:GetService("Players").PlayerRemoving:Connect(function(player)
+		if player == LocalPlayer then
+			GPSSpoof(false)
+		end
+	end)
+
+
+
+
+	local EnableBaypassRadar = Tabs.Misc:AddToggle("EnableBaypassRadar", {Title = "Enable Baypas Radar", Default = false})
+
+	local function RadarSpoof()
+		-- Включаем все теги радара
+		for _, v in pairs(game:GetService("CollectionService"):GetTagged("radarTag")) do
+			if v:IsA("BillboardGui") or v:IsA("SurfaceGui") then
+				v.Enabled = Options.EnableBaypassRadar.Value  -- Исправлено: используем Options
+			end
+		end
+		for _, v in pairs(game:GetService("CollectionService"):GetTagged("radarTagWithTimer")) do
+			if v:IsA("BillboardGui") or v:IsA("SurfaceGui") then
+				v.Enabled = Options.EnableBaypassRadar.Value  -- Исправлено: используем Options
+			end
+		end
+	end
+
+	EnableBaypassRadar:OnChanged(function()
+		RadarSpoof()
+	end)
+
+	local CustomRadarDistance = Tabs.Misc:AddSlider("CustomRadarDistance", {
+		Title = "Custom Distance",
+		Description = "Set custom Radar Distance",
+		Default = 9999,
+		Min = 0,
+		Max = 9999,
+		Rounding = 2,
+		Callback = function(Value) end
+	})
+
+	local BaypassRadarDistance = Tabs.Misc:AddToggle("BaypassRadarDistance", {Title = "Baypas Radar Distance", Default = false})
+
+	local DistSoofEnable = false
+	local OriginalValue = {}
+
+	-- Функция для сохранения оригинальных дистанций ВСЕХ радаров
+	local function SaveOriginalDistances()
+		OriginalValue = {} -- Очищаем таблицу
+		for _, zone in pairs(workspace.zones.fishing:GetChildren()) do
+			for _, radarName in ipairs({"radar1", "radar2"}) do
+				local radar = zone:FindFirstChild(radarName)
+				if radar and radar:IsA("BillboardGui") then
+					-- Сохраняем оригинальное значение дистанции
+					OriginalValue[radar] = radar.MaxDistance
+				end
+			end
+		end
+	end
+
+	-- Функция для восстановления оригинальных дистанций ВСЕХ радаров
+	local function RestoreOriginalDistances()
+		for radar, originalMaxDistance in pairs(OriginalValue) do
+			if radar and radar.Parent then
+				radar.MaxDistance = originalMaxDistance
+			end
+		end
+		-- Также восстанавливаем все текущие радары на случай если какие-то пропущены
+		for _, zone in pairs(workspace.zones.fishing:GetChildren()) do
+			for _, radarName in ipairs({"radar1", "radar2"}) do
+				local radar = zone:FindFirstChild(radarName)
+				if radar and radar:IsA("BillboardGui") and not OriginalValue[radar] then
+					radar.MaxDistance = 250 -- Стандартное значение по умолчанию
+				end
+			end
+		end
+	end
+
+	local function ChangeRadarDist(Value)
+		if DistSoofEnable == false then
+			-- Сохраняем оригинальные значения при первом включении
+			SaveOriginalDistances()
+			DistSoofEnable = true
+		end
+		
+		-- Устанавливаем новое значение для всех радаров
+		for _, zone in pairs(workspace.zones.fishing:GetChildren()) do
+			for _, radarName in ipairs({"radar1", "radar2"}) do
+				local radar = zone:FindFirstChild(radarName)
+				if radar and radar:IsA("BillboardGui") then
+					radar.MaxDistance = Value
+				end
+			end
+		end
+	end
+
+	local BaypassRadarDistanceLoop = nil
+	BaypassRadarDistance:OnChanged(function()
+		if Options.BaypassRadarDistance.Value == true then
+			-- Сразу сохраняем оригинальные дистанции при включении
+			SaveOriginalDistances()
+			
+			BaypassRadarDistanceLoop = RunService.Heartbeat:Connect(function()
+				if Fluent.Unloaded then 
+					if BaypassRadarDistanceLoop then
+						BaypassRadarDistanceLoop:Disconnect()
+					end
+					RestoreOriginalDistances() -- Восстанавливаем при выгрузке
+					return
+				end
+				ChangeRadarDist(Options.CustomRadarDistance.Value)
+			end)
+		else
+			if BaypassRadarDistanceLoop then
+				BaypassRadarDistanceLoop:Disconnect()
+			end
+			DistSoofEnable = false
+			RestoreOriginalDistances()
+			OriginalValue = {}
+		end
+	end)
+
+local NormolizeRadarBilbordSize = Tabs.Misc:AddToggle("NormolizeRadarBilbordSize", {Title = "Normolize Radar Bilbord Size", Default = false})
+
+local SizeSoofEnable = false
+local OriginalSizeValue = {}
+local MIN_DISTANCE = 500   -- Дистанция, внутри которой размер всегда дефолтный
+local MAX_DISTANCE = 3500  -- Дистанция, за которой размер увеличивается в 5 раз
+local MAX_MULTIPLIER = 10   -- Максимальный множитель
+
+-- Функция для сохранения оригинальных размеров ВСЕХ радаров
+local function SaveOriginalSizes()
+    OriginalSizeValue = {}
+    for _, zone in pairs(workspace.zones.fishing:GetChildren()) do
+        for _, radarName in ipairs({"radar1", "radar2"}) do
+            local radar = zone:FindFirstChild(radarName)
+            if radar and radar:IsA("BillboardGui") then
+                -- Сохраняем индивидуальные размеры каждого радара
+                OriginalSizeValue[radar] = {
+                    Size = radar.Size,
+                    SizeOffset = radar.SizeOffset
+                }
+            end
+        end
+    end
+end
+
+-- Функция для восстановления оригинальных размеров ВСЕХ радаров
+local function RestoreOriginalSizes()
+    for radar, originalData in pairs(OriginalSizeValue) do
+        if radar and radar.Parent then
+            -- Восстанавливаем индивидуальные размеры каждого радара
+            radar.Size = originalData.Size
+            radar.SizeOffset = originalData.SizeOffset
+        end
+    end
+end
+
+local function GetDistanceFromPlayer(position)
+    local player = Players.LocalPlayer
+    if not player or not player.Character or not player.Character:FindFirstChild("HumanoidRootPart") then
+        return math.huge
+    end
+    
+    local playerPosition = player.Character.HumanoidRootPart.Position
+    return (position - playerPosition).Magnitude
+end
+
+local function CalculateSizeMultiplier(distance)
+    if distance <= MIN_DISTANCE then
+        return 1  -- Дефолтный размер вблизи
+    elseif distance >= MAX_DISTANCE then
+        return MAX_MULTIPLIER  -- Максимальный множитель на большой дистанции
+    else
+        -- Плавное изменение множителя от 1 до MAX_MULTIPLIER
+        local normalizedDistance = (distance - MIN_DISTANCE) / (MAX_DISTANCE - MIN_DISTANCE)
+        return 1 + (MAX_MULTIPLIER - 1) * normalizedDistance
+    end
+end
+
+local function UpdateRadarSizes()
+    if SizeSoofEnable == false then
+        SaveOriginalSizes()
+        SizeSoofEnable = true
+    end
+    
+    -- Обновляем размеры всех радаров на основе их индивидуальных оригинальных размеров
+    for radar, originalData in pairs(OriginalSizeValue) do
+        if radar and radar.Parent then
+            local zone = radar.Parent
+            local distance = GetDistanceFromPlayer(zone.Position)
+            local multiplier = CalculateSizeMultiplier(distance)
+            
+            -- Применяем множитель к индивидуальному оригинальному размеру
+            local originalSize = originalData.Size
+            local newX = originalSize.X.Scale * multiplier
+            local newY = originalSize.Y.Scale * multiplier
+            
+            radar.Size = UDim2.new(newX, originalSize.X.Offset * multiplier, newY, originalSize.Y.Offset * multiplier)
+            radar.SizeOffset = Vector2.new(0, 0)
+        end
+    end
+end
+
+local BaypassRadarSizeLoop = nil
+NormolizeRadarBilbordSize:OnChanged(function()
+    if Options.NormolizeRadarBilbordSize.Value == true then
+        SaveOriginalSizes()
+        
+        BaypassRadarSizeLoop = RunService.Heartbeat:Connect(function()
+            if Fluent.Unloaded then 
+                if BaypassRadarSizeLoop then
+                    BaypassRadarSizeLoop:Disconnect()
+                end
+                RestoreOriginalSizes()
+                return
+            end
+            UpdateRadarSizes()
+        end)
+    else
+        if BaypassRadarSizeLoop then
+            BaypassRadarSizeLoop:Disconnect()
+        end
+        SizeSoofEnable = false
+        RestoreOriginalSizes()
+        OriginalSizeValue = {}
+    end
+end)
+
+-- Обработчик выхода из игры для гарантии восстановления
+game:GetService("Players").PlayerRemoving:Connect(function(player)
+    if player == Players.LocalPlayer then
+        -- Восстанавливаем размеры
+        RestoreOriginalSizes()
+        
+        -- Отключаем все loops
+        if BaypassRadarDistanceLoop then
+            BaypassRadarDistanceLoop:Disconnect()
+        end
+        if BaypassRadarSizeLoop then
+            BaypassRadarSizeLoop:Disconnect()
+        end
+    end
+end)
+	--[[
+		-- Также добавим обработчик выгрузки для гарантии восстановления размеров
+		game:GetService("Players").PlayerRemoving:Connect(function(player)
+			if player == Players.LocalPlayer then
+				if BaypassRadarSizeLoop then
+					BaypassRadarSizeLoop:Disconnect()
+				end
+				RestoreOriginalSizes()
+			end
+		end)
+	]]
+
+local Misc = Tabs.Misc:AddSection("Misc", nil)
+    Tabs.Misc:AddButton({
+        Title = "Discover all location",
+        Description = "", --Make your character sit",
+        Callback = function()
+			for k, v in pairs(workspace.zones.player:GetChildren()) do
+				print(v.Name)
+				game:GetService("ReplicatedStorage").events.discoverlocation:FireServer(v.Name)
+			end
+        end
+    })
+
+	local function ActivetePromo() 
+		local argsList = loadstring(game:HttpGet("https://raw.githubusercontent.com/Y-ForBE-Y/ioasduq089eu3oi13u12o3u/refs/heads/main/Fisch/promo"))()
+		for _, args in ipairs(argsList) do
+			game:GetService("ReplicatedStorage"):WaitForChild("events"):WaitForChild("runcode"):FireServer(unpack(args))
+			print(tostring(unpack(args)))
+		end
+	end
+
+    Tabs.Misc:AddButton({
+        Title = "Activate all promocodes",
+        Description = "", --Make your character sit",
+        Callback = function()
+			ActivetePromo() 
+        end
+    })
+
+	-- Чекбокс для AntiAFKTeg
+	local AntiAFKTeg = Tabs.Misc:AddToggle("AntiAFKTeg", {Title = "AntiAFKTeg", Default = false})
+
+	local AntiAFKTegLoop = nil
+	AntiAFKTeg:OnChanged(function()
+		if Options.AntiAFKTeg.Value == true then
+			AntiAFKTegLoop = RunService.Heartbeat:Connect(function()
+				if Fluent.Unloaded then 
+					AntiAFKTegLoop:Disconnect()
+					return
+				end
+				if game.Players.LocalPlayer.Character:FindFirstChild("afk") then
+					game:GetService("ReplicatedStorage").events.afk:FireServer(false)
+				end
+			end)
+		else
+			if AntiAFKTegLoop then
+				AntiAFKTegLoop:Disconnect()
+			end
+		end
+	end)
+
+local GUIsSection = Tabs.Misc:AddSection("GUIs", nil)
 	Tabs.Misc:AddButton({
         Title = "Black Market",
         Description = "Opening BlackMarket GUI",
@@ -1862,6 +2359,14 @@ local Merlin = Tabs.Market:AddSection("Merlin", nil)
     })
 
 	Tabs.Misc:AddButton({
+        Title = "FriendQuests",
+        Description = "Opening FriendQuests GUI",
+        Callback = function()
+            game:GetService("Players").LocalPlayer.PlayerGui.Friends.FriendQuests.Visible = not game:GetService("Players").LocalPlayer.PlayerGui.Friends.FriendQuests.Visible
+        end
+    })
+
+	Tabs.Misc:AddButton({
         Title = "Aquarium",
         Description = "Opening Aquarium GUI",
         Callback = function()
@@ -1870,19 +2375,18 @@ local Merlin = Tabs.Market:AddSection("Merlin", nil)
     })
 
 	Tabs.Misc:AddButton({
-        Title = "Boat PopUP",
-        Description = "Opening Boat PopUP GUI",
-        Callback = function()
-			game:GetService("Players").LocalPlayer.PlayerGui.hud.safezone.BoatPopup.Visible = not game:GetService("Players").LocalPlayer.PlayerGui.hud.safezone.BoatPopup.Visible
-        end
-    })
-
-
-	Tabs.Misc:AddButton({
         Title = "Spear Crafting",
         Description = "Opening Spear Craft GUI",
         Callback = function()
             game:GetService("Players").LocalPlayer.PlayerGui.hud.safezone.SpearCrafting.Visible = not game:GetService("Players").LocalPlayer.PlayerGui.hud.safezone.SpearCrafting.Visible
+        end
+    })
+
+	Tabs.Misc:AddButton({
+        Title = "Boat PopUP",
+        Description = "Opening Boat PopUP GUI",
+        Callback = function()
+			game:GetService("Players").LocalPlayer.PlayerGui.hud.safezone.BoatPopup.Visible = not game:GetService("Players").LocalPlayer.PlayerGui.hud.safezone.BoatPopup.Visible
         end
     })
 
@@ -2120,7 +2624,9 @@ local locations = {
     ["Luminescent Cavern"] = CFrame.new(-1008.2897338867188, -336.3400573730469, -4076.955078125),
     ["Lost Jungles"] = CFrame.new(-2710.125, 150.24826049804688, -2051.906494140625),
     ["Crimson Cavern"] = CFrame.new(-1031.912109375, -354.1904296875, -4851.046875),
-    ["Scylla"] = CFrame.new(-2348.7109375, -11183.4892578125, 7071.1806640625)
+    ["Scylla"] = CFrame.new(-2348.7109375, -11183.4892578125, 7071.1806640625),
+	["Kraken Pool"] = CFrame.new(-4301.30712890625, -1001.360107421875, 2004.2734375),
+	["Mossjaw Hunt"] = CFrame.new(-4909.92333984375, -1790.561279296875, -10162.6962890625),
 }
 
 -- Функция для телепортации к локации
@@ -2170,55 +2676,67 @@ local locationDropdown = Tabs.Teleport:AddDropdown("LocationDropdown", {
     Default = nil, -- Устанавливаем nil по умолчанию
 })
 
-locationDropdown:OnChanged(function(Value)
-    teleportToLocation(Value)
-end)
-
 -- Кнопка для копирования всех координат
 Tabs.Teleport:AddButton({
-    Title = "Copy All Coords",
-    Description = "Copy all location coordinates to clipboard",
+    Title = "Teleport to Select",
+    Description = "Teleporting you to selected location",
     Callback = function()
-        local coordsText = ""
-        for locationName, cf in pairs(locations) do
-            local position = cf.Position
-            coordsText = coordsText .. string.format("%s: Vector3.new(%.2f, %.2f, %.2f)\n", 
-                locationName, position.X, position.Y, position.Z)
-        end
-        setclipboard(coordsText)
-        Fluent:Notify({
-            Title = "Coords Copied",
-            Content = "All location coordinates copied to clipboard!",
-            Duration = 5
-        })
+		teleportToLocation(locationDropdown.Value)
     end
 })
 
+
+--[[
+	-- Кнопка для копирования всех координат
+	Tabs.Teleport:AddButton({
+		Title = "Copy All Coords",
+		Description = "Copy all location coordinates to clipboard",
+		Callback = function()
+			local coordsText = ""
+			for locationName, cf in pairs(locations) do
+				local position = cf.Position
+				coordsText = coordsText .. string.format("%s: Vector3.new(%.2f, %.2f, %.2f)\n", 
+					locationName, position.X, position.Y, position.Z)
+			end
+			setclipboard(coordsText)
+			Fluent:Notify({
+				Title = "Coords Copied",
+				Content = "All location coordinates copied to clipboard!",
+				Duration = 5
+			})
+		end
+	})
+]]
+
 local Old_pos
+local inSavePlase = false
 Tabs.Teleport:AddButton({
     Title = "Create Safe Place",
     Description = "Create a safe zone high in the sky",
     Callback = function()
-        local Players = game:GetService("Players")
-        local LocalPlayer = Players.LocalPlayer
-        local playerName = LocalPlayer.Name
+		if not inSavePlase then
+			inSavePlase = true
+			local Players = game:GetService("Players")
+			local LocalPlayer = Players.LocalPlayer
+			local playerName = LocalPlayer.Name
 
-        Old_pos = workspace[playerName].HumanoidRootPart.Position
+			Old_pos = workspace[playerName].HumanoidRootPart.Position
 
-        local targetCharacter = workspace:WaitForChild(playerName)
-        local HumanoidRootPart = targetCharacter:WaitForChild("HumanoidRootPart")
+			local targetCharacter = workspace:WaitForChild(playerName)
+			local HumanoidRootPart = targetCharacter:WaitForChild("HumanoidRootPart")
 
-        local currentRotation = HumanoidRootPart.CFrame.Rotation
+			local currentRotation = HumanoidRootPart.CFrame.Rotation
 
-        local SafeZone = Instance.new("Part")
-        SafeZone.Size = Vector3.new(30, 1, 30)
-        SafeZone.Position = Vector3.new(math.random(-2000,2000), math.random(50000,90000), math.random(-2000,2000))
-        SafeZone.Anchored = true
-        SafeZone.BrickColor = BrickColor.new("Bright purple")
-        SafeZone.Material = Enum.Material.ForceField
-        SafeZone.Parent = game.Workspace
-        
-        HumanoidRootPart.CFrame = CFrame.new(SafeZone.Position + Vector3.new(0, 5, 0)) * currentRotation
+			local SafeZone = Instance.new("Part")
+			SafeZone.Size = Vector3.new(30, 1, 30)
+			SafeZone.Position = Vector3.new(math.random(-2000,2000), math.random(50000,90000), math.random(-2000,2000))
+			SafeZone.Anchored = true
+			SafeZone.BrickColor = BrickColor.new("Bright purple")
+			SafeZone.Material = Enum.Material.ForceField
+			SafeZone.Parent = game.Workspace
+			
+			HumanoidRootPart.CFrame = CFrame.new(SafeZone.Position + Vector3.new(0, 5, 0)) * currentRotation
+		end
     end
 })
 
@@ -2230,8 +2748,17 @@ Tabs.Teleport:AddButton({
             local character = workspace[game:GetService("Players").LocalPlayer.Name]
             local humanoidRootPart = character:WaitForChild("HumanoidRootPart")
             humanoidRootPart.CFrame = CFrame.new(Old_pos) * humanoidRootPart.CFrame.Rotation
+			inSavePlase = false
         end
     end
+})
+
+local CopyXYZType = Tabs.Teleport:AddDropdown("CopyXYZType", {
+    Title = "Copy XYZ Type", 
+    Values = {"CFrame Script", "Coordinates Only"},
+    Multi = false,
+    Search = true,
+    Default = 1,
 })
 
 Tabs.Teleport:AddButton({
@@ -2239,10 +2766,16 @@ Tabs.Teleport:AddButton({
     Description = "Copy position to clipboard",
     Callback = function()
         local XYZ = tostring(game.Players.LocalPlayer.Character.HumanoidRootPart.Position)
-        setclipboard("game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(" .. XYZ .. ")")
+
+		if CopyXYZType.Value == "CFrame Script" then
+			setclipboard("game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(" .. XYZ .. ")")
+		else
+			setclipboard(XYZ)
+		end
+
         Fluent:Notify({
-            Title = "Position",
-            Content = "XYZ coordinates copied!",
+            Title = "Copied to clipbord",
+            Content = "XYZ " .. tostring(CopyXYZType.Value) .. " copied!",
             Duration = 3
         })
     end
@@ -2372,33 +2905,6 @@ Tabs.Teleport:AddButton({
 	local Misc = Tabs.Debug:AddSection("Misc", nil)
 
     Tabs.Debug:AddButton({
-        Title = "Discover all location",
-        Description = "", --Make your character sit",
-        Callback = function()
-			for k, v in pairs(workspace.zones.player:GetChildren()) do
-				print(v.Name)
-				game:GetService("ReplicatedStorage").events.discoverlocation:FireServer(v.Name)
-			end
-        end
-    })
-
-	local function ActivetePromo() 
-		local argsList = loadstring(game:HttpGet("https://raw.githubusercontent.com/Y-ForBE-Y/ioasduq089eu3oi13u12o3u/refs/heads/main/Fisch/promo"))()
-		for _, args in ipairs(argsList) do
-			game:GetService("ReplicatedStorage"):WaitForChild("events"):WaitForChild("runcode"):FireServer(unpack(args))
-			print(tostring(unpack(args)))
-		end
-	end
-
-    Tabs.Debug:AddButton({
-        Title = "Activate all promocodes",
-        Description = "", --Make your character sit",
-        Callback = function()
-			ActivetePromo() 
-        end
-    })
-
-    Tabs.Debug:AddButton({
         Title = "Title Spam",
         Description = "", --Make your character sit",
         Callback = function()
@@ -2465,35 +2971,6 @@ Tabs.Teleport:AddButton({
 			humanoid:SetStateEnabled(Enum.HumanoidStateType.Swimming, true)
         end
     })
-
-	local Player = Tabs.Debug:AddSection("Player", nil)
-
-    local DisableOxigenSwim = Tabs.Debug:AddToggle("DisableOxigenSwim", {Title = "DisableOxigenSwim",Default = false })
-    DisableOxigenSwim:OnChanged(function()
-		game.Players.LocalPlayer.Character.Resources.oxygen.Enabled = not DisableOxigenSwim.Value
-    end)
-
-    local DisableOxigenPeaks = Tabs.Debug:AddToggle("DisableOxigenPeaks", {Title = "DisableOxigenPeaks",Default = false })
-    DisableOxigenPeaks:OnChanged(function()
-		game.Players.LocalPlayer.Character.Resources["oxygen(peaks)"].Enabled = not DisableOxigenPeaks.Value
-    end)
-
-    local DisableOxigenRefactor = Tabs.Debug:AddToggle("DisableOxigenRefactor", {Title = "DisableOxigenRefactor",Default = false })
-    DisableOxigenRefactor:OnChanged(function()
-		game.Players.LocalPlayer.Character.Resources.oxygenRefactor_WIP.Enabled = not DisableOxigenRefactor.Value
-    end)
-
-
-    local DisableTemperaturePeaks = Tabs.Debug:AddToggle("DisableTemperaturePeaks", {Title = "DisableTemperaturePeaks",Default = false })
-    DisableTemperaturePeaks:OnChanged(function()
-		game.Players.LocalPlayer.Character.Resources.temperature.Enabled = not DisableTemperaturePeaks.Value
-    end)
-
-    local DisableTemperatureHeat = Tabs.Debug:AddToggle("DisableTemperatureHeat", {Title = "DisableTemperatureHeat",Default = false })
-    DisableTemperatureHeat:OnChanged(function()
-		game.Players.LocalPlayer.Character.Resources["temperature(heat)"].Enabled = not DisableTemperatureHeat.Value
-    end)
-
 
 	local Market = Tabs.Debug:AddSection("Market", nil)
 	
