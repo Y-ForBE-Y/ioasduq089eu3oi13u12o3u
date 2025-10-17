@@ -4589,36 +4589,132 @@ ElementsTable.Paragraph = (function()
         Paragraph.Visible = Paragraph.Visible
         Paragraph.Elements = Paragraph
 
+        -- Store references to title elements
+        local titleLabel = Paragraph.TitleLabel
+        local headerFrame = Paragraph.Header
+
         -- Add icon functionality
         local iconImage
-        local currentIconPosition = Config.IconPosition or "left" -- default position
+        local currentIconPosition = Config.IconPosition or "left"
+        local titleContainer
 
-        if Config.Icon then
-            local resolvedIcon = Config.Icon
-            pcall(function()
-                if Library and Library.GetIcon then
-                    local resolved = Library:GetIcon(Config.Icon)
-                    if resolved then resolvedIcon = resolved end
-                end
-            end)
-            
-            iconImage = New("ImageLabel", {
-                Image = resolvedIcon,
-                Size = UDim2.fromOffset(16, 16),
+        -- Method to create title container
+        function Paragraph:CreateTitleContainer()
+            if titleContainer then
+                titleContainer:Destroy()
+            end
+
+            titleContainer = New("Frame", {
+                Size = UDim2.new(1, -20, 0, 16),
+                Position = UDim2.fromOffset(10, 13),
                 BackgroundTransparency = 1,
-                ThemeTag = {
-                    ImageColor3 = "Text",
-                },
+            }, {
+                New("UIListLayout", {
+                    FillDirection = Enum.FillDirection.Horizontal,
+                    VerticalAlignment = Enum.VerticalAlignment.Center,
+                    Padding = UDim.new(0, 6)
+                })
             })
-            iconImage.Parent = Paragraph.Frame
+            titleContainer.Parent = Paragraph.Frame
             
-            -- Set initial position
-            Paragraph:UpdateIconPosition(Config.IconPosition or "left")
+            return titleContainer
+        end
+
+        -- Method to update icon position and adjust layouts
+        function Paragraph:UpdateIconPosition(position)
+            if not iconImage then return end
+            
+            currentIconPosition = position
+            
+            -- Reset layouts first
+            if titleContainer then
+                titleContainer:Destroy()
+                titleContainer = nil
+            end
+            
+            -- Restore original header if it exists
+            if headerFrame and titleLabel then
+                titleLabel.Parent = headerFrame
+                headerFrame.Visible = true
+            end
+            
+            Paragraph.LabelHolder.Position = UDim2.fromOffset(10, 0)
+            Paragraph.LabelHolder.Size = UDim2.new(1, -20, 1, 0)
+
+            if position == "left" then
+                -- Icon on left, text shifted right
+                iconImage.Position = UDim2.new(0, 10, 0, 13)
+                iconImage.AnchorPoint = Vector2.new(0, 0)
+                Paragraph.LabelHolder.Position = UDim2.fromOffset(34, 0)
+                Paragraph.LabelHolder.Size = UDim2.new(1, -44, 1, 0)
+                
+            elseif position == "right" then
+                -- Icon on right side
+                iconImage.Position = UDim2.new(1, -10, 0, 13)
+                iconImage.AnchorPoint = Vector2.new(1, 0)
+                Paragraph.LabelHolder.Position = UDim2.fromOffset(10, 0)
+                Paragraph.LabelHolder.Size = UDim2.new(1, -44, 1, 0)
+                
+            elseif position == "title-left" then
+                -- Icon left of title
+                local container = self:CreateTitleContainer()
+                iconImage.Parent = container
+                iconImage.Size = UDim2.fromOffset(16, 16)
+                
+                if titleLabel then
+                    titleLabel.Parent = container
+                    titleLabel.Size = UDim2.new(1, -22, 1, 0)
+                    titleLabel.TextXAlignment = Enum.TextXAlignment.Left
+                end
+                
+                if headerFrame then
+                    headerFrame.Visible = false
+                end
+                
+                -- Adjust content position
+                Paragraph.LabelHolder.Position = UDim2.fromOffset(10, 35)
+                Paragraph.LabelHolder.Size = UDim2.new(1, -20, 1, -45)
+                
+            elseif position == "title-right" then
+                -- Icon right of title
+                local container = self:CreateTitleContainer()
+                
+                if titleLabel then
+                    titleLabel.Parent = container
+                    titleLabel.Size = UDim2.new(1, -22, 1, 0)
+                    titleLabel.TextXAlignment = Enum.TextXAlignment.Left
+                end
+                
+                iconImage.Parent = container
+                iconImage.Size = UDim2.fromOffset(16, 16)
+                
+                if headerFrame then
+                    headerFrame.Visible = false
+                end
+                
+                -- Adjust content position
+                Paragraph.LabelHolder.Position = UDim2.fromOffset(10, 35)
+                Paragraph.LabelHolder.Size = UDim2.new(1, -20, 1, -45)
+                
+            elseif position == "center-top" then
+                -- Icon centered at top
+                iconImage.Position = UDim2.new(0.5, 0, 0, 10)
+                iconImage.AnchorPoint = Vector2.new(0.5, 0)
+                Paragraph.LabelHolder.Position = UDim2.fromOffset(10, 30)
+                Paragraph.LabelHolder.Size = UDim2.new(1, -20, 1, -30)
+                
+            elseif position == "center-bottom" then
+                -- Icon centered at bottom
+                iconImage.Position = UDim2.new(0.5, 0, 1, -10)
+                iconImage.AnchorPoint = Vector2.new(0.5, 1)
+                Paragraph.LabelHolder.Position = UDim2.fromOffset(10, 0)
+                Paragraph.LabelHolder.Size = UDim2.new(1, -20, 1, -30)
+            end
         end
 
         -- Add SetIcon method with position support
         function Paragraph:SetIcon(iconPath, position)
-            position = position or "left" -- default to left if not specified
+            position = position or "left"
             
             local resolvedIcon = iconPath
             pcall(function()
@@ -4650,61 +4746,6 @@ ElementsTable.Paragraph = (function()
             currentIconPosition = position
         end
 
-        -- Method to update icon position and adjust layouts
-        function Paragraph:UpdateIconPosition(position)
-            if not iconImage then return end
-            
-            currentIconPosition = position
-            
-            -- Reset all layouts first to avoid conflicts
-            Paragraph.LabelHolder.Position = UDim2.fromOffset(10, 0)
-            Paragraph.LabelHolder.Size = UDim2.new(1, -20, 1, 0)
-            
-            if position == "left" then
-                -- Icon on left, text shifted right
-                iconImage.Position = UDim2.new(0, 10, 0, 13)
-                iconImage.AnchorPoint = Vector2.new(0, 0)
-                Paragraph.LabelHolder.Position = UDim2.fromOffset(34, 0)
-                Paragraph.LabelHolder.Size = UDim2.new(1, -44, 1, 0)
-                
-            elseif position == "right" then
-                -- Icon on right side
-                iconImage.Position = UDim2.new(1, -10, 0, 13)
-                iconImage.AnchorPoint = Vector2.new(1, 0)
-                Paragraph.LabelHolder.Position = UDim2.fromOffset(10, 0)
-                Paragraph.LabelHolder.Size = UDim2.new(1, -44, 1, 0)
-                
-            elseif position == "title-left" then
-                -- Icon left of title - simplified approach
-                iconImage.Position = UDim2.new(0, 10, 0, 13)
-                iconImage.AnchorPoint = Vector2.new(0, 0)
-                -- Don't modify Header, just adjust the main container
-                Paragraph.LabelHolder.Position = UDim2.fromOffset(10, 0)
-                Paragraph.LabelHolder.Size = UDim2.new(1, -20, 1, 0)
-                
-            elseif position == "title-right" then
-                -- Icon right of title - simplified approach
-                iconImage.Position = UDim2.new(1, -10, 0, 13)
-                iconImage.AnchorPoint = Vector2.new(1, 0)
-                Paragraph.LabelHolder.Position = UDim2.fromOffset(10, 0)
-                Paragraph.LabelHolder.Size = UDim2.new(1, -20, 1, 0)
-                
-            elseif position == "center-top" then
-                -- Icon centered at top
-                iconImage.Position = UDim2.new(0.5, 0, 0, 10)
-                iconImage.AnchorPoint = Vector2.new(0.5, 0)
-                Paragraph.LabelHolder.Position = UDim2.fromOffset(10, 30)
-                Paragraph.LabelHolder.Size = UDim2.new(1, -20, 1, -30)
-                
-            elseif position == "center-bottom" then
-                -- Icon centered at bottom
-                iconImage.Position = UDim2.new(0.5, 0, 1, -10)
-                iconImage.AnchorPoint = Vector2.new(0.5, 1)
-                Paragraph.LabelHolder.Position = UDim2.fromOffset(10, 0)
-                Paragraph.LabelHolder.Size = UDim2.new(1, -20, 1, -30)
-            end
-        end
-
         -- Method to get current icon position
         function Paragraph:GetIconPosition()
             return currentIconPosition
@@ -4714,10 +4755,23 @@ ElementsTable.Paragraph = (function()
         function Paragraph:RemoveIcon()
             if iconImage then
                 iconImage.Visible = false
-                -- Reset layouts to default
-                Paragraph.LabelHolder.Position = UDim2.fromOffset(10, 0)
-                Paragraph.LabelHolder.Size = UDim2.new(1, -20, 1, 0)
             end
+            if titleContainer then
+                titleContainer:Destroy()
+                titleContainer = nil
+            end
+            -- Restore original layout
+            if headerFrame and titleLabel then
+                titleLabel.Parent = headerFrame
+                headerFrame.Visible = true
+            end
+            Paragraph.LabelHolder.Position = UDim2.fromOffset(10, 0)
+            Paragraph.LabelHolder.Size = UDim2.new(1, -20, 1, 0)
+        end
+
+        -- Initialize with icon if provided in config
+        if Config.Icon then
+            Paragraph:SetIcon(Config.Icon, Config.IconPosition or "left")
         end
 
         return Paragraph
@@ -4725,6 +4779,8 @@ ElementsTable.Paragraph = (function()
 
     return Paragraph
 end)()
+
+
 
 ElementsTable.Slider = (function()
 	local Element = {}
