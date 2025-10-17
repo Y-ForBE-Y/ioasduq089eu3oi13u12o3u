@@ -4664,34 +4664,41 @@ ElementsTable.Paragraph = (function()
         end
 
         -- Add SetIcon method
-        function Paragraph:SetIcon(iconPath, position)
-            position = position or "left"
-            
-            local resolvedIcon = iconPath
-            pcall(function()
-                if Library and Library.GetIcon then
-                    local resolved = Library:GetIcon(iconPath)
-                    if resolved then resolvedIcon = resolved end
-                end
-            end)
-            
-            if iconImage then
-                iconImage.Image = resolvedIcon
-                iconImage.Visible = true
-            else
-                iconImage = New("ImageLabel", {
-                    Image = resolvedIcon,
-                    Size = UDim2.fromOffset(16, 16),
-                    BackgroundTransparency = 1,
-                    ThemeTag = {
-                        ImageColor3 = "Text",
-                    },
-                })
-                iconImage.Parent = self.Frame
-            end
-            
-            self:UpdateIconPosition(position)
-        end
+		-- В методе SetIcon добавьте проверку на пустую иконку
+		function Paragraph:SetIcon(iconPath, position)
+		    position = position or "left"
+		    
+		    -- Если передана пустая строка или nil - удаляем иконку
+		    if not iconPath or iconPath == "" then
+		        self:RemoveIcon()
+		        return
+		    end
+		    
+		    local resolvedIcon = iconPath
+		    pcall(function()
+		        if Library and Library.GetIcon then
+		            local resolved = Library:GetIcon(iconPath)
+		            if resolved then resolvedIcon = resolved end
+		        end
+		    end)
+		    
+		    if iconImage then
+		        iconImage.Image = resolvedIcon
+		        iconImage.Visible = true
+		    else
+		        iconImage = New("ImageLabel", {
+		            Image = resolvedIcon,
+		            Size = UDim2.fromOffset(16, 16),
+		            BackgroundTransparency = 1,
+		            ThemeTag = {
+		                ImageColor3 = "Text",
+		            },
+		        })
+		        iconImage.Parent = self.Frame
+		    end
+		    
+		    self:UpdateIconPosition(position)
+		end
 
         -- Method to get current icon position
         function Paragraph:GetIconPosition()
@@ -4699,13 +4706,20 @@ ElementsTable.Paragraph = (function()
         end
 
         -- Add RemoveIcon method
-        function Paragraph:RemoveIcon()
-            if iconImage then
-                iconImage.Visible = false
-            end
-            Paragraph.LabelHolder.Position = UDim2.fromOffset(10, 0)
-            Paragraph.LabelHolder.Size = UDim2.new(1, -20, 1, 0)
-        end
+		-- Улучшенный метод RemoveIcon
+		function Paragraph:RemoveIcon()
+		    if iconImage then
+		        iconImage.Visible = false
+		        -- Полностью удаляем иконку из родителя
+		        if iconImage.Parent then
+		            iconImage:Destroy()
+		        end
+		        iconImage = nil
+		    end
+		    -- Восстанавливаем оригинальную позицию контента
+		    Paragraph.LabelHolder.Position = UDim2.fromOffset(10, 0)
+		    Paragraph.LabelHolder.Size = UDim2.new(1, -20, 1, 0)
+		end
 
         -- Initialize with icon if provided
         if Config.Icon then
