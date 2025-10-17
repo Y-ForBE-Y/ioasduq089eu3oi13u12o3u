@@ -4656,6 +4656,10 @@ ElementsTable.Paragraph = (function()
             
             currentIconPosition = position
             
+            -- Reset all layouts first to avoid conflicts
+            Paragraph.LabelHolder.Position = UDim2.fromOffset(10, 0)
+            Paragraph.LabelHolder.Size = UDim2.new(1, -20, 1, 0)
+            
             if position == "left" then
                 -- Icon on left, text shifted right
                 iconImage.Position = UDim2.new(0, 10, 0, 13)
@@ -4671,28 +4675,19 @@ ElementsTable.Paragraph = (function()
                 Paragraph.LabelHolder.Size = UDim2.new(1, -44, 1, 0)
                 
             elseif position == "title-left" then
-                -- Icon left of title (in header)
+                -- Icon left of title - simplified approach
                 iconImage.Position = UDim2.new(0, 10, 0, 13)
                 iconImage.AnchorPoint = Vector2.new(0, 0)
-                -- Adjust header to include icon
-                if Paragraph.Header then
-                    Paragraph.Header.Position = UDim2.fromOffset(34, 0)
-                    Paragraph.Header.Size = UDim2.new(1, -44, 1, 0)
-                end
+                -- Don't modify Header, just adjust the main container
                 Paragraph.LabelHolder.Position = UDim2.fromOffset(10, 0)
-                Paragraph.LabelHolder.Size = UDim2.new(1, -28, 1, 0)
+                Paragraph.LabelHolder.Size = UDim2.new(1, -20, 1, 0)
                 
             elseif position == "title-right" then
-                -- Icon right of title (in header)
+                -- Icon right of title - simplified approach
                 iconImage.Position = UDim2.new(1, -10, 0, 13)
                 iconImage.AnchorPoint = Vector2.new(1, 0)
-                -- Adjust header to include icon
-                if Paragraph.Header then
-                    Paragraph.Header.Position = UDim2.fromOffset(10, 0)
-                    Paragraph.Header.Size = UDim2.new(1, -44, 1, 0)
-                end
                 Paragraph.LabelHolder.Position = UDim2.fromOffset(10, 0)
-                Paragraph.LabelHolder.Size = UDim2.new(1, -28, 1, 0)
+                Paragraph.LabelHolder.Size = UDim2.new(1, -20, 1, 0)
                 
             elseif position == "center-top" then
                 -- Icon centered at top
@@ -4721,11 +4716,7 @@ ElementsTable.Paragraph = (function()
                 iconImage.Visible = false
                 -- Reset layouts to default
                 Paragraph.LabelHolder.Position = UDim2.fromOffset(10, 0)
-                Paragraph.LabelHolder.Size = UDim2.new(1, -28, 1, 0)
-                if Paragraph.Header then
-                    Paragraph.Header.Position = UDim2.fromOffset(10, 0)
-                    Paragraph.Header.Size = UDim2.new(1, -28, 1, 0)
-                end
+                Paragraph.LabelHolder.Size = UDim2.new(1, -20, 1, 0)
             end
         end
 
@@ -4734,7 +4725,6 @@ ElementsTable.Paragraph = (function()
 
     return Paragraph
 end)()
-
 
 ElementsTable.Slider = (function()
 	local Element = {}
