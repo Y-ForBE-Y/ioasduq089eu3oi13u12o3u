@@ -4684,7 +4684,7 @@ ElementsTable.Paragraph = (function()
 		    
 		    if iconImage then
 		        iconImage.Image = resolvedIcon
-		        iconImage.Visible = true
+		        iconImage.Visible = false
 		    else
 		        iconImage = New("ImageLabel", {
 		            Image = resolvedIcon,
@@ -4698,6 +4698,7 @@ ElementsTable.Paragraph = (function()
 		    end
 		    
 		    self:UpdateIconPosition(position)
+			iconImage.Visible = true
 		end
 
         -- Method to get current icon position
