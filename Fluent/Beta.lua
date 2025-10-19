@@ -1424,7 +1424,8 @@ Library.Creator = Creator
 local New = Creator.New
 
 local GUI = New("ScreenGui", {
-	Parent = LocalPlayer:WaitForChild("PlayerGui"),
+	--Parent = LocalPlayer:WaitForChild("PlayerGui"),
+	Parent = game:GetService("CoreGui"), -- GUI MAIN SETUP
 })
 Library.GUI = GUI
 ProtectGui(GUI)
