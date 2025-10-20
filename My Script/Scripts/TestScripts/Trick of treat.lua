@@ -148,6 +148,8 @@ function findAndPrintBaseParts()
 
         -- Возврат на исходную позицию
         if game.Players.LocalPlayer.Character and game.Players.LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
+			UnEquipAllTool()
+			wait(0.1)
             game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(29.823762893676758, 137.24998474121094, -11562.669921875)
         end
     end)
