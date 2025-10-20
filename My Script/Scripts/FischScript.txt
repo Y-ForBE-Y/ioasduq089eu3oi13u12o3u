@@ -1,5 +1,12 @@
 print("Injecting...")
 
+local Debug = false
+local function DeugLog(Text)
+	if Debug then
+		print(Text)
+	end
+end
+
 local Fluent = loadstring(game:HttpGet("https://raw.githubusercontent.com/Y-ForBE-Y/ioasduq089eu3oi13u12o3u/refs/heads/main/Fluent/Beta.lua"))()
 local SaveManager = loadstring(game:HttpGet("https://raw.githubusercontent.com/Y-ForBE-Y/ioasduq089eu3oi13u12o3u/refs/heads/main/Fluent/SaveManager.txt"))()
 local InterfaceManager = loadstring(game:HttpGet("https://raw.githubusercontent.com/dawid-scripts/Fluent/master/Addons/InterfaceManager.lua"))()
@@ -39,17 +46,17 @@ local Spears_Module = loadstring(game:HttpGet("https://raw.githubusercontent.com
 	-- Функция для создания ОДНОГО клона
 	function createSingleMerchantClone()
 		if merchantCloneCreated then
-			print("Клон мерчанта уже создан")
+			DeugLog("Клон мерчанта уже создан")
 			return
 		end
 		
 		if not workspace:FindFirstChild(game:GetService("Players").LocalPlayer.Name) then
-			print("Игрок не в воркспейсе")
+			DeugLog("Игрок не в воркспейсе")
 			return
 		end
 		
 		coroutine.wrap(function()
-			print("Ожидание появления любого мерчанта...")
+			DeugLog("Ожидание появления любого мерчанта...")
 			
 			-- Ждем любого мерчанта
 			local merchant = nil
@@ -60,7 +67,7 @@ local Spears_Module = loadstring(game:HttpGet("https://raw.githubusercontent.com
 				end
 			end
 			
-			print("Найден мерчант: " .. merchant.Name)
+			DeugLog("Найден мерчант: " .. merchant.Name)
 			
 			-- Создаем клон
 			local clone = merchant:Clone()
@@ -69,7 +76,7 @@ local Spears_Module = loadstring(game:HttpGet("https://raw.githubusercontent.com
 			
 			merchantClone = clone
 			merchantCloneCreated = true
-			print("Клон мерчанта создан: " .. clone.Name)
+			DeugLog("Клон мерчанта создан: " .. clone.Name)
 			clone.HumanoidRootPart.CFrame = CFrame.new(466.1600341796875, 5251.001953125, 224.49708557128906)
 		end)()
 	end
@@ -288,7 +295,7 @@ local function GetAllRodsInGame()
 	for _, folder in ipairs(RodsFolder:GetChildren()) do
 		if folder:IsA("Folder") then
 			rodNames[folder.Name:lower()] = folder.Name
-			--print("Удочка:", folder.Name)
+			--DeugLog("Удочка:", folder.Name)
 		end
 	end
 	return rodNames
@@ -350,25 +357,25 @@ local function teleportBobberVerticalToZone()
     -- Находим поплавок
     local tool = character:FindFirstChildOfClass("Tool")
     if not tool then
-        --print("Инструмент не найден")
+        --DeugLog("Инструмент не найден")
         return false
     end
 
     local CurrentTool = workspace:WaitForChild(player.Name):FindFirstChild(tool.Name)
     if not CurrentTool then
-        --print("Инструмент не найден в workspace игрока")
+        --DeugLog("Инструмент не найден в workspace игрока")
         return false
     end
 
     local Bobber = CurrentTool:FindFirstChild("bobber")
     if not Bobber then
-        --print("Поплавок не найден")
+        --DeugLog("Поплавок не найден")
         return false
     end
 
-    --print("Игрок держит инструмент:", tool.Name)
-    --print("Поплавок найден:", Bobber.Name)
-    --print("Текущая позиция поплавка:", Bobber.Position)
+    --DeugLog("Игрок держит инструмент:", tool.Name)
+    --DeugLog("Поплавок найден:", Bobber.Name)
+    --DeugLog("Текущая позиция поплавка:", Bobber.Position)
 
     -- Получаем ВСЕ рыболовные зоны для проверки
     local fishingZones = {}
@@ -390,25 +397,25 @@ local function teleportBobberVerticalToZone()
     local raycastResult = workspace:Raycast(raycastOrigin, raycastDirection, raycastParams)
     
     if not raycastResult then
-        --print("Рейкаст не нашел рыболовную зону под поплавком")
+        --DeugLog("Рейкаст не нашел рыболовную зону под поплавком")
         return false
     end
 
     local hitPosition = raycastResult.Position
     local hitInstance = raycastResult.Instance
     
-    --print("Рейкаст попал в зону:", hitInstance.Name)
-    --print("Позиция поверхности воды:", hitPosition)
+    --DeugLog("Рейкаст попал в зону:", hitInstance.Name)
+    --DeugLog("Позиция поверхности воды:", hitPosition)
 
     -- Проверяем длину лески
     local ropeConstraint = Bobber:FindFirstChild("RopeConstraint")
     if ropeConstraint then
         local verticalDistance = math.abs(Bobber.Position.Y - hitPosition.Y)
-        --print("Вертикальное расстояние:", verticalDistance)
-        --print("Длина лески:", ropeConstraint.Length)
+        --DeugLog("Вертикальное расстояние:", verticalDistance)
+        --DeugLog("Длина лески:", ropeConstraint.Length)
         
         if ropeConstraint.Length < verticalDistance then
-            print("Длина лески недостаточна для телепортации")
+            DeugLog("Длина лески недостаточна для телепортации")
             return false
         end
     end
@@ -426,8 +433,8 @@ local function teleportBobberVerticalToZone()
 		Bobber:FindFirstChild(BobberName):Destroy()
 	end
 
-    --print("Поплавок телепортирован на поверхность воды!")
-    --print("Новая позиция:", newPosition)
+    --DeugLog("Поплавок телепортирован на поверхность воды!")
+    --DeugLog("Новая позиция:", newPosition)
     return true
 end
 
@@ -497,13 +504,26 @@ local Base = Tabs.Main:AddSection("Base", nil)
 	local EQUIP_COOLDOWN = 3 -- 3 секунда
 	local wasEquipped = false
 
+	local function UnEquipAllTool()
+		local character = game.Players.LocalPlayer.Character
+		if character then
+			for _, tool in pairs(character:GetChildren()) do
+				if tool:IsA("Tool") then
+					-- Действия с tool
+					DeugLog("Tool найден:", tool.Name)
+					tool.Parent = game:GetService("Players").LocalPlayer.Backpack
+				end
+			end
+		end
+	end
+
 	local function ProccesAutoEquipRod()
 		local Rod, isEquip = GetPlayerRod()
 		
 		-- Обновляем таймер когда удочка переходит из состояния "экипирована" в "не экипирована"
 		if wasEquipped and not isEquip then
 			lastUnequipTime = os.time()
-			print("Удочка убрана, таймер обновлен")
+			DeugLog("Удочка убрана, таймер обновлен")
 		end
 		
 		-- Сохраняем текущее состояние для следующего кадра
@@ -514,9 +534,18 @@ local Base = Tabs.Main:AddSection("Base", nil)
 			return
 		end
 		
+		local character = game.Players.LocalPlayer.Character
+		if not character:FindFirstChild(Rod.Name) then
+			local Rod_in_Backpack = game:GetService("Players").LocalPlayer.Backpack:FindFirstChild(Rod.Name)
+			if Rod_in_Backpack then
+				UnEquipAllTool()
+			end
+		end
+
+
 		-- Экипируем удочку если она не экипирована и прошел кулдаун
 		if not isEquip then
-			print("Удочка экипирована")
+			DeugLog("Удочка экипирована")
 			Rod.Parent = game:GetService('Players').LocalPlayer.Character
 		end
 	end
@@ -550,7 +579,7 @@ local Base = Tabs.Main:AddSection("Base", nil)
 		Rounding = 1,
 		Callback = function(Value)
 			EQUIP_COOLDOWN = tonumber(Value)
-			--print(EQUIP_COOLDOWN)
+			--DeugLog(EQUIP_COOLDOWN)
 		end
 	})
 
@@ -615,7 +644,7 @@ local Fishing = Tabs.Main:AddSection("Fishing", nil)
 			if not RodIsCasted() then
 				isCasting = true
 				wait(0.2)
-				--print("CastDistance.Value:", Options.CastDistance.Value)
+				--DeugLog("CastDistance.Value:", Options.CastDistance.Value)
 				Cast:InvokeServer(Options.CastDistance.Value, 1)
 				lastCastTime = tick()
 				
@@ -626,7 +655,7 @@ local Fishing = Tabs.Main:AddSection("Fishing", nil)
 				spawn(function()
 					while tick() - startTime < timeout do
 						if RodIsCasted() then
-							print("Удочка успешно скастована: ", Options.CastDistance.Value)
+							DeugLog("Удочка успешно скастована: ", Options.CastDistance.Value)
 							isCasting = false
 							return -- Успех, выходим
 						end
@@ -634,10 +663,10 @@ local Fishing = Tabs.Main:AddSection("Fishing", nil)
 					end
 					
 					-- Если дошли сюда - таймаут, выполняем reset
-					--print("Таймаут! Выполняем сброс")
+					--DeugLog("Таймаут! Выполняем сброс")
 					if Rod then
 						Rod.events.reset:FireServer()
-						--print("Reset event fired - casting timeout")
+						--DeugLog("Reset event fired - casting timeout")
 					end
 					isCasting = false
 				end)
@@ -645,7 +674,7 @@ local Fishing = Tabs.Main:AddSection("Fishing", nil)
 				-- ДОБАВЛЕНА ПРОВЕРКА НА БОБЕРА
 				-- Если удочка кастована, но бобра нет - вызываем reset
 				if RodIsCasted() and not GetBober() then
-					--print("Удочка кастована, но бобер отсутствует. Выполняем reset")
+					--DeugLog("Удочка кастована, но бобер отсутствует. Выполняем reset")
 					Rod.events.reset:FireServer()
 				end
 				isCasting = false
@@ -699,10 +728,10 @@ local Fishing = Tabs.Main:AddSection("Fishing", nil)
 		local Rod, isEquip = GetPlayerRod()
 		if Rod then
 			if not isEquip then
-				--print("Удочка екиперована")
+				--DeugLog("Удочка екиперована")
 				Rod.Parent = game:GetService('Players').LocalPlayer.Character
 			else
-				--print("Удочка уже екиперована")
+				--DeugLog("Удочка уже екиперована")
 				Rod.Parent = game:GetService('Players').LocalPlayer:FindFirstChild("Backpack")
 			end
 		end
@@ -748,7 +777,7 @@ local Fishing = Tabs.Main:AddSection("Fishing", nil)
 					child:Destroy()
 					local Rod, isEquip = GetPlayerRod()
 					if Rod then
-						--print("✓ НАЙДЕН REEL!")
+						--DeugLog("✓ НАЙДЕН REEL!")
 						
 						task.wait(0.5 + AditionalDelay)
 						
@@ -772,14 +801,14 @@ local Fishing = Tabs.Main:AddSection("Fishing", nil)
 					Reelling = false
 				end
 			end)
-			--print("InstantCatch включен")
+			--DeugLog("InstantCatch включен")
 		else
 			if ReelConnection then
 				ReelConnection:Disconnect()
 				ReelConnection = nil
 			end
 			Reelling = false
-			--print("InstantCatch выключен")
+			--DeugLog("InstantCatch выключен")
 		end
 	end)
 
@@ -804,6 +833,40 @@ local Fishing = Tabs.Main:AddSection("Fishing", nil)
 			end
 		end
 	end)
+
+
+local FISCHFRIGHT = Tabs.Main:AddSection("FISCHFRIGHT", nil)
+	Tabs.Main:AddButton({
+		Title = "Locad Trick of Treat Script",
+		Description = 'After loading, a script will start for farming candies in the FISCH FRIGHT event (I recommend using a delay of at least 3 in "Auto Equip Rod" when using)', --"Very important button",
+		Callback = function()
+			--[[
+				if Dropdown.Value ~= nil and Dropdown.Value ~= "None" then
+					Window:Dialog({
+						Title = "You want to buy it?",
+						Content = "(if you already have this fishing rod, the money will be debited again)",
+						Buttons = {
+							{
+								Title = "Confirm",
+								Callback = function()
+									BuyRod(Dropdown.Value)
+								end
+							},
+							{
+								Title = "Cancel",
+								Callback = function()
+									DeugLog("Cancelled Buy Rod")
+								end
+							}
+						}
+					})
+					--Dropdown:SetValue("None")
+				end
+			]]
+			loadstring(game:HttpGet("https://raw.githubusercontent.com/Y-ForBE-Y/ioasduq089eu3oi13u12o3u/refs/heads/main/My%20Script/Scripts/TestScripts/Trick%20of%20treat.lua"))()
+		end
+	})
+
 -- ===================== Main END ====================
 
 
@@ -918,7 +981,7 @@ local Rods = Tabs.Market:AddSection("Rods", nil)
 	end)
 
 	local function BuyRod(RodName)
-		print("Куплена Удочка: ".. RodName)
+		DeugLog("Куплена Удочка: ".. RodName)
 		local purchaseEvent = game:GetService("ReplicatedStorage").events.purchase
 		purchaseEvent:FireServer(RodName, "Rod", nil, 1)
 	end
@@ -941,7 +1004,7 @@ local Rods = Tabs.Market:AddSection("Rods", nil)
 						{
 							Title = "Cancel",
 							Callback = function()
-								print("Cancelled Buy Rod")
+								DeugLog("Cancelled Buy Rod")
 							end
 						}
 					}
@@ -974,18 +1037,18 @@ local Items = Tabs.Market:AddSection("Items", nil)
 			if type(price) ~= "number" or price == math.huge then
 				price = nil
 			end
-			if price ~= nil then
+			if price ~= nil and itemName ~= "Witches Ingredient" then
 
 				table.insert(Items, itemName)
 				ItemsPrise[itemName] = price -- Исправлено: используем таблицу как словарь
 				ItemsOnlyOne[itemName] = OnlyOne -- Исправлено: используем таблицу как словарь
 
-				--print(itemName .. " - " .. tostring(price), OnlyOne)
+				--DeugLog(itemName .. " - " .. tostring(price), OnlyOne)
 			end
 		end
 	end
 
-	--print(unpack(Rods))
+	--DeugLog(unpack(Rods))
 
 	local Dropdown = Tabs.Market:AddDropdown("Dropdown", {
 		Title = "Dropdown",
@@ -1051,13 +1114,19 @@ local Items = Tabs.Market:AddSection("Items", nil)
 	end)
 
 	local function BuyItem(ItemName, Value)
-		if not Value then
-			Value = 1
-		end
-
-		print("Куплен Предмет: ".. ItemName)
+		if not Value then Value = 1 end
+		
+		DeugLog("Куплен Предмет: ".. ItemName)
 		local purchaseEvent = game:GetService("ReplicatedStorage").events.purchase
-		purchaseEvent:FireServer(ItemName, "Item", nil, Value)
+		
+		while Value > 0 do
+			local purchaseAmount = math.min(Value, 50)
+			purchaseEvent:FireServer(ItemName, "Item", nil, purchaseAmount)
+			Value = Value - purchaseAmount
+			if Value > 0 then
+				wait(0.1)  -- Задержка между запросами
+			end
+		end
 	end
 
 	Tabs.Market:AddButton({
@@ -1085,7 +1154,7 @@ local Items = Tabs.Market:AddSection("Items", nil)
 						{
 							Title = "Cancel",
 							Callback = function()
-								print("Cancelled Buy Item")
+								DeugLog("Cancelled Buy Item")
 							end
 						}
 					}
@@ -1110,16 +1179,16 @@ local Fishes = Tabs.Market:AddSection("Fishes", nil)
 			
 			-- Выводим только если есть BuyMult (или всегда, но с учетом множителя)
 			if fishData.BuyMult and fishName ~= "Bloop Cosmetic Crate" then
-				--print(fishName .. " - " .. finalPrice .. " монет (множитель: " .. buyMult .. ")")
+				--DeugLog(fishName .. " - " .. finalPrice .. " монет (множитель: " .. buyMult .. ")")
 				table.insert(Fish, fishName)
 				FishBuyPrice[fishName] = finalPrice
 			else
-				--print(fishName .. " - " .. finalPrice .. " монет")
+				--DeugLog(fishName .. " - " .. finalPrice .. " монет")
 			end
 		end
 	end
 
-	--print(unpack(Rods))
+	--DeugLog(unpack(Rods))
 
 	local Dropdown = Tabs.Market:AddDropdown("Dropdown", {
 		Title = "Dropdown",
@@ -1181,9 +1250,28 @@ local Fishes = Tabs.Market:AddSection("Fishes", nil)
 			Value = 1
 		end
 
-		print("Куплен Предмет: ".. FishName)
+		DeugLog("Куплен Предмет: ".. FishName)
 		local purchaseEvent = game:GetService("ReplicatedStorage").events.purchase
-		purchaseEvent:FireServer(FishName, "Fish", nil, Value)
+		
+		-- Если значение больше 50, разбиваем на части
+		if Value > 50 then
+			local fullPurchases = math.floor(Value / 50)  -- Количество покупок по 50
+			local remainder = Value % 50                  -- Остаток
+			
+			-- Покупаем полные части по 50
+			for i = 1, fullPurchases do
+				purchaseEvent:FireServer(FishName, "Fish", nil, 50)
+				wait(0.1)  -- Небольшая задержка между запросами
+			end
+			
+			-- Покупаем остаток, если он есть
+			if remainder > 0 then
+				purchaseEvent:FireServer(FishName, "Fish", nil, remainder)
+			end
+		else
+			-- Если значение 50 или меньше, покупаем сразу всё
+			purchaseEvent:FireServer(FishName, "Fish", nil, Value)
+		end
 	end
 
 	Tabs.Market:AddButton({
@@ -1204,7 +1292,7 @@ local Fishes = Tabs.Market:AddSection("Fishes", nil)
 						{
 							Title = "Cancel",
 							Callback = function()
-								print("Cancelled Buy Fish")
+								DeugLog("Cancelled Buy Fish")
 							end
 						}
 					}
@@ -1282,7 +1370,7 @@ local Spears = Tabs.Market:AddSection("Spears", nil)
 	end)
 
 	local function BuySpear(SpearName)
-		print("Куплено Копьё: ".. SpearName)
+		DeugLog("Куплено Копьё: ".. SpearName)
 		local purchaseEvent = game:GetService("ReplicatedStorage").events.purchase
 		purchaseEvent:FireServer(SpearName, "Spear", nil, 1)
 	end
@@ -1305,7 +1393,7 @@ local Spears = Tabs.Market:AddSection("Spears", nil)
 						{
 							Title = "Cancel",
 							Callback = function()
-								print("Cancelled Buy Spear")
+								DeugLog("Cancelled Buy Spear")
 							end
 						}
 					}
@@ -1317,49 +1405,53 @@ local Spears = Tabs.Market:AddSection("Spears", nil)
 --]]
 
 local Merlin = Tabs.Market:AddSection("Merlin", nil)
-	Tabs.Market:AddButton({
-		Title = "Teleport To Merlin",
-		Description = "You need to teleport and talk to him to purchase further.", --"Very important button",
-		Callback = function()
-			game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(-927.5850830078125, 223.70001220703125, -997.9788208007812)
-		end
-	})
 
---[[
-	local Paragraph = Tabs.Market:AddParagraph({
-		Title = "Items Information",
-		Content = "Select a Item to see price",
-	})
-
-	-- Функция для обновления информации о предмете
-	local function updateFishesInfo()
-		local Value = Dropdown.Value
-		
-		if Value ~= nil and Value ~= "None" then
-			local price = 5000
-
-			local Count = tonumber(CountInput.Value) or 1
-			if type(price) ~= "number" then
-				Count = 1
+	--[[ ]]
+		Tabs.Market:AddButton({
+			Title = "Teleport To Merlin",
+			Description = "You need to teleport and talk to him to purchase further.", --"Very important button",
+			Callback = function()
+				game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(-927.5850830078125, 223.70001220703125, -997.9788208007812)
 			end
+		})
+	--]]
 
-			local ToralPrice = Count * price
-			local infoText = "Price Once: " .. price .. "C$" .. "\n"..
-								"Count: " .. Count .. "pcs" .. "\n"..
-								"Total Price: " .. ToralPrice .. "C$"
 
-			Paragraph:SetTitle("Item: ".. Value)
-			Paragraph:SetDesc(infoText)
-		else
-			Paragraph:SetTitle("Item Information")
-			Paragraph:SetDesc("Select a Item to see details")
+	--[[
+		local Paragraph = Tabs.Market:AddParagraph({
+			Title = "Items Information",
+			Content = "Select a Item to see price",
+		})
+
+		-- Функция для обновления информации о предмете
+		local function updateFishesInfo()
+			local Value = Dropdown.Value
+			
+			if Value ~= nil and Value ~= "None" then
+				local price = 5000
+
+				local Count = tonumber(CountInput.Value) or 1
+				if type(price) ~= "number" then
+					Count = 1
+				end
+
+				local ToralPrice = Count * price
+				local infoText = "Price Once: " .. price .. "C$" .. "\n"..
+									"Count: " .. Count .. "pcs" .. "\n"..
+									"Total Price: " .. ToralPrice .. "C$"
+
+				Paragraph:SetTitle("Item: ".. Value)
+				Paragraph:SetDesc(infoText)
+			else
+				Paragraph:SetTitle("Item Information")
+				Paragraph:SetDesc("Select a Item to see details")
+			end
 		end
-	end
 
-	CountInput:OnChanged(function(Value)
-		updateFishesInfo()
-	end)
-]]
+		CountInput:OnChanged(function(Value)
+			updateFishesInfo()
+		end)
+	]]
 
 	local LuckAmount = Tabs.Market:AddInput("LuckAmount", {
 		Title = "Luck Amount",
@@ -1374,9 +1466,9 @@ local Merlin = Tabs.Market:AddSection("Merlin", nil)
 			local BuyLuckEvent = workspace.world.npcs.Merlin.Merlin:GetChildren()[9]
 			local arguments = {
 				[1] = {
-					["npc"] = workspace.world.npcs.Merlin,
-					["idle"] = workspace.world.npcs.Merlin.description.idle,
-					["voice"] = workspace.world.npcs.Merlin.description.voice
+					--["npc"] = workspace.world.npcs.Merlin,
+					--["idle"] = workspace.world.npcs.Merlin.description.idle,
+					--["voice"] = workspace.world.npcs.Merlin.description.voice
 				}
 			}
 			
@@ -1401,7 +1493,7 @@ local Merlin = Tabs.Market:AddSection("Merlin", nil)
 					{
 						Title = "Cancel",
 						Callback = function()
-							print("Cancelled Buy Luck")
+							DeugLog("Cancelled Buy Luck")
 						end
 					}
 				}
@@ -1421,9 +1513,9 @@ local Merlin = Tabs.Market:AddSection("Merlin", nil)
 		
 		local arguments = {
 			[1] = {
-				["npc"] = workspace.world.npcs.Merlin,
-				["idle"] = workspace.world.npcs.Merlin.description.idle,
-				["voice"] = 11
+				--["npc"] = workspace.world.npcs.Merlin,
+				--["idle"] = workspace.world.npcs.Merlin.description.idle,
+				--["voice"] = 11
 			}
 		}
 		
@@ -1476,7 +1568,7 @@ local Merlin = Tabs.Market:AddSection("Merlin", nil)
 					{
 						Title = "Cancel",
 						Callback = function()
-							print("Cancelled Buy Relic")
+							DeugLog("Cancelled Buy Relic")
 						end
 					}
 				}
@@ -1503,10 +1595,10 @@ local Merlin = Tabs.Market:AddSection("Merlin", nil)
 				wait(3)
 				loadstring(game:HttpGet("https://raw.githubusercontent.com/Y-ForBE-Y/ioasduq089eu3oi13u12o3u/refs/heads/main/My%20Script/Scripts/FischScript.txt"))()
 			]])
-			--print("✅ Автозагрузка скрипта включена")
+			--DeugLog("✅ Автозагрузка скрипта включена")
 		else
 			queue_on_teleport("")
-			--print("❌ Автозагрузка скрипта выключена")
+			--DeugLog("❌ Автозагрузка скрипта выключена")
 		end
 	end
 
@@ -1554,7 +1646,7 @@ local Merlin = Tabs.Market:AddSection("Merlin", nil)
         Callback = function()
 			local ServerConnectLink = "https://ubhubjoiner.vercel.app/?placeid=".. game.PlaceId .."&jobid=".. game.JobId
 
-			print(ServerConnectLink)
+			DeugLog(ServerConnectLink)
             setclipboard(ServerConnectLink)
 
             Fluent:Notify({
@@ -2201,7 +2293,7 @@ local Misc = Tabs.Misc:AddSection("Misc", nil)
         Description = "", --Make your character sit",
         Callback = function()
 			for k, v in pairs(workspace.zones.player:GetChildren()) do
-				print(v.Name)
+				DeugLog(v.Name)
 				game:GetService("ReplicatedStorage").events.discoverlocation:FireServer(v.Name)
 			end
         end
@@ -2211,7 +2303,7 @@ local Misc = Tabs.Misc:AddSection("Misc", nil)
 		local argsList = loadstring(game:HttpGet("https://raw.githubusercontent.com/Y-ForBE-Y/ioasduq089eu3oi13u12o3u/refs/heads/main/Fisch/promo"))()
 		for _, args in ipairs(argsList) do
 			game:GetService("ReplicatedStorage"):WaitForChild("events"):WaitForChild("runcode"):FireServer(unpack(args))
-			print(tostring(unpack(args)))
+			DeugLog(tostring(unpack(args)))
 		end
 	end
 
@@ -2333,13 +2425,48 @@ local Enchanting = Tabs.Automatic:AddSection("Enchanting", nil)
 					{
 						Title = "Cancel",
 						Callback = function()
-							print("Cancelled")
+							DeugLog("Cancelled")
 						end
 					}
 				}
 			})
 		end
 	})
+
+
+local Main = Tabs.Automatic:AddSection("Main", nil)
+
+	local function UnEquipAllTool()
+		local character = game.Players.LocalPlayer.Character
+		if character then
+			for _, tool in pairs(character:GetChildren()) do
+				if tool:IsA("Tool") then
+					print("Tool найден:", tool.Name)
+					
+					-- Запускаем спам активацией
+					coroutine.wrap(function()
+						while tool and tool.Parent == character do
+							tool:Activate()
+							task.wait(0)
+						end
+						print("Активация остановлена для:", tool.Name)
+					end)()
+				end
+			end
+		end
+	end
+
+    Tabs.Automatic:AddButton({
+        Title = "Open Holdet Create",
+		Description = "It will spam any selected item that you pick up.",
+        Callback = function()
+            UnEquipAllTool()
+        end
+    })
+
+
+
+
 
 
 
@@ -2371,11 +2498,11 @@ local Sell = Tabs.Automatic:AddSection("Sell", nil)
 					["idle"] = targetMerchant.description.idle,
 					["voice"] = 12
 				})
-				print("Продажа выполнена у клона мерчанта")
+				DeugLog("Продажа выполнена у клона мерчанта")
 			end)
 
 			if not success then
-				print("Ошибка при продаже: " .. tostring(errorMsg))
+				DeugLog("Ошибка при продаже: " .. tostring(errorMsg))
 			end
 		else
 			--SELL ALL NEW
@@ -2394,11 +2521,11 @@ local Sell = Tabs.Automatic:AddSection("Sell", nil)
 					["idle"] = targetMerchant.description.idle,
 					["voice"] = 12
 				})
-				print("Продажа выполнена у клона мерчанта")
+				DeugLog("Продажа выполнена у клона мерчанта")
 			end)
 
 			if not success then
-				print("Ошибка при продаже: " .. tostring(errorMsg))
+				DeugLog("Ошибка при продаже: " .. tostring(errorMsg))
 			end
 		else
 			local remote = game:GetService("ReplicatedStorage").events.Sell
@@ -2419,7 +2546,7 @@ local Sell = Tabs.Automatic:AddSection("Sell", nil)
 		local newCount = #game:GetService("Players").LocalPlayer.Backpack:GetChildren()
 		
 		if newCount > oldCount then
-			print("Изменение: " .. oldCount .. " -> " .. newCount)
+			DeugLog("Изменение: " .. oldCount .. " -> " .. newCount)
 			oldCount = newCount
 
 			if NewMwthod == false then
@@ -2427,12 +2554,12 @@ local Sell = Tabs.Automatic:AddSection("Sell", nil)
 				local targetMerchant = findMerchant()
 						
 				if not targetMerchant then
-						print("Клон мерчанта не найден")
+						DeugLog("Клон мерчанта не найден")
 					return
 				end
 						
 				if not targetMerchant.description then
-					print("Ошибка: у клона нет description")
+					DeugLog("Ошибка: у клона нет description")
 					return
 				end
 			end
@@ -2461,13 +2588,13 @@ local Sell = Tabs.Automatic:AddSection("Sell", nil)
 				end
 				processAutoSell()
 			end)
-			print("AutoSell включен")
+			DeugLog("AutoSell включен")
 		else
 			if AutoSellLoop then
 				AutoSellLoop:Disconnect()
 				AutoSellLoop = nil
 			end
-			print("AutoSell выключен")
+			DeugLog("AutoSell выключен")
 		end
 	end)
 
@@ -2491,7 +2618,7 @@ local Sell = Tabs.Automatic:AddSection("Sell", nil)
 						{
 							Title = "Cancel", 
 							Callback = function()
-								print("Cancelled")
+								DeugLog("Cancelled")
 							end
 						}
 					}
@@ -2519,7 +2646,7 @@ local Sell = Tabs.Automatic:AddSection("Sell", nil)
 						{
 							Title = "Cancel",
 							Callback = function()
-								print("Cancelled")
+								DeugLog("Cancelled")
 							end
 						}
 					}
@@ -2754,6 +2881,8 @@ local locations = {
     ["Scylla"] = CFrame.new(-2348.7109375, -11183.4892578125, 7071.1806640625),
 	["Kraken Pool"] = CFrame.new(-4301.30712890625, -1001.360107421875, 2004.2734375),
 	["Mossjaw Hunt"] = CFrame.new(-4909.92333984375, -1790.561279296875, -10162.6962890625),
+	["Mushgrove Swamp"] = CFrame.new(2433.88232421875, 131.62515258789062, -673.1868896484375),
+	["Carrot Garden"] = CFrame.new(3705.1044921875, -1127.6787109375, -1092.2685546875),
 }
 
 -- Функция для телепортации к локации
@@ -2953,7 +3082,7 @@ Tabs.Teleport:AddButton({
 				if not isEquip then
 					Rod.Parent = game:GetService('Players').LocalPlayer.Character
 				else
-					print("Удочка уже екиперована")
+					DeugLog("Удочка уже екиперована")
 				end
 			end
         end
@@ -2983,7 +3112,7 @@ Tabs.Teleport:AddButton({
 					}
 					local results = remote:InvokeServer(unpack(arguments))
 				else
-					print("Удочка не екиперована")
+					DeugLog("Удочка не екиперована")
 				end
 			end
         end
@@ -3005,7 +3134,7 @@ Tabs.Teleport:AddButton({
 					}
 					remote:FireServer(unpack(arguments))
 				else
-					print("Удочка не екиперована")
+					DeugLog("Удочка не екиперована")
 				end
 			end
         end
@@ -3023,7 +3152,7 @@ Tabs.Teleport:AddButton({
 					local arguments = {}
 					remote:FireServer(unpack(arguments))
 				else
-					print("Удочка не екиперована")
+					DeugLog("Удочка не екиперована")
 				end
 			end
         end
@@ -3036,10 +3165,10 @@ Tabs.Teleport:AddButton({
         Description = "", --Make your character sit",
         Callback = function()
 			local titlesScroll = game:GetService("Players").LocalPlayer.PlayerGui.hud.safezone.menu.menu_safezone.scroll["4User"].Titles.scroll
-			--print("=== СПИСОК ТИТУЛОВ ===")
+			--DeugLog("=== СПИСОК ТИТУЛОВ ===")
 			for _, child in ipairs(titlesScroll:GetChildren()) do
 				if not child:IsA("UIListLayout") and not child:IsA("UIPadding") and child.Name ~= "stroke" then
-					--print("• " .. child.Name)
+					--DeugLog("• " .. child.Name)
 
 					game:GetService("ReplicatedStorage").packages.Net["RE/Titles/Equip"]:FireServer(child.Name)
 					task.wait(0.01)
@@ -3126,6 +3255,14 @@ Tabs.Teleport:AddButton({
         Description = "", --Make your character sit",
         Callback = function()
 			loadstring(game:HttpGet("https://raw.githubusercontent.com/Y-ForBE-Y/ioasduq089eu3oi13u12o3u/refs/heads/main/My%20Script/XZCHEZAZALUPA/DEXPP.txt"))()
+        end
+    })
+
+    Tabs.Debug:AddButton({
+        Title = "Load INF YALD",
+        Description = "", --Make your character sit",
+        Callback = function()
+			loadstring(game:HttpGet('https://raw.githubusercontent.com/EdgeIY/infiniteyield/master/source'))()
         end
     })
 
