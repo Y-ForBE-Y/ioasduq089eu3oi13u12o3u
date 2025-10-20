@@ -1,6 +1,19 @@
 --[[ ]]
 print("Injected")
 
+game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(29.823762893676758, 137.24998474121094, -11562.669921875)
+
+-- Ждем только если пауза
+function waitIfPaused()
+	while game:GetService("Players").LocalPlayer.GameplayPaused do
+		wait(0.1)
+	end
+	wait(0.1)
+end
+
+waitIfPaused()
+wait(3)
+
 local houses = {
     workspace.world.map["Crook's Hallow"].Houses:FindFirstChild("001"),
     workspace.world.map["Crook's Hallow"].Houses:FindFirstChild("067"),
@@ -56,14 +69,6 @@ local function EquipCandyBuket()
 			--print("Error Bucket Equiped")
 		end
     end
-end
-
--- Ждем только если пауза
-function waitIfPaused()
-	while game:GetService("Players").LocalPlayer.GameplayPaused do
-		wait(0.1)
-	end
-	wait(0.1)
 end
 
 -- Функция для обновления позиции камеры
