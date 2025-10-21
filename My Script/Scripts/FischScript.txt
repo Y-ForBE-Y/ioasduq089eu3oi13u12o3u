@@ -535,18 +535,23 @@ local Base = Tabs.Main:AddSection("Base", nil)
 		end
 		
 		local character = game.Players.LocalPlayer.Character
-		if not character:FindFirstChild(Rod.Name) then
-			local Rod_in_Backpack = game:GetService("Players").LocalPlayer.Backpack:FindFirstChild(Rod.Name)
-			if Rod_in_Backpack then
-				UnEquipAllTool()
+
+		if not character:FindFirstChild("Nuke") then
+			if not character:FindFirstChild(Rod.Name) then
+				local Rod_in_Backpack = game:GetService("Players").LocalPlayer.Backpack:FindFirstChild(Rod.Name)
+				if Rod_in_Backpack then
+					UnEquipAllTool()
+				end
 			end
-		end
 
+			-- Экипируем удочку если она не экипирована и прошел кулдаун
+			if not isEquip then
+				DeugLog("Удочка экипирована")
+				Rod.Parent = game:GetService('Players').LocalPlayer.Character
+			end
 
-		-- Экипируем удочку если она не экипирована и прошел кулдаун
-		if not isEquip then
-			DeugLog("Удочка экипирована")
-			Rod.Parent = game:GetService('Players').LocalPlayer.Character
+		else
+			DeugLog("У Игрока в руках нюк свапнуть нельзя")
 		end
 	end
 
@@ -753,7 +758,8 @@ local Fishing = Tabs.Main:AddSection("Fishing", nil)
 
 	local Reelling = false
 	local ReelConnection = nil
-	local AditionalDelay = 0.1780
+	--local AditionalDelay = 0.1780
+	local AditionalDelay = 3
 
 	-- Чекбокс для PerfectOnly
 	local PerfectOnly = Tabs.Main:AddToggle("PerfectOnly", {Title = "PerfectOnly", Default = false})
@@ -780,6 +786,7 @@ local Fishing = Tabs.Main:AddSection("Fishing", nil)
 						--DeugLog("✓ НАЙДЕН REEL!")
 						
 						task.wait(0.5 + AditionalDelay)
+						--task.wait(0.58)
 						
 						game:GetService("ReplicatedStorage"):FindFirstChild("events"):FindFirstChild("reelfinished"):FireServer(100, PerfectOnly.Value)
 						EquipRud()
@@ -787,12 +794,12 @@ local Fishing = Tabs.Main:AddSection("Fishing", nil)
 						if Options.AutoCast.Value == true then
 							lastCastTime = tick()
 
-							if firstRun then
-								firstRun = false
-								task.wait(0.2)
-							else
-								task.wait(0.58)
-							end
+							--if firstRun then
+							--	firstRun = false
+								--task.wait(0.2)
+							--else
+								
+							--end
 							
 							ProcesAutoCast(true)
 						end
