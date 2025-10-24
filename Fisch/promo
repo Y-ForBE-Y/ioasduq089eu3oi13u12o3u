@@ -1,6 +1,7 @@
 local PromoList = {
     {"CARBON"},
     {"TemporarySubmarine"},
+    {"FISCHFRIGHT2025"},
 }
 
 return PromoList
