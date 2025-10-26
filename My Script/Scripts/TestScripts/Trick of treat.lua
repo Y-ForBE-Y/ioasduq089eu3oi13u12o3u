@@ -90,7 +90,7 @@ end
 
 local InProgresTreekOrTreet = false
 local LastTreekOrTreetTime = 0
-local TimeDelay = 480 * 30 -- 8.5 минут в секундах
+local TimeDelay = 480 + 30 -- 8.5 минут в секундах
 
 function findAndPrintBaseParts()
     -- Проверка кулдауна и статуса выполнения
@@ -169,4 +169,5 @@ while true do
 end
 
 --]]
+
 
