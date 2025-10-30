@@ -1,101 +1,247 @@
-print("Injecting...")
+local WindUI
 
-local Debug = false
-local function DeugLog(Text)
-	if Debug then
+local SDebug = false
+
+local function DebugLog(Text)
+	if SDebug then
 		print(Text)
 	end
 end
 
-local Fluent = loadstring(game:HttpGet("https://raw.githubusercontent.com/Y-ForBE-Y/ioasduq089eu3oi13u12o3u/refs/heads/main/Fluent/Beta.lua"))()
-local SaveManager = loadstring(game:HttpGet("https://raw.githubusercontent.com/Y-ForBE-Y/ioasduq089eu3oi13u12o3u/refs/heads/main/Fluent/SaveManager.txt"))()
-local InterfaceManager = loadstring(game:HttpGet("https://raw.githubusercontent.com/dawid-scripts/Fluent/master/Addons/InterfaceManager.lua"))()
+local function DebugWarn(Text)
+	if SDebug then
+		warn(Text)
+	end
+end
 
+print("Injecting...")
+do
+    local ok, result = pcall(function()
+        return require("./src/Init")
+    end)
+    
+    if ok then
+        WindUI = result
+    else 
+        WindUI = loadstring(game:HttpGet("https://raw.githubusercontent.com/gornorestor-ship-it/OosdpospdosoppodsoKAKmsd/refs/heads/main/NewWind.luau"))()
+    end
+end
 
+print("Loading Icons")
+
+-- */ РЕГИСТРАЦИЯ ВСЕХ ИКОНОК /* --
+do
+    local NebulaIcons = loadstring(game:HttpGet("https://raw.nebulasoftworks.xyz/nebula-icon-library-loader"))()
+    
+    -- ДЕБАГ: посмотрим что вообще есть
+    --DebugLog("=== ВСЕ НАБОРЫ ICONS ===")
+    for setName, iconSet in pairs(NebulaIcons) do
+        --DebugLog("Набор:", setName, "Тип:", type(iconSet))
+    end
+    
+    -- 1. РЕГИСТРИРУЕМ ОСНОВНЫЕ НАБОРЫ (таблицы с иконками)
+    WindUI.Creator.AddIcons("material", NebulaIcons.Material)
+    WindUI.Creator.AddIcons("lucide", NebulaIcons.Lucide) 
+    WindUI.Creator.AddIcons("phosphor", NebulaIcons.Phosphor)
+    WindUI.Creator.AddIcons("phosphor_filled", NebulaIcons["Phosphor-Filled"])
+    WindUI.Creator.AddIcons("sf", NebulaIcons["SF"])
+    WindUI.Creator.AddIcons("symbols", NebulaIcons["Symbols"])
+    WindUI.Creator.AddIcons("symbols_filled", NebulaIcons["Symbols-Filled"])
+    WindUI.Creator.AddIcons("lab", NebulaIcons["Lab"])
+    WindUI.Creator.AddIcons("fluency", NebulaIcons.Fluency)
+    
+    -- 2. РЕГИСТРИРУЕМ NEBULA ICONS (отдельные иконки)
+    WindUI.Creator.AddIcons("nebula", NebulaIcons.nebulaIcons)
+    
+    --DebugLog("✅ Все иконки зарегистрированы!")
+end
+
+-- Загружаем и ВЫЗЫВАЕМ функцию
+local LoadedConfig = loadstring(game:HttpGet("https://raw.githubusercontent.com/gornorestor-ship-it/OosdpospdosoppodsoKAKmsd/refs/heads/main/KeySys.luau"))()
+
+print("Loading Modules")
 -- For Market 
---local Rods_Module = require(game:GetService("ReplicatedStorage").shared.modules.library.rods)
 local Rods_Module = loadstring(game:HttpGet("https://raw.githubusercontent.com/Y-ForBE-Y/ioasduq089eu3oi13u12o3u/refs/heads/main/My%20Script/InGameModules/Fisch/RodsModule.luau"))()
---local Fish_Module = require(game:GetService("ReplicatedStorage").shared.modules.library.fish)
 local Fish_Module = loadstring(game:HttpGet("https://raw.githubusercontent.com/Y-ForBE-Y/ioasduq089eu3oi13u12o3u/refs/heads/main/My%20Script/InGameModules/Fisch/FishModule/Fish.lua"))()
---local Items_Module = require(game:GetService("ReplicatedStorage").shared.modules.library.items)
 local success, Items_Module = pcall(function()
     return loadstring(game:HttpGet("https://raw.githubusercontent.com/Y-ForBE-Y/ioasduq089eu3oi13u12o3u/refs/heads/main/My%20Script/InGameModules/Fisch/ItemsModule.luau"))()
 end)
---local Spears_Module = require(game:GetService("ReplicatedStorage").shared.modules.library.spears)
 local Spears_Module = loadstring(game:HttpGet("https://raw.githubusercontent.com/Y-ForBE-Y/ioasduq089eu3oi13u12o3u/refs/heads/main/My%20Script/InGameModules/Fisch/SpearsModule.lua"))()
-----------------
 
---[[
-	local merchantCloneCreated = false
-	local merchantClone = nil
 
-	-- Функция для поиска любого мерчанта
-	function findAnyMerchant()
-		if not workspace.world or not workspace.world.npcs then
-			return nil
-		end
+print("Loading Theme")
+do
+	WindUI:AddTheme({
+		Name = "Transparent Theme",
 		
-		for _, npc in pairs(workspace.world.npcs:GetChildren()) do
-			if string.find(string.lower(npc.Name), "merchant") then
-				return npc
-			end
-		end
-		return nil
-	end
+		Accent = Color3.fromHex("#30FF6A"),
+		Dialog = Color3.fromHex("#000000"),
+		Outline = Color3.fromHex("#30FF6A"),
+		Text = Color3.fromHex("#FFFFFF"),
+		Placeholder = Color3.fromHex("#7a7a7a"),
+		Background = Color3.fromHex("#000000"),
+		Button = Color3.fromHex("#1a1a1a"),
+		Icon = Color3.fromHex("#e7ff2f")
+	})
 
-	-- Функция для создания ОДНОГО клона
-	function createSingleMerchantClone()
-		if merchantCloneCreated then
-			DeugLog("Клон мерчанта уже создан")
-			return
-		end
+	WindUI:AddTheme({
+		Name = "White Blue Theme",
 		
-		if not workspace:FindFirstChild(game:GetService("Players").LocalPlayer.Name) then
-			DeugLog("Игрок не в воркспейсе")
-			return
-		end
+		Accent = Color3.fromHex("#00a8ff"),  -- Голубой акцент
+		Dialog = Color3.fromHex("#ffffff"),  -- Белый фон
+		Outline = Color3.fromHex("#00a8ff"), -- Голубые контуры
+		Text = Color3.fromHex("#2c3e50"),    -- Темно-синий текст
+		Placeholder = Color3.fromHex("#95a5a6"), -- Серый плейсхолдер
+		Background = Color3.fromHex("#ecf0f1"), -- Светло-серый фон
+		Button = Color3.fromHex("#3498db"),  -- Синяя кнопка
+		Icon = Color3.fromHex("#00a8ff")     -- Голубые иконки
+	})
+
+	WindUI:AddTheme({
+		Name = "Blue White Gradient Theme",
 		
-		coroutine.wrap(function()
-			DeugLog("Ожидание появления любого мерчанта...")
-			
-			-- Ждем любого мерчанта
-			local merchant = nil
-			while not merchant do
-				merchant = findAnyMerchant()
-				if not merchant then
-					RunService.Heartbeat:Wait()
-				end
-			end
-			
-			DeugLog("Найден мерчант: " .. merchant.Name)
-			
-			-- Создаем клон
-			local clone = merchant:Clone()
-			clone.Parent = workspace.world.npcs
-			clone.Name = "AutoSell Merchant Clone"
-			
-			merchantClone = clone
-			merchantCloneCreated = true
-			DeugLog("Клон мерчанта создан: " .. clone.Name)
-			clone.HumanoidRootPart.CFrame = CFrame.new(466.1600341796875, 5251.001953125, 224.49708557128906)
-		end)()
-	end
+		Accent = Color3.fromHex("#00a8ff"),  -- Яркий голубой
+		Dialog = Color3.fromHex("#ffffff"),  -- Белый фон
+		Outline = Color3.fromHex("#00a8ff"), -- Голубые контуры
+		Text = Color3.fromHex("#2c3e50"),    -- Темно-синий текст для контраста
+		Placeholder = Color3.fromHex("#7f8c8d"), -- Серый плейсхолдер
+		Background = Color3.fromHex("#e8f4fc"), -- Очень светлый голубой фон
+		Button = Color3.fromHex("#00a8ff"),  -- Голубая кнопка
+		Icon = Color3.fromHex("#00a8ff")     -- Голубые иконки
+	})
 
--- Создаем одного клона при запуске
-createSingleMerchantClone()
---]]
+	WindUI:AddTheme({
+		Name = "Black Background Blue White Theme",
+		
+		Accent = Color3.fromHex("#00a8ff"),  -- Голубой акцент
+		Dialog = Color3.fromHex("#1a1a1a"),  -- Темный фон диалогов
+		Outline = Color3.fromHex("#00a8ff"), -- Голубые контуры
+		Text = Color3.fromHex("#ffffff"),    -- Белый текст
+		Placeholder = Color3.fromHex("#7f8c8d"), -- Серый плейсхолдер
+		Background = Color3.fromHex("#000000"), -- Черный фон
+		Button = Color3.fromHex("#00a8ff"),  -- Голубая кнопка
+		Icon = Color3.fromHex("#00a8ff")     -- Голубые иконки
+	})
 
+	WindUI:AddTheme({
+		Name = "Black Background Blue White Theme",
+		
+		Accent = Color3.fromHex("#00a8ff"),  -- Голубой акцент
+		Dialog = Color3.fromHex("#0a0a0a"),  -- Темный фон диалогов
+		Outline = Color3.fromHex("#00a8ff"), -- Голубые контуры
+		Text = Color3.fromHex("#ffffff"),    -- Белый текст
+		Placeholder = Color3.fromHex("#7f8c8d"), -- Серый плейсхолдер
+		Background = Color3.fromHex("#000000"), -- Черный фон
+		Button = Color3.fromHex("#00a8ff"),  -- Голубая кнопка
+		Icon = Color3.fromHex("#00a8ff"),    -- Голубые иконки
+		
+		-- Дополнительные настройки для табов
+		Tab = {
+			Background = Color3.fromHex("#000000"), -- Черный фон табов
+			Text = Color3.fromHex("#ffffff"),       -- Белый текст табов
+			Accent = Color3.fromHex("#00a8ff")      -- Голубой акцент табов
+		},
+		
+		Section = {
+			Background = Color3.fromHex("#0a0a0a"), -- Темный фон секций
+			Text = Color3.fromHex("#ffffff")        -- Белый текст секций
+		}
+	})
+end
 
+print("Loading Main Ui")
+
+-- */  Window  /* --
+local Window = WindUI:CreateWindow({
+    Title = "Eternal",
+    Author = "by HUISOSIKUSITUNITY x Y-ForBE-Y",
+    Folder = "Eternal",
+    NewElements = true,
+    HideSearchBar = false,
+
+    -- Иконка для окна
+	Icon = "lucide:orbit",
+
+    -- ↓ This all is Optional. You can remove it.
+    Size = UDim2.fromOffset(800, 540),
+    --MinSize = Vector2.new(560, 350),
+    MaxSize = Vector2.new(1850, 1260),
+    Transparent = true,
+    Theme = "Dark",
+    Resizable = true,
+    SideBarWidth = 200,
+    BackgroundImageTransparency = 0.42,
+    --HideSearchBar = true,
+    ScrollBarEnabled = false,
+	Debug = SDebug,
+
+    -- Настройки прозрачности основного окна
+    BackgroundTransparency = 0.2,
+    BackgroundColor = Color3.fromHex("#000000"),
+    BlurBackground = true,
+    BlurIntensity = 0.7,
+
+    -- Настройки прозрачности для внутренних элементов
+    ElementTransparency = {
+        Main = 0.1,
+        Section = 0.2,
+        Button = 0.1,
+        Toggle = 0.1,
+        Dropdown = 0.2,
+        Slider = 0.2,
+        Input = 0.2,
+        Tab = 0.1  -- Прозрачность табов
+    },
+
+    -- Применяем нашу тему
+    Theme = "Black Background Blue White Theme",
+
+    -- ↓ Optional. You can remove it.
+    User = {
+        Enabled = true,
+        Anonymous = false,
+        Callback = function()
+            DebugLog("clicked")
+        end,
+    },
+
+    -- Передаем загруженную конфигурацию
+    KeySystem = LoadedConfig,
+
+    OpenButton = {
+        Title = "Open eternal",
+        CornerRadius = UDim.new(1,0),
+        StrokeThickness = 3,
+        Enabled = true,
+        Draggable = true,
+        OnlyMobile = true,
+        
+        Color = ColorSequence.new(
+            Color3.fromHex("#30FF6A"), 
+            Color3.fromHex("#e7ff2f")
+        )
+    }
+})
+
+Window:SetToggleKey(Enum.KeyCode.RightControl)
+
+-- */  Tags  /* --
+do
+    Window:Tag({
+        Title = "v" .. "0.0.2", 
+        Color = Color3.fromHex("#6b31ff")
+    })
+end
+
+print("Loading Ui Elements")
+	
 -- Variables --
 local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
 local RunService = game:GetService("RunService")
 local TeleportService = game:GetService("TeleportService")
 local TweenService = game:GetService("TweenService")
-
--- Переменные для сервер хопа
-local PlaceId = game.PlaceId
-local JobId = game.JobId
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 -- Будем хранить текущие ссылки на персонажа и humanoid
 local LCharacter
@@ -109,12 +255,7 @@ local TimeLoop = nil
 
 local originalJumpHeight = 7.2
 local originalJumpPower = 50
-
 local originalWalkSpeed = 16
-local originalTime = "12:00:00"
-
--- Флаг для отслеживания телепортации
-local IsTeleporting = false
 
 -- Функция для обновления ссылок на персонажа
 local function updateCharacterReferences(character)
@@ -124,32 +265,7 @@ local function updateCharacterReferences(character)
     -- Сохраняем оригинальные значения при появлении персонажа
     originalJumpHeight = LHumanoid.JumpHeight
     originalWalkSpeed = LHumanoid.WalkSpeed
-	originalJumpPower = LHumanoid.JumpPower
-    
-    -- Обновляем значения слайдеров, если они уже созданы
-    if Options and Options.SetJumpHeight then
-        Options.SetJumpHeight:Set(LHumanoid.JumpHeight)
-    end
-    if Options and Options.SetWalkSpeed then
-        Options.SetWalkSpeed:Set(LHumanoid.WalkSpeed)
-    end
-	if Options and Options.SetJumpPower then
-        Options.SetJumpPower:Set(LHumanoid.JumpPower)
-    end
-    
-    -- Применяем настройки только если тогглы включены
-    if Options and Options.JumpHeightToggle and Options.JumpHeightToggle.Value == true then
-        SetJumpHeight(Options.SetJumpHeight.Value)
-    end
-
-    -- Применяем настройки только если тогглы включены
-    if Options and Options.JumpPowerToggle and Options.JumpPowerToggle.Value == true then
-        SetJumpPower(Options.SetJumpPower.Value)
-    end
-
-    if Options and Options.WalkSpeedToggle and Options.WalkSpeedToggle.Value == true then
-        SetWalkSpeed(Options.SetWalkSpeed.Value)
-    end
+    originalJumpPower = LHumanoid.JumpPower
 end
 
 -- Functions --
@@ -190,94 +306,6 @@ local function SuicideV2()
     end
 end
 
--- Функции для сервер хопа
-local function getServers()
-    local servers = {}
-    local success, result = pcall(function()
-        return game:GetService("HttpService"):JSONDecode(game:HttpGet("https://games.roblox.com/v1/games/"..PlaceId.."/servers/Public?sortOrder=Asc&limit=100"))
-    end)
-    
-    if success and result and result.data then
-        for _, server in pairs(result.data) do
-            if server.playing < server.maxPlayers and server.id ~= JobId then
-                table.insert(servers, server)
-            end
-        end
-    end
-    return servers
-end
-
-local function serverHop()
-    IsTeleporting = true
-    --SaveManager:SaveConfig() -- Сохраняем настройки перед телепортом
-    
-    local servers = getServers()
-    if #servers > 0 then
-        local randomServer = servers[math.random(1, #servers)]
-        TeleportService:TeleportToPlaceInstance(PlaceId, randomServer.id, LocalPlayer)
-    else
-        Fluent:Notify({
-            Title = "Server Hop",
-            Content = "No available servers found!",
-            Duration = 5
-        })
-        IsTeleporting = false
-    end
-end
-
-local function rejoin()
-    IsTeleporting = true
-    --SaveManager:SaveConfig() -- Сохраняем настройки перед телепортом
-    TeleportService:TeleportToPlaceInstance(PlaceId, JobId, LocalPlayer)
-end
-
--- Функция для восстановления GUI после телепортации
-local function restoreGUI()
-    if not IsTeleporting then return end
-    
-    -- Ждем полной загрузки игры
-    wait(3)
-    
-    -- Пересоздаем GUI
-    if Fluent and not Fluent.Unloaded then
-        Fluent:Unload()
-    end
-    
-    -- Загружаем сохраненную конфигурацию
-    SaveManager:LoadAutoloadConfig()
-    
-    IsTeleporting = false
-    Fluent:Notify({
-        Title = "Fluent",
-        Content = "GUI restored after server hop!",
-        Duration = 5
-    })
-end
-
--- Обработчик появления нового персонажа
-LocalPlayer.CharacterAdded:Connect(function(character)
-    updateCharacterReferences(character)
-end)
-
--- Автоматическое восстановление GUI при загрузке
-game:GetService("Players").LocalPlayer.OnTeleport:Connect(function(State)
-    if State == Enum.TeleportState.Started then
-        --SaveManager:SaveConfig()
-        syn.queue_on_teleport([[
-            wait(3)
-            loadstring(game:HttpGet("https://raw.githubusercontent.com/discoart/FluentPlus/refs/heads/main/Beta.lua"))()
-			
-			wait(0.5)
-
-			Fluent:Notify({
-				Title = "Fluent",
-				Content = "The script has been loaded with Server Hop features!",
-				Duration = 8
-			})
-		]])
-    end
-end)
-
 -- Инициализация текущего персонажа
 if LocalPlayer.Character then
     updateCharacterReferences(LocalPlayer.Character)
@@ -287,95 +315,69 @@ else
 end
 
 
---[[
-local function GetAllRodsInGame()
-	local RodsFolder = game:GetService("ReplicatedStorage").resources.items.rods
-	-- Собираем названия удочек
-	local rodNames = {}
-	for _, folder in ipairs(RodsFolder:GetChildren()) do
-		if folder:IsA("Folder") then
-			rodNames[folder.Name:lower()] = folder.Name
-			--DeugLog("Удочка:", folder.Name)
-		end
-	end
-	return rodNames
+-- Stats --
+local IsUnloaded = false
+
+-- Functions
+Window:OnDestroy(function()
+    DebugLog("Window Destroyed")
+    IsUnloaded = true
+    DebugLog(IsUnloaded)
+end)
+
+local function GetPlayerRod(OnlyEquped)
+    if IsUnloaded then return nil, false end
+    
+    if not OnlyEquped then
+        OnlyEquped = false
+    end
+
+    local isEquipped, Rod
+    local Backpack = game:GetService('Players').LocalPlayer:FindFirstChild("Backpack")
+    local WPlayer = game:GetService('Players').LocalPlayer.Character
+    local LocalPlayer = game:GetService('Players').LocalPlayer
+    local playerName = LocalPlayer.Name
+    local Selected_rod_Name = workspace.PlayerStats[playerName].T[playerName].Stats.rod.Value
+
+    if WPlayer:FindFirstChild(Selected_rod_Name) then
+        Rod = WPlayer:FindFirstChild(Selected_rod_Name)
+        isEquipped = true
+        return Rod, isEquipped
+    elseif Backpack and Backpack:FindFirstChild(Selected_rod_Name) and not OnlyEquped then
+        Rod = Backpack:FindFirstChild(Selected_rod_Name)
+        isEquipped = false
+        return Rod, isEquipped
+    else
+        return nil, false        
+    end
 end
 
-local function isRod(tool)
-    if not tool:IsA('Tool') then return false end
-    local toolNameLower = tool.Name:lower()
-    
-    -- Проверяем совпадение с названиями удочек
-    for rodNameLower, originalName in pairs(GetAllRodsInGame()) do
-        if toolNameLower:find(rodNameLower) or toolNameLower:find('rod') then
-            return true, originalName
-        end
-    end
-    return false
-end]]
-
-	local function GetPlayerRod(OnlyEquped)
-		
-		if not OnlyEquped then
-			OnlyEquped = false
-		end
-
-		local isEquipped, Rod
-		local Backpack = game:GetService('Players').LocalPlayer:FindFirstChild("Backpack")
-
-		local WPlayer = game:GetService('Players').LocalPlayer.Character
-
-		local LocalPlayer = game:GetService('Players').LocalPlayer
-		local playerName = LocalPlayer.Name
-		local Selected_rod_Name = workspace.PlayerStats[playerName].T[playerName].Stats.rod.Value
-
-		if WPlayer:FindFirstChild(Selected_rod_Name) then
-			Rod = WPlayer:FindFirstChild(Selected_rod_Name)
-			isEquipped = true
-			return Rod, isEquipped
-		elseif Backpack and Backpack:FindFirstChild(Selected_rod_Name) and not OnlyEquped then
-			Rod = Backpack:FindFirstChild(Selected_rod_Name)
-			isEquipped = false
-			return Rod, isEquipped
-		else
-			return nil, false        
-		end
-	end
-
-
-
-
 local function teleportBobberVerticalToZone()
+    if IsUnloaded then return false end
+    
     local workspace = game:GetService("Workspace")
     local player = game.Players.LocalPlayer
     local character = player.Character or player.CharacterAdded:Wait()
     
-	local LocalPlayer = game:GetService('Players').LocalPlayer
-	local playerName = LocalPlayer.Name
-	local BobberName = workspace.PlayerStats[playerName].T[playerName].Stats.bobber.Value
+    local LocalPlayer = game:GetService('Players').LocalPlayer
+    local playerName = LocalPlayer.Name
+    local BobberName = workspace.PlayerStats[playerName].T[playerName].Stats.bobber.Value
 
     -- Находим поплавок
     local tool = character:FindFirstChildOfClass("Tool")
     if not tool then
-        --DeugLog("Инструмент не найден")
         return false
     end
 
     local CurrentTool = workspace:WaitForChild(player.Name):FindFirstChild(tool.Name)
     if not CurrentTool then
-        --DeugLog("Инструмент не найден в workspace игрока")
         return false
     end
 
     local Bobber = CurrentTool:FindFirstChild("bobber")
     if not Bobber then
-        --DeugLog("Поплавок не найден")
         return false
     end
-
-    --DeugLog("Игрок держит инструмент:", tool.Name)
-    --DeugLog("Поплавок найден:", Bobber.Name)
-    --DeugLog("Текущая позиция поплавка:", Bobber.Position)
 
     -- Получаем ВСЕ рыболовные зоны для проверки
     local fishingZones = {}
@@ -387,1360 +389,2588 @@ local function teleportBobberVerticalToZone()
 
     -- Параметры рейкаста - ИГНОРИРУЕМ ВСЕ КРОМЕ РЫБОЛОВНЫХ ЗОН
     local raycastParams = RaycastParams.new()
-    raycastParams.FilterType = Enum.RaycastFilterType.Whitelist  -- ТОЛЬКО эти объекты
-    raycastParams.FilterDescendantsInstances = fishingZones  -- ТОЛЬКО рыболовные зоны
+    raycastParams.FilterType = Enum.RaycastFilterType.Whitelist
+    raycastParams.FilterDescendantsInstances = fishingZones
 
     -- Рейкаст вертикально вниз от текущей позиции поплавка
-    local raycastOrigin = Bobber.Position + Vector3.new(0, 5, 0)  -- Начинаем чуть выше
-    local raycastDirection = Vector3.new(0, -500, 0)  -- Луч вниз
+    local raycastOrigin = Bobber.Position + Vector3.new(0, 5, 0)
+    local raycastDirection = Vector3.new(0, -500, 0)
     
     local raycastResult = workspace:Raycast(raycastOrigin, raycastDirection, raycastParams)
     
     if not raycastResult then
-        --DeugLog("Рейкаст не нашел рыболовную зону под поплавком")
         return false
     end
 
     local hitPosition = raycastResult.Position
     local hitInstance = raycastResult.Instance
-    
-    --DeugLog("Рейкаст попал в зону:", hitInstance.Name)
-    --DeugLog("Позиция поверхности воды:", hitPosition)
 
     -- Проверяем длину лески
     local ropeConstraint = Bobber:FindFirstChild("RopeConstraint")
     if ropeConstraint then
         local verticalDistance = math.abs(Bobber.Position.Y - hitPosition.Y)
-        --DeugLog("Вертикальное расстояние:", verticalDistance)
-        --DeugLog("Длина лески:", ropeConstraint.Length)
-        
         if ropeConstraint.Length < verticalDistance then
-            DeugLog("Длина лески недостаточна для телепортации")
+            DebugLog("Длина лески недостаточна для телепортации")
             return false
         end
     end
 
     -- Телепортируем поплавок на поверхность воды
     local newPosition = Vector3.new(
-        Bobber.Position.X,  -- Сохраняем X
-        hitPosition.Y + 0.5, -- Чуть выше поверхности воды
-        Bobber.Position.Z   -- Сохраняем Z
+        Bobber.Position.X,
+        hitPosition.Y + 0.5,
+        Bobber.Position.Z
     )
     
     Bobber.Position = newPosition
 
-	if Bobber:FindFirstChild(BobberName) then
-		Bobber:FindFirstChild(BobberName):Destroy()
-	end
+    if Bobber:FindFirstChild(BobberName) then
+        Bobber:FindFirstChild(BobberName):Destroy()
+    end
 
-    --DeugLog("Поплавок телепортирован на поверхность воды!")
-    --DeugLog("Новая позиция:", newPosition)
     return true
 end
 
-print("Modules Loaded")
+local lastCastTime = 0
+local castCooldown = 0.95
+local isCasting = false
 
--- ================================================ GUI ================================================
-local Window = Fluent:CreateWindow({
-    Title = "Eternal", --.. Fluent.Version,
-    SubTitle = "by HUISOSIKUSITUNITY X YForBEY",
-    Search = true, -- optional and default true
-    Icon = "home", -- optional
-    TabWidth = 160,
-    Size = UDim2.fromOffset(580, 460),
-    Acrylic = true, -- The blur may be detectable, setting this to false disables blur entirely
-    Theme = "Dark",
-    MinimizeKey = Enum.KeyCode.LeftControl, -- Used when theres no MinimizeKeybind
-
-    UserInfo = true,
-    UserInfoTop = false, -- display user info at the top of the window
-    UserInfoTitle = game:GetService("Players").LocalPlayer.DisplayName,
-    UserInfoSubtitle = "User",
-    UserInfoSubtitleColor = Color3.fromRGB(71, 123, 255)
-})
-
--- Вариант 4 (минималистичный)
-local Tabs = {
-    Main = Window:AddTab({ Title = "Main", Icon = "home" }),
-    Misc = Window:AddTab({ Title = "Misc", Icon = "layers" }),
-	Automatic = Window:AddTab({ Title = "Automatic", Icon = "refresh-cw" }),
-	Market = Window:AddTab({ Title = "Market", Icon = "store" }),
+local function GetBober()
+    if IsUnloaded then return nil end
     
-    Player = Window:AddTab({ Title = "Player", Icon = "user-plus" }),
-    Teleport = Window:AddTab({ Title = "Teleport", Icon = "map-pin" }),
+    local Rod, isEquip = GetPlayerRod()
+    if not Rod then
+        return nil
+    end
     
-    --Visuals = Window:AddTab({ Title = "Visuals", Icon = "eye" }),
-    --View = Window:AddTab({ Title = "View", Icon = "camera" }),
-	--Protect = Window:AddTab({ Title = "Protect", Icon = "shield" }),
-    World = Window:AddTab({ Title = "World", Icon = "cloud" }),
+    local Bober = Rod:FindFirstChild("bobber")
+    if Bober then
+        return Bober
+    else
+        return nil
+    end
+end
+
+local function GetRodValies()
+    if IsUnloaded then return nil end
     
-    Server = Window:AddTab({ Title = "Server", Icon = "hard-drive" }),
-    Settings = Window:AddTab({ Title = "Settings", Icon = "settings" }),
+    local Rod, isEquip = GetPlayerRod(true)
+    if isEquip then
+        return Rod.values
+    else
+        DebugWarn("Удочка не экипирована")
+    end
+end
 
-    Debug = Window:AddTab({ Title = "Debug", Icon = "wrench" }),
-    --Info = Window:AddTab({ Title = "Info", Icon = "book" }),
-}
+local function RodIsCasted()
+    if IsUnloaded then return false end
+    
+    local values = GetRodValies()
+    if values ~= nil then
+        if values.casted.Value == true then
+            return true
+        else
+            return false
+        end
+    else
+        return true
+    end
+end
+
+local CastDistance = 0
+local function ProcesAutoCast(InInstantReel)
+    if IsUnloaded then return end
+    
+    local Rod, isEquip = GetPlayerRod(true)
+
+    if InInstantReel == nil then
+        InInstantReel = false
+    end
+
+    if not InInstantReel then
+        if tick() - lastCastTime < castCooldown or isCasting then
+            return
+        end
+    end
+
+    if isEquip then
+        local Cast = Rod.events.castAsync
+        if not RodIsCasted() then
+            isCasting = true
+            wait(0.2)
+            Cast:InvokeServer(CastDistance, 1)
+            lastCastTime = tick()
+            
+            local startTime = tick()
+            local timeout = 1
+            
+            spawn(function()
+                while tick() - startTime < timeout do
+                    if IsUnloaded then 
+                        isCasting = false
+                        return 
+                    end
+                    
+                    if RodIsCasted() then
+                        DebugLog("Удочка успешно скастована")
+                        isCasting = false
+                        return
+                    end
+                    wait(0.05)
+                end
+                
+                if Rod and not IsUnloaded then
+                    Rod.events.reset:FireServer()
+                end
+                isCasting = false
+            end)
+        else
+            if RodIsCasted() and not GetBober() then
+                Rod.events.reset:FireServer()
+            end
+            isCasting = false
+        end
+    end
+end
+
+-- Instant Catch функциональность
+local function EquipRud()
+    if IsUnloaded then return end
+    
+    local Rod, isEquip = GetPlayerRod()
+    if Rod then
+        if not isEquip then
+            Rod.Parent = game:GetService('Players').LocalPlayer.Character
+        else
+            Rod.Parent = game:GetService('Players').LocalPlayer:FindFirstChild("Backpack")
+        end
+    end
+end
+
+local function CenterPlayerBarOnFish()
+    local reelGUI = game:GetService("Players").LocalPlayer.PlayerGui:FindFirstChild("reel")
+    if reelGUI then
+        local bar = reelGUI:FindFirstChild("bar")
+        if bar then
+            local fish = bar:FindFirstChild("fish")
+            local playerbar = bar:FindFirstChild("playerbar")
+            
+            if fish and playerbar then
+                -- Просто ставим playerbar на позицию рыбы
+                playerbar.Position = fish.Position
+				local halfPlayerbar = playerbar.Size.X.Scale / 2
+                
+                -- Если вышли за левый край - фиксим
+                if playerbar.Position.X.Scale < 0 + halfPlayerbar then
+                    playerbar.Position = UDim2.new(halfPlayerbar, 0, playerbar.Position.Y.Scale, playerbar.Position.Y.Offset)
+                end
+                
+                -- Если вышли за правый край - фиксим
+                if playerbar.Position.X.Scale + halfPlayerbar > 1 then
+                    playerbar.Position = UDim2.new(1 - halfPlayerbar, 0, playerbar.Position.Y.Scale, playerbar.Position.Y.Offset)
+                end
+            end
+        end
+    end
+end
 
 
-local Minimizer = Fluent:CreateMinimizer({
-    Icon = "home",
-    Size = UDim2.fromOffset(44, 44),
-    Position = UDim2.new(0, 320, 0, 24),
-    Acrylic = false,
-    Corner = 10,
-    Transparency = 1,
-    Draggable = true,
-    Visible = true
-})
 
-local Options = Fluent.Options
+-- Добавляем переменные для контроля состояния
+local Reelling = false
+local ReelTime = 3.15
+local hasEventFired = false
+local ReelStartTime = 0
+local Perfect_Only = false
+local AtoCastValue = false
 
-do
+local ReelConnection = nil
 
--- ==================== Main START ====================
+local function ProcessReel()
+	if IsUnloaded then 
+        if ReelConnection then
+            ReelConnection:Disconnect()
+            ReelConnection = nil
+        end
+        return 
+    end
+	
+	if ReelConnection then  -- Добавьте эту проверку
+        ReelConnection:Disconnect()
+    end
 
-local Base = Tabs.Main:AddSection("Base", nil)
-	local lastUnequipTime = os.time()
-	local EQUIP_COOLDOWN = 3 -- 3 секунда
-	local wasEquipped = false
+	ReelConnection = game:GetService("RunService").Heartbeat:Connect(function()
+		local ReelGUI = game:GetService("Players").LocalPlayer.PlayerGui:FindFirstChild("reel")
 
-	local function UnEquipAllTool()
-		local character = game.Players.LocalPlayer.Character
-		if character then
-			for _, tool in pairs(character:GetChildren()) do
-				if tool:IsA("Tool") then
-					-- Действия с tool
-					DeugLog("Tool найден:", tool.Name)
-					tool.Parent = game:GetService("Players").LocalPlayer.Backpack
-				end
-			end
-		end
-	end
+		if ReelGUI then
+			CenterPlayerBarOnFish()
 
-	local function ProccesAutoEquipRod()
-		local Rod, isEquip = GetPlayerRod()
-		
-		-- Обновляем таймер когда удочка переходит из состояния "экипирована" в "не экипирована"
-		if wasEquipped and not isEquip then
-			lastUnequipTime = os.time()
-			DeugLog("Удочка убрана, таймер обновлен")
-		end
-		
-		-- Сохраняем текущее состояние для следующего кадра
-		wasEquipped = isEquip
-		
-		-- Проверяем кулдаун
-		if os.time() - lastUnequipTime < EQUIP_COOLDOWN then
-			return
-		end
-		
-		local character = game.Players.LocalPlayer.Character
-
-		if not character:FindFirstChild("Nuke") then
-			if not character:FindFirstChild(Rod.Name) then
-				local Rod_in_Backpack = game:GetService("Players").LocalPlayer.Backpack:FindFirstChild(Rod.Name)
-				if Rod_in_Backpack then
-					UnEquipAllTool()
-				end
-			end
-
-			-- Экипируем удочку если она не экипирована и прошел кулдаун
-			if not isEquip then
-				DeugLog("Удочка экипирована")
-				Rod.Parent = game:GetService('Players').LocalPlayer.Character
-			end
-
-		else
-			DeugLog("У Игрока в руках нюк свапнуть нельзя")
-		end
-	end
-
-	-- Чекбокс для AutoEquipRod
-	local AutoEquipRod = Tabs.Main:AddToggle("AutoEquipRod", {Title = "Auto Equip Rod", Default = false})
-
-	local AutoEquipRodRod = nil
-	AutoEquipRod:OnChanged(function()
-		if Options.AutoEquipRod.Value == true then
-			AutoEquipRodRod = RunService.Heartbeat:Connect(function()
-				if Fluent.Unloaded then 
-					AutoEquipRodRod:Disconnect()
-					return
-				end
-				ProccesAutoEquipRod()
-			end)
-		else
-			if AutoEquipRodRod then
-				AutoEquipRodRod:Disconnect()
-			end
-		end
-	end)
-
-	-- Слайдер скорости
-	local EquipDalay = Tabs.Main:AddSlider("EquipDalay", {
-		Title = "Equip Dalay",
-		Default = 3,
-		Min = 0.5,
-		Max = 10,
-		Rounding = 1,
-		Callback = function(Value)
-			EQUIP_COOLDOWN = tonumber(Value)
-			--DeugLog(EQUIP_COOLDOWN)
-		end
-	})
-
-local Fishing = Tabs.Main:AddSection("Fishing", nil)
-	local lastCastTime = 0
-	local castCooldown = 0.95 -- 1 секунда
-	local isCasting = false
-
-	local function GetBober()
-		local Rod, isEquip = GetPlayerRod()
-		if not Rod then
-			return nil
-		end
-		
-		local Bober = Rod:FindFirstChild("bobber")
-		if Bober then
-			return Bober
-		else
-			return nil
-		end
-	end
-
-	local function GetRodValies()
-		local Rod, isEquip = GetPlayerRod(true)
-		if isEquip then
-			return Rod.values
-		else
-			warn("Удочкуа не екиперована")
-		end
-	end
-
-	local function RodIsCasted()
-		local values = GetRodValies()
-		if values ~= nil then
-			if values.casted.Value == true then
-				return true
-			else
-				return false
-			end
-		else
-			return true
-		end
-	end
-
-	local function ProcesAutoCast(InInstantReel)
-		local Rod, isEquip = GetPlayerRod(true)
-
-		if InInstantReel == nil then
-			InInstantReel = false
-		end
-
-		if not InInstantReel then
-			-- Проверяем cooldown и не идет ли уже каст
-			if tick() - lastCastTime < castCooldown or isCasting then
+			-- Если событие уже сработало, выходим
+			if hasEventFired then
 				return
 			end
-		end
 
+			-- Если только начали риллинг
+			if not Reelling then
+				ReelStartTime = time()
+				Reelling = true
+				DebugLog("Setuping time")
+				return
+			end
 
-		if isEquip then
-			local Cast = Rod.events.castAsync
-			if not RodIsCasted() then
-				isCasting = true
-				wait(0.2)
-				--DeugLog("CastDistance.Value:", Options.CastDistance.Value)
-				Cast:InvokeServer(Options.CastDistance.Value, 1)
-				lastCastTime = tick()
-				
-				-- Добавляем проверку таймаута как в WaitCasting
-				local startTime = tick()
-				local timeout = 1 -- секунда
-				
-				spawn(function()
-					while tick() - startTime < timeout do
-						if RodIsCasted() then
-							DeugLog("Удочка успешно скастована: ", Options.CastDistance.Value)
-							isCasting = false
-							return -- Успех, выходим
-						end
-						wait(0.05) -- Короткие интервалы проверки
-					end
+			-- Проверяем, прошло ли достаточно времени
+			if time() - ReelStartTime >= ReelTime then
+				-- Отправляем событие только один раз
+				if not hasEventFired then
+					game:GetService("ReplicatedStorage"):FindFirstChild("events"):FindFirstChild("reelfinished"):FireServer(100, Perfect_Only)
+					DebugLog("Reel Event Fired")
+					hasEventFired = true
 					
-					-- Если дошли сюда - таймаут, выполняем reset
-					--DeugLog("Таймаут! Выполняем сброс")
-					if Rod then
-						Rod.events.reset:FireServer()
-						--DeugLog("Reset event fired - casting timeout")
-					end
-					isCasting = false
-				end)
-			else
-				-- ДОБАВЛЕНА ПРОВЕРКА НА БОБЕРА
-				-- Если удочка кастована, но бобра нет - вызываем reset
-				if RodIsCasted() and not GetBober() then
-					--DeugLog("Удочка кастована, но бобер отсутствует. Выполняем reset")
-					Rod.events.reset:FireServer()
-				end
-				isCasting = false
-			end
-		end
-	end
+					-- Ждем 0.5 секунды перед сбросом
+					wait(0.5)
+					
+					-- Сбрасываем состояние для следующего цикла
+					Reelling = false
+					hasEventFired = false
+					DebugLog("Ready for new setup")
 
-	-- Чекбокс для AutoCast
-	local AutoCast = Tabs.Main:AddToggle("AutoCast", {Title = "AutoCast", Default = false})
-
-	local AutoCatsLoop = nil
-	AutoCast:OnChanged(function()
-		if Options.AutoCast.Value == true then
-			AutoCatsLoop = RunService.Heartbeat:Connect(function()
-				if Fluent.Unloaded then 
-					AutoCatsLoop:Disconnect()
-					return
-				end
-				ProcesAutoCast()
-			end)
-		else
-			if AutoCatsLoop then
-				AutoCatsLoop:Disconnect()
-			end
-		end
-	end)
-
-	-- Слайдер скорости
-	local CastDistance = Tabs.Main:AddSlider("CastDistance", {
-		Title = "CastDistance",
-		Default = 50,
-		Min = 0,
-		Max = 99,
-		Rounding = 1,
-		Callback = function(Value) end
-	})
-
-	
---[[
-    Tabs.Main:AddButton({
-        Title = "Load Instant Catch",
-        Description = "Запускает скрпит с инстант катчем", --Make your character sit",
-        Callback = function()
-			loadstring(game:HttpGet("https://raw.githubusercontent.com/Y-ForBE-Y/ioasduq089eu3oi13u12o3u/refs/heads/main/My%20Script/Scripts/NewInstantCacth"))()
-        end
-    })
-]]
-
-
-	local function EquipRud()
-		local Rod, isEquip = GetPlayerRod()
-		if Rod then
-			if not isEquip then
-				--DeugLog("Удочка екиперована")
-				Rod.Parent = game:GetService('Players').LocalPlayer.Character
-			else
-				--DeugLog("Удочка уже екиперована")
-				Rod.Parent = game:GetService('Players').LocalPlayer:FindFirstChild("Backpack")
-			end
-		end
-	end
-
-	local function GetBober()
-		local Rod, isEquip = GetPlayerRod()
-		if not Rod then
-			return nil
-		end
-		
-		local Bober = Rod:FindFirstChild("bobber")
-		if Bober then
-			return Bober
-		else
-			return nil
-		end
-	end
-
-	local Reelling = false
-	local ReelConnection = nil
-	--local AditionalDelay = 0.1780
-	local AditionalDelay = 3
-
-	-- Чекбокс для PerfectOnly
-	local PerfectOnly = Tabs.Main:AddToggle("PerfectOnly", {Title = "PerfectOnly", Default = false})
-
-	-- Чекбокс для InstantCatch
-	local InstantCatch = Tabs.Main:AddToggle("InstantCatch", {Title = "InstantCatch", Default = false})
-	local firstRun = true
-	InstantCatch:OnChanged(function()
-		if Options.InstantCatch.Value == true then
-			-- Проверка на выгрузку
-			if Fluent.Unloaded then return end
-			
-			ReelConnection = game:GetService("Players").LocalPlayer.PlayerGui.ChildAdded:Connect(function(child)
-				-- Двойная проверка
-				if Fluent.Unloaded or not Options.InstantCatch.Value then
-					return
-				end
-				
-				if child.Name == "reel" then
-					Reelling = true
-					child:Destroy()
-					local Rod, isEquip = GetPlayerRod()
-					if Rod then
-						--DeugLog("✓ НАЙДЕН REEL!")
-						
-						task.wait(0.5 + AditionalDelay)
-						--task.wait(0.58)
-						
-						game:GetService("ReplicatedStorage"):FindFirstChild("events"):FindFirstChild("reelfinished"):FireServer(100, PerfectOnly.Value)
-						EquipRud()
-						EquipRud()
-						if Options.AutoCast.Value == true then
+					if not IsUnloaded then
+						if AtoCastValue == true then
 							lastCastTime = tick()
-
-							--if firstRun then
-							--	firstRun = false
-								--task.wait(0.2)
-							--else
-								
-							--end
-							
 							ProcesAutoCast(true)
 						end
 					end
-					
-					Reelling = false
 				end
-			end)
-			--DeugLog("InstantCatch включен")
-		else
-			if ReelConnection then
-				ReelConnection:Disconnect()
-				ReelConnection = nil
 			end
+		else
+			-- Если GUI пропал, сбрасываем состояние
 			Reelling = false
-			--DeugLog("InstantCatch выключен")
+			hasEventFired = false
+			--print("Reel GUI Not Found")
 		end
 	end)
+end
 
-	-- Чекбокс для InstantBobber
-	local InstantBobber = Tabs.Main:AddToggle("InstantBobber", {Title = "InstantBobber", Default = false})
 
-	local InstantBobberLoop = nil
-	InstantBobber:OnChanged(function()
-		if Options.InstantBobber.Value == true then
-			InstantBobberLoop = RunService.Heartbeat:Connect(function()
-				if Fluent.Unloaded then 
-					InstantBobberLoop:Disconnect()
-					firstRun = false
-					return
+--[[
+local function ProcessReel()
+		ReelConnection = game:GetService("Players").LocalPlayer.PlayerGui.ChildAdded:Connect(function(child)
+			if IsUnloaded then 
+                if ReelConnection then
+                    ReelConnection:Disconnect()
+                    ReelConnection = nil
+                end
+                return 
+            end
+            
+			if child.Name == "reel" then
+				Reelling = true
+				
+				-- Запускаем отслеживание позиции playerbar
+				
+				barTracking = game:GetService("RunService").Heartbeat:Connect(function()
+					if not child or not child.Parent then
+						barTracking:Disconnect()
+						return
+					end
+					CenterPlayerBarOnFish()
+				end)
+				
+				local Rod, isEquip = GetPlayerRod()
+				--[[ Coment For Legit 
+				if Rod then
+					wait(AditionalDelay)
+
+					game:GetService("ReplicatedStorage"):FindFirstChild("events"):FindFirstChild("reelfinished"):FireServer(100, Perfect_Only)
+
+                    -- Останавливаем отслеживание перед завершением
+                    if barTracking then
+                        barTracking:Disconnect()
+                    end
+
+                    if not IsUnloaded then
+                        if AtoCastValue == true then
+                            lastCastTime = tick()
+                            ProcesAutoCast(true)
+                        end
+                    end
+				else
+                    if barTracking then
+                        barTracking:Disconnect()
+                    end
+                end
+				--))
+				
+				Reelling = false
+			end
+		end)
+end
+]]
+
+local function Reel(state)
+    if IsUnloaded then 
+        if ReelConnection then
+            ReelConnection:Disconnect()
+            ReelConnection = nil
+        end
+        return 
+    end
+    
+	if state == true then
+		ProcessReel()
+	else
+		if ReelConnection then
+			ReelConnection:Disconnect()
+			ReelConnection = nil
+		end
+
+		Reelling = false
+	end
+end
+
+
+
+-- Functions End
+
+
+-- */  Секции с ПРАВИЛЬНЫМИ иконками  /* --
+	--Window:Divider()
+		local Main = Window:Section({
+			Title = "Main",
+			Icon = "nebula:home",  -- ✅ Точно работает
+			Opened = true
+		})
+	Window:Divider()
+		local Automatic = Window:Section({
+			Title = "Automatic",
+			Icon = "phosphor:robot"  -- ✅ Теперь работает
+		})
+	Window:Divider()
+		local Market = Window:Section({
+			Title = "Market",
+			Icon = "fluency:shopping_cart_stock"  -- ✅ Точно работает
+		})
+	Window:Divider()
+		-- Player - используем user иконки
+		local Player = Window:Section({
+			Title = "Player", 
+			Icon = "lucide:user"  -- ✅ Точно работает
+		})
+	Window:Divider()
+		-- Teleport - используем map-pin иконки
+		local Teleport = Window:Section({
+			Title = "Teleport",
+			Icon = "phosphor:map-pin-area"  -- ✅ Точно есть в phosphor_filled
+		})
+	Window:Divider()
+		local Misc = Window:Section({
+			Title = "Misc",
+			Icon = "fluency:settings_cog_wheels"  -- Правильное имя для settings
+		})
+	--[[
+	Window:Divider()
+		local World = Window:Section({
+			Title = "World",
+			Icon = "lucide:globe"  -- ✅ Точно работает
+		})
+	]]
+	Window:Divider()
+		local AppearanceAndConfigs = Window:Section({
+			Title = "Appearance & Configs",
+			Icon = "arrow-left-right"
+		})
+	Window:Divider()
+		local Development = Window:Section({
+			Title = "Development",
+			Icon = "lucide:code"  -- ✅ Точно работает
+		})
+	--Window:Divider()
+------------------------------------------------------------------------
+
+
+-- Main 
+do
+	do
+		local fishingTab = Main:Tab({
+			Title = "fishing",
+			Icon = "phosphor_filled:fish-simple"
+		})
+		fishingTab:Select() -- Select Tab
+
+		-- Base Section
+		local Base = fishingTab:Section({
+			Title = "  Base"	
+		})
+
+		local lastUnequipTime = os.time()
+		local EQUIP_COOLDOWN = 3
+		local wasEquipped = false
+
+		local function UnEquipAllTool()
+			local character = game.Players.LocalPlayer.Character
+			if character then
+				for _, tool in pairs(character:GetChildren()) do
+					if tool:IsA("Tool") then
+						DebugLog("Tool найден:", tool.Name)
+						tool.Parent = game:GetService("Players").LocalPlayer.Backpack
+					end
 				end
-				teleportBobberVerticalToZone()
-			end)
-		else
-			if InstantBobberLoop then
-				InstantBobberLoop:Disconnect()
-				firstRun = false
 			end
 		end
-	end)
+
+		local function ProccesAutoEquipRod()
+			local Rod, isEquip = GetPlayerRod()
+			
+			if wasEquipped and not isEquip then
+				lastUnequipTime = os.time()
+				DebugLog("Удочка убрана, таймер обновлен")
+			end
+			
+			wasEquipped = isEquip
+			
+			if os.time() - lastUnequipTime < EQUIP_COOLDOWN then
+				return
+			end
+			
+			local character = game.Players.LocalPlayer.Character
+
+			if not character:FindFirstChild("Nuke") then
+				if not character:FindFirstChild(Rod.Name) then
+					local Rod_in_Backpack = game:GetService("Players").LocalPlayer.Backpack:FindFirstChild(Rod.Name)
+					if Rod_in_Backpack then
+						UnEquipAllTool()
+					end
+				end
+
+				if not isEquip then
+					DebugLog("Удочка экипирована")
+					Rod.Parent = game:GetService('Players').LocalPlayer.Character
+				end
+			else
+				DebugLog("У Игрока в руках нюк свапнуть нельзя")
+			end
+		end
+
+		-- Чекбокс для AutoEquipRod
+		local AutoEquipRodLoop = nil
+		local AutoEquipRodToggle = fishingTab:Toggle({
+			Title = "Auto Equip Rod", 
+			Default = false,
+			Callback = function(state)
+				if state == true then
+					AutoEquipRodLoop = RunService.Heartbeat:Connect(function()
+						-- Проверка на выгрузку скрипта
+						if IsUnloaded then 
+							if AutoEquipRodLoop then
+								AutoEquipRodLoop:Disconnect()
+								AutoEquipRodLoop = nil
+							end
+							return
+						end
+						
+						ProccesAutoEquipRod()
+					end)
+				else
+					if AutoEquipRodLoop then
+						AutoEquipRodLoop:Disconnect()
+						AutoEquipRodLoop = nil
+					end
+				end
+			end
+		})
+	
 
 
-local FISCHFRIGHT = Tabs.Main:AddSection("FISCHFRIGHT", nil)
-	Tabs.Main:AddButton({
-		Title = "Locad Trick of Treat Script",
-		Description = 'After loading, a script will start for farming candies in the FISCH FRIGHT event (I recommend using a delay of at least 3 in "Auto Equip Rod" when using)', --"Very important button",
-		Callback = function()
-			--[[
-				if Dropdown.Value ~= nil and Dropdown.Value ~= "None" then
+		-- Слайдер дистанции каста
+		local AutoEquipDelay = fishingTab:Slider({
+			Title = "Auto Equip Delay",
+			Step = 0.1,
+			Value = {
+				Min = 0,
+				Max = 10,
+				Default = EQUIP_COOLDOWN,
+			},
+			Callback = function(value) 
+				EQUIP_COOLDOWN = tonumber(value)
+			end
+		})
+	
+		-- Fishing Section
+		local Fishing = fishingTab:Section({
+			Title = "  Fishing"
+		})
+
+		-- Чекбокс для AutoCast
+		local AutoCatsLoop = nil
+		local AutoCastToggle
+		AutoCastToggle = fishingTab:Toggle({
+			Title = "AutoCast", 
+			Default = false,
+			Callback = function(state)
+				AtoCastValue = state
+				if state == true then
+					AutoCatsLoop = RunService.Heartbeat:Connect(function()
+						ProcesAutoCast()
+					end)
+				else
+					if AutoCatsLoop then
+						AutoCatsLoop:Disconnect()
+					end
+				end
+			end
+		})
+
+		-- Слайдер дистанции каста
+		local CastDistanceSlider = fishingTab:Slider({
+			Title = "Cast Distance",
+			Step = 1,
+			Value = {
+				Min = 0,
+				Max = 99,
+				Default = CastDistance,
+			},
+			Callback = function(value) 
+				CastDistance = tonumber(value)
+			end
+		})
+
+		-- Чекбокс для PerfectOnly
+		local PerfectOnlyToggle = fishingTab:Toggle({
+			Title = "PerfectOnly", 
+			Default = Perfect_Only,
+			Callback = function(state)
+				Perfect_Only = state
+			end
+		})
+
+		-- Чекбокс для InstantCatch
+		local InstantCatchToggle = fishingTab:Toggle({
+			Title = "InstantCatch", 
+			Default = false,
+			Callback = function(state)
+				Reel(state)
+			end
+		})
+
+		-- Чекбокс для InstantBobber
+		local InstantBobberLoop = nil
+		local InstantBobberToggle = fishingTab:Toggle({
+			Title = "InstantBobber", 
+			Default = false,
+			Callback = function(state)
+				if state == true then
+					InstantBobberLoop = RunService.Heartbeat:Connect(function()
+						teleportBobberVerticalToZone()
+					end)
+				else
+					if InstantBobberLoop then
+						InstantBobberLoop:Disconnect()
+					end
+				end
+			end
+		})
+
+	end
+
+	do
+		local EventsTab = Main:Tab({
+			Title = "Events",
+			Icon = "phosphor:gift"
+		})
+
+		-- FISCHFRIGHT Section
+		local FischFright = EventsTab:Section({
+			Title = "FISCHFRIGHT"
+		})
+
+		EventsTab:Button({
+			Title = "Load Trick or Treat Script",
+			Description = 'After loading, a script will start for farming candies in the FISCH FRIGHT event',
+			Callback = function()
+				loadstring(game:HttpGet("https://raw.githubusercontent.com/Y-ForBE-Y/ioasduq089eu3oi13u12o3u/refs/heads/main/My%20Script/Scripts/TestScripts/Trick%20of%20treat.lua"))()
+			end
+		})
+	end
+
+
+    local Aditionals = Main:Tab({
+        Title = "Aditionals",
+        Icon = "lucide:puzzle"
+    })
+
+--[[
+    local Optional = Main:Tab({
+        Title = "Optional",
+        Icon = "lucide:list"
+    })
+]]
+end
+
+
+
+
+
+
+
+
+
+
+
+-- Misc 
+do
+	-- BaseTab
+	do
+		local BaseTab = Misc:Tab({
+			Title = "Base",
+			Icon = "lucide:layers"
+		})
+	
+		do
+			local DisableOxigenSwim
+			DisableOxigenSwim = BaseTab:Toggle({
+				Title = "DisableOxigenSwim",
+				--Desc = "Toggle Description",
+				Value = false, -- default value
+				Callback = function(state) 
+					game.Players.LocalPlayer.Character.Resources.oxygen.Enabled = not state
+				end
+			})
+			local DisableOxigenPeaks
+			DisableOxigenPeaks = BaseTab:Toggle({
+				Title = "DisableOxigenPeaks",
+				--Desc = "Toggle Description",
+				Value = false, -- default value
+				Callback = function(state) 
+					game.Players.LocalPlayer.Character.Resources["oxygen(peaks)"].Enabled = not state
+				end
+			})
+			local DisableOxigenRefactor
+			DisableOxigenRefactor = BaseTab:Toggle({
+				Title = "DisableOxigenRefactor",
+				--Desc = "Toggle Description",
+				Value = false, -- default value
+				Callback = function(state) 
+					game.Players.LocalPlayer.Character.Resources.oxygenRefactor_WIP.Enabled = not state
+				end
+			})
+			local DisableTemperaturePeaks
+			DisableTemperaturePeaks = BaseTab:Toggle({
+				Title = "DisableTemperaturePeaks",
+				--Desc = "Toggle Description",
+				Value = false, -- default value
+				Callback = function(state) 
+					game.Players.LocalPlayer.Character.Resources.temperature.Enabled = not state
+				end
+			})
+			local DisableTemperatureHeat
+			DisableTemperatureHeat = BaseTab:Toggle({
+				Title = "DisableTemperatureHeat",
+				--Desc = "Toggle Description",
+				Value = false, -- default value
+				Callback = function(state) 
+					game.Players.LocalPlayer.Character.Resources["temperature(heat)"].Enabled = not state
+				end
+			})
+		end
+	end
+
+
+	-- Bypass
+	do
+	
+		local Bypass = Misc:Tab({
+			Title = "Bypass",
+			Icon = "lucide:shield-off"
+		})
+	
+		local XyzClone = nil
+		local BypassGpsLoop = nil
+
+		local GetPosition = rawget(_G, "GetPosition") or function()
+			local char = Players.LocalPlayer.Character
+			if char and char:FindFirstChild("HumanoidRootPart") then
+				local p = char.HumanoidRootPart.Position
+				return {p.X, p.Y, p.Z}
+			end
+			return {0,0,0}
+		end
+
+		local ExportValue = rawget(_G, "ExportValue") or function(v)
+			return tostring(math.floor(tonumber(v) or 0))
+		end
+
+		local function GPSSpoof(state)
+			if state then
+				if XyzClone then return end
+
+				XyzClone = ReplicatedStorage.resources.items.items.GPS.GPS.gpsMain.xyz:Clone()
+
+				local container = Players.LocalPlayer.PlayerGui.backpack.hotbar.Folder.Frame
+				XyzClone.Parent = container
+
+				local Pos = GetPosition()
+				local StringInput = string.format("%s, %s, %s", ExportValue(Pos[1]), ExportValue(Pos[2]), ExportValue(Pos[3]))
+				XyzClone.Text = "<font color='#ff4949'>X</font><font color = '#a3ff81'>Y</font><font color = '#626aff'>Z</font>: "..StringInput
+
+				BypassGpsLoop = RunService.Heartbeat:Connect(function()
+					if IsUnloaded then 
+						if BypassGpsLoop then
+							BypassGpsLoop:Disconnect()
+						end
+						if XyzClone then
+							XyzClone:Destroy()
+							XyzClone = nil
+						end
+						return
+					end
+					local Pos = GetPosition()
+					local StringInput = string.format("%s, %s, %s", ExportValue(Pos[1]), ExportValue(Pos[2]), ExportValue(Pos[3]))
+					XyzClone.Text = "<font color='#ff4949'>X</font><font color = '#a3ff81'>Y</font><font color = '#626aff'>Z</font>: "..StringInput
+				end)
+			else
+				if XyzClone then
+					XyzClone:Destroy()
+					XyzClone = nil
+				end
+				if BypassGpsLoop then
+					BypassGpsLoop:Disconnect()
+					BypassGpsLoop = nil
+				end
+			end
+		end
+
+		local BypassGps
+		BypassGps = Bypass:Toggle({
+			Title = "Bypass GPS",
+			--Desc = "Toggle Description",
+			Value = false, -- default value
+			Callback = function(state)
+				if state == true then
+					GPSSpoof(true)
+				else
+					GPSSpoof(false)
+				end
+			end
+		})
+
+		local function RadarSpoof(state)
+			-- Включаем все теги радара
+			for _, v in pairs(game:GetService("CollectionService"):GetTagged("radarTag")) do
+				if v:IsA("BillboardGui") or v:IsA("SurfaceGui") then
+					v.Enabled = state
+				end
+			end
+			for _, v in pairs(game:GetService("CollectionService"):GetTagged("radarTagWithTimer")) do
+				if v:IsA("BillboardGui") or v:IsA("SurfaceGui") then
+					v.Enabled = state
+				end
+			end
+		end
+
+		local BaypassRadarDistanceLoop = nil
+		local EnableBaypassRadar
+		EnableBaypassRadar = Bypass:Toggle({
+			Title = "Enable Baypas Radar",
+			--Desc = "Toggle Description",
+			Value = false, -- default value
+			Callback = function(state)
+				RadarSpoof(state)
+			end
+		})
+
+
+		local CustomDistValue
+		local CustomRadarDistance = Bypass:Slider({
+			Title = "Custom Distance",
+			Desc = "Set custom Radar Distance",
+			Step = 1,
+			Value = {
+				Min = 0,
+				Max = 9999,
+				Default = 9999,
+			},
+			Callback = function(value) 
+				CustomDistValue = tonumber(value)
+			end
+		})
+
+
+		local DistSoofEnable = false
+		local OriginalValue = {}
+
+		-- Функция для сохранения оригинальных дистанций ВСЕХ радаров
+		local function SaveOriginalDistances()
+			OriginalValue = {} -- Очищаем таблицу
+			for _, zone in pairs(workspace.zones.fishing:GetChildren()) do
+				for _, radarName in ipairs({"radar1", "radar2"}) do
+					local radar = zone:FindFirstChild(radarName)
+					if radar and radar:IsA("BillboardGui") then
+						-- Сохраняем оригинальное значение дистанции
+						OriginalValue[radar] = radar.MaxDistance
+					end
+				end
+			end
+		end
+
+		-- Функция для восстановления оригинальных дистанций ВСЕХ радаров
+		local function RestoreOriginalDistances()
+			for radar, originalMaxDistance in pairs(OriginalValue) do
+				if radar and radar.Parent then
+					radar.MaxDistance = originalMaxDistance
+				end
+			end
+			-- Также восстанавливаем все текущие радары на случай если какие-то пропущены
+			for _, zone in pairs(workspace.zones.fishing:GetChildren()) do
+				for _, radarName in ipairs({"radar1", "radar2"}) do
+					local radar = zone:FindFirstChild(radarName)
+					if radar and radar:IsA("BillboardGui") and not OriginalValue[radar] then
+						radar.MaxDistance = 250 -- Стандартное значение по умолчанию
+					end
+				end
+			end
+		end
+
+		local function ChangeRadarDist(Value)
+			if DistSoofEnable == false then
+				-- Сохраняем оригинальные значения при первом включении
+				SaveOriginalDistances()
+				DistSoofEnable = true
+			end
+			
+			-- Устанавливаем новое значение для всех радаров
+			for _, zone in pairs(workspace.zones.fishing:GetChildren()) do
+				for _, radarName in ipairs({"radar1", "radar2"}) do
+					local radar = zone:FindFirstChild(radarName)
+					if radar and radar:IsA("BillboardGui") then
+						--DebugLog(Value, type(Value))
+						if not Value or Value == nil or type(Value) ~= "number" then
+							Value = 9999
+						end
+						radar.MaxDistance = Value
+					end
+				end
+			end
+		end
+
+		local BaypassRadarDistanceLoop = nil
+		local BaypassRadarDistance
+		BaypassRadarDistance = Bypass:Toggle({
+			Title = "Baypas Radar Distance",
+			--Desc = "Toggle Description",
+			Value = false, -- default value
+			Callback = function(state)
+				if state == true then
+					-- Сразу сохраняем оригинальные дистанции при включении
+					SaveOriginalDistances()
+					
+					BaypassRadarDistanceLoop = RunService.Heartbeat:Connect(function()
+						if IsUnloaded then 
+							if BaypassRadarDistanceLoop then
+								BaypassRadarDistanceLoop:Disconnect()
+							end
+							RestoreOriginalDistances() -- Восстанавливаем при выгрузке
+							return
+						end
+						--DebugLog(CustomRadarDistance.Value, type(CustomRadarDistance))
+						ChangeRadarDist(CustomDistValue)
+					end)
+				else
+					if BaypassRadarDistanceLoop then
+						BaypassRadarDistanceLoop:Disconnect()
+					end
+					DistSoofEnable = false
+					RestoreOriginalDistances()
+					OriginalValue = {}
+				end
+			end
+		})
+
+
+
+		local SizeSoofEnable = false
+		local OriginalSizeValue = {}
+		local MIN_DISTANCE = 500   -- Дистанция, внутри которой размер всегда дефолтный
+		local MAX_DISTANCE = 3500  -- Дистанция, за которой размер увеличивается в 5 раз
+		local MAX_MULTIPLIER = 10   -- Максимальный множитель
+
+		-- Функция для сохранения оригинальных размеров ВСЕХ радаров
+		local function SaveOriginalSizes()
+			OriginalSizeValue = {}
+			for _, zone in pairs(workspace.zones.fishing:GetChildren()) do
+				for _, radarName in ipairs({"radar1", "radar2"}) do
+					local radar = zone:FindFirstChild(radarName)
+					if radar and radar:IsA("BillboardGui") then
+						-- Сохраняем индивидуальные размеры каждого радара
+						OriginalSizeValue[radar] = {
+							Size = radar.Size,
+							SizeOffset = radar.SizeOffset
+						}
+					end
+				end
+			end
+		end
+
+		-- Функция для восстановления оригинальных размеров ВСЕХ радаров
+		local function RestoreOriginalSizes()
+			for radar, originalData in pairs(OriginalSizeValue) do
+				if radar and radar.Parent then
+					-- Восстанавливаем индивидуальные размеры каждого радара
+					radar.Size = originalData.Size
+					radar.SizeOffset = originalData.SizeOffset
+				end
+			end
+		end
+
+		local function GetDistanceFromPlayer(position)
+			local player = Players.LocalPlayer
+			if not player or not player.Character or not player.Character:FindFirstChild("HumanoidRootPart") then
+				return math.huge
+			end
+			
+			local playerPosition = player.Character.HumanoidRootPart.Position
+			return (position - playerPosition).Magnitude
+		end
+
+		local function CalculateSizeMultiplier(distance)
+			if distance <= MIN_DISTANCE then
+				return 1  -- Дефолтный размер вблизи
+			elseif distance >= MAX_DISTANCE then
+				return MAX_MULTIPLIER  -- Максимальный множитель на большой дистанции
+			else
+				-- Плавное изменение множителя от 1 до MAX_MULTIPLIER
+				local normalizedDistance = (distance - MIN_DISTANCE) / (MAX_DISTANCE - MIN_DISTANCE)
+				return 1 + (MAX_MULTIPLIER - 1) * normalizedDistance
+			end
+		end
+
+		local function UpdateRadarSizes()
+			if SizeSoofEnable == false then
+				SaveOriginalSizes()
+				SizeSoofEnable = true
+			end
+			
+			-- Обновляем размеры всех радаров на основе их индивидуальных оригинальных размеров
+			for radar, originalData in pairs(OriginalSizeValue) do
+				if radar and radar.Parent then
+					local zone = radar.Parent
+					local distance = GetDistanceFromPlayer(zone.Position)
+					local multiplier = CalculateSizeMultiplier(distance)
+					
+					-- Применяем множитель к индивидуальному оригинальному размеру
+					local originalSize = originalData.Size
+					local newX = originalSize.X.Scale * multiplier
+					local newY = originalSize.Y.Scale * multiplier
+					
+					radar.Size = UDim2.new(newX, originalSize.X.Offset * multiplier, newY, originalSize.Y.Offset * multiplier)
+					radar.SizeOffset = Vector2.new(0, 0)
+				end
+			end
+		end
+
+		local BaypassRadarSizeLoop = nil
+		local NormolizeRadarBilbordSize
+		NormolizeRadarBilbordSize = Bypass:Toggle({
+			Title = "Normolize Radar Bilbord Size",
+			--Desc = "Toggle Description",
+			Value = false, -- default value
+			Callback = function(state)
+				NormolizeRadarBilbordSizeValue = state
+				if state == true then
+					SaveOriginalSizes()
+					
+					BaypassRadarSizeLoop = RunService.Heartbeat:Connect(function()
+						if IsUnloaded then 
+							if BaypassRadarSizeLoop then
+								BaypassRadarSizeLoop:Disconnect()
+							end
+							RestoreOriginalSizes()
+							return
+						end
+						UpdateRadarSizes()
+					end)
+				else
+					if BaypassRadarSizeLoop then
+						BaypassRadarSizeLoop:Disconnect()
+					end
+					SizeSoofEnable = false
+					RestoreOriginalSizes()
+					OriginalSizeValue = {}
+				end
+			end
+		})
+	end
+
+
+
+	-- Game_Aditionals
+	do
+		local Game_Aditionals = Misc:Tab({
+			Title = "Game Aditionals",
+			Icon = "lucide:dices"
+		})
+
+		local Misc = Game_Aditionals:Section({
+			Title = " Misc",
+			Opened = false,
+		})
+
+		do
+			Game_Aditionals:Button({
+				Title = "Discover all location",
+				Desc = "", --Make your character sit",
+				Callback = function()
+					for k, v in pairs(workspace.zones.player:GetChildren()) do
+						DebugLog(v.Name)
+						game:GetService("ReplicatedStorage").events.discoverlocation:FireServer(v.Name)
+					end
+				end
+			})
+		end
+
+		do
+			Game_Aditionals:Button({
+				Title = "Activate all promocodes",
+				--Desc = "", --Make your character sit",
+				Callback = function()
+					local function ActivetePromo() 
+						local argsList = loadstring(game:HttpGet("https://raw.githubusercontent.com/Y-ForBE-Y/ioasduq089eu3oi13u12o3u/refs/heads/main/Fisch/promo"))()
+						for _, args in ipairs(argsList) do
+							game:GetService("ReplicatedStorage"):WaitForChild("events"):WaitForChild("runcode"):FireServer(unpack(args))
+							DebugLog(tostring(unpack(args)))
+						end
+					end
+					ActivetePromo() 
+				end
+			})
+		end
+
+		do
+			-- Чекбокс для AntiAFKTeg
+			local AntiAFKTegLoop = nil
+			local Start = 0
+			local AntiAFKTeg = Game_Aditionals:Toggle(
+				{
+					Title = "AntiAFKTeg",
+					Value = false,
+					Callback = function(state)
+
+						if state == true then
+							AntiAFKTegLoop = RunService.Heartbeat:Connect(function()
+								if IsUnloaded then
+									AntiAFKTegLoop:Disconnect()
+									return
+								end
+								if time() - Start < 1 then
+									return
+								end
+								if game.Players.LocalPlayer.Character:FindFirstChild("afk") then
+									Start = time()
+									game:GetService("ReplicatedStorage").events.afk:FireServer(false)
+								end
+							end)
+						else
+							if AntiAFKTegLoop then
+								AntiAFKTegLoop:Disconnect()
+							end
+						end
+
+					end
+				}
+			)
+		end
+	end
+
+	-- Guis
+	do
+		local Guis = Misc:Tab({
+			Title = "Guis",
+			Icon = "lucide:layout-template" 
+		})
+
+		do
+			local Main = Guis:Section({
+				Title = "Main",
+				Opened = false,
+			})
+		
+			Guis:Button({
+				Title = "Black Market",
+				Desc = "Opening BlackMarket GUI",
+				Callback = function()
+					game:GetService("Players").LocalPlayer.PlayerGui.hud.safezone.BlackMarket.Visible = not game:GetService("Players").LocalPlayer.PlayerGui.hud.safezone.BlackMarket.Visible
+				end
+			})
+
+			Guis:Button({
+				Title = "Daily shop",
+				Desc = "Opening Daily shop GUI",
+				Callback = function()
+					game:GetService("Players").LocalPlayer.PlayerGui.hud.safezone.DailyShop.Visible = not game:GetService("Players").LocalPlayer.PlayerGui.hud.safezone.DailyShop.Visible
+				end
+			})
+
+
+			Guis:Button({
+				Title = "Challanges",
+				Desc = "Opening Challanges GUI",
+				Callback = function()
+					game:GetService("Players").LocalPlayer.PlayerGui.hud.safezone.Challenges.Visible = not game:GetService("Players").LocalPlayer.PlayerGui.hud.safezone.Challenges.Visible
+				end
+			})
+
+			Guis:Button({
+				Title = "FriendQuests",
+				Desc = "Opening FriendQuests GUI",
+				Callback = function()
+					game:GetService("Players").LocalPlayer.PlayerGui.Friends.FriendQuests.Visible = not game:GetService("Players").LocalPlayer.PlayerGui.Friends.FriendQuests.Visible
+				end
+			})
+
+			Guis:Button({
+				Title = "Aquarium",
+				Desc = "Opening Aquarium GUI",
+				Callback = function()
+					game:GetService("Players").LocalPlayer.PlayerGui.hud.safezone.PersonalAquarium.Visible = not game:GetService("Players").LocalPlayer.PlayerGui.hud.safezone.PersonalAquarium.Visible
+				end
+			})
+		end
+
+		do
+			local IDK = Guis:Section({
+				Title = "IDK",
+				Opened = false,
+			})
+
+			Guis:Button({
+				Title = "Spear Crafting",
+				Desc = "Opening Spear Craft GUI",
+				Callback = function()
+					game:GetService("Players").LocalPlayer.PlayerGui.hud.safezone.SpearCrafting.Visible = not game:GetService("Players").LocalPlayer.PlayerGui.hud.safezone.SpearCrafting.Visible
+				end
+			})
+		end
+
+		do
+			local Paid = Guis:Section({
+				Title = "Paid",
+				Opened = false,
+			})
+
+			Guis:Button({
+				Title = "Boat PopUP",
+				Desc = "Opening Boat PopUP GUI",
+				Callback = function()
+					game:GetService("Players").LocalPlayer.PlayerGui.hud.safezone.BoatPopup.Visible = not game:GetService("Players").LocalPlayer.PlayerGui.hud.safezone.BoatPopup.Visible
+				end
+			})
+
+			Guis:Button({
+				Title = "Starter pack",
+				Desc = "Opening Starter Pack buying GUI",
+				Callback = function()
+					game:GetService("Players").LocalPlayer.PlayerGui.hud.safezone.starterpack.Visible = not game:GetService("Players").LocalPlayer.PlayerGui.hud.safezone.starterpack.Visible
+				end
+			})
+		end
+	end
+
+	-- Server
+	do
+		local Server = Misc:Tab({
+			Title = "Server",
+			Icon = "lucide:cloud"
+		})
+
+		local Server_Hop = Server:Section({
+			Title = " Server Settings",
+			Opened = false,
+		})
+
+		--Srver Svith Code
+		do
+			local AutoReloadScript = Server:Toggle({
+				Title = "Re Load Script After Chenge Server",
+				Desc = "Automatically reload the script after changing the server or place",
+				Icon = "lucide:repeat",
+				--Type = "Checkbox",
+				Value = false, -- default value
+				Callback = function(enable) 
+					if enable then
+						DebugLog("Авто Перезагрузка серипта Включена")
+						queue_on_teleport([[
+							loadstring(game:HttpGet("https://raw.githubusercontent.com/Y-ForBE-Y/ioasduq089eu3oi13u12o3u/refs/heads/main/My%20Script/New"))()
+						]])
+						--DebugLog("✅ Автозагрузка скрипта включена")
+					else
+						DebugLog("Авто Перезагрузка серипта Выключена")
+						queue_on_teleport("")
+						--DebugLog("❌ Автозагрузка скрипта выключена")
+					end
+				end
+			})
+		
+			do
+				-- Функции для сервер хопа
+				local function getServers()
+					local servers = {}
+					local success, result = pcall(function()
+						return game:GetService("HttpService"):JSONDecode(game:HttpGet("https://games.roblox.com/v1/games/"..game.PlaceId.."/servers/Public?sortOrder=Asc&limit=100"))
+					end)
+					
+					if success and result and result.data then
+						for _, server in pairs(result.data) do
+							if server.playing < server.maxPlayers and server.id ~= JobId then
+								table.insert(servers, server)
+							end
+						end
+					end
+					return servers
+				end
+
+				local function serverHop()
+					local servers = getServers()
+					if #servers > 0 then
+						local randomServer = servers[math.random(1, #servers)]
+						TeleportService:TeleportToPlaceInstance(game.PlaceId, randomServer.id, game:GetService("Players").LocalPlayer)
+					else
+						WindUI:Notify({
+							Title = "Notification Title",
+							Content = "No available servers found!",
+							Duration = 5,
+							--Icon = "bird",
+						})
+					end
+				end
+
+				local Server_Hop_BTN
+				Server_Hop_BTN = Server:Button({
+					Title = "Server Hop",
+					Desc = "Join a different server",
+					Locked = false,
+					Callback = function()
+						Server_Hop_BTN:Highlight()
+						serverHop()
+					end
+				})
+			end
+
+			do
+				local function rejoin()
+					TeleportService:TeleportToPlaceInstance(game.PlaceId, game.JobId, LocalPlayer)
+				end
+
+				local Rejoin_BTN
+				Rejoin_BTN = Server:Button({
+					Title = "Rejoin Server",
+					Desc = "Rejoin current server",
+					Locked = false,
+					Callback = function()
+						Rejoin_BTN:Highlight()
+						rejoin()
+					end
+				})
+			end
+		end
+
+		do
+			local Server_Info = Server:Paragraph({
+				Title = "Current Server Info",
+				Desc = "Place ID: " .. game.PlaceId .. "\nJob ID: " .. game.JobId .. "\nPlayers: " .. #Players:GetPlayers(),
+				Locked = true
+			})
+
+			Window:OnOpen(function()
+				if Server_Info then
+					Server_Info:SetDesc("Place ID: " .. game.PlaceId .. "\nJob ID: " .. game.JobId .. "\nPlayers: " .. #Players:GetPlayers())
+				end
+			end)
+
+			do
+				local resetTimer
+				local lastClickTime = 0
+				local jobButton
+				jobButton = Server:Button({
+					Title = "		Copy JobID",
+					Desc = "Copy current server ID",
+					Icon = "lucide:copy",
+					Justify = "Center",
+					Callback = function() 
+						setclipboard(game.JobId)
+						jobButton:Highlight()
+						jobButton:SetTitle("Copied!")
+						jobButton:Highlight()
+
+						lastClickTime = tick()
+
+						if resetTimer then resetTimer:Disconnect() end
+						
+						resetTimer = game:GetService("RunService").Heartbeat:Connect(function()
+							if tick() - lastClickTime >= 1.5 then
+								resetTimer:Disconnect()
+								resetTimer = nil
+								jobButton:SetTitle("Copy JobID")
+							end
+						end)
+					end
+				})
+			end
+
+			do
+				local resetTimer
+				local lastClickTime = 0
+				local placeButton
+				placeButton = Server:Button({
+					Title = "   Copy Place ID",
+					Desc = "Copy current place id",
+					Icon = "lucide:copy",
+					Justify = "Center",
+					Callback = function()
+						setclipboard(game.PlaceId)
+						DebugLog("Place ID скопирован!")
+						placeButton:SetTitle("Copied!")
+						placeButton:Highlight()
+						
+						lastClickTime = tick()
+
+						if resetTimer then resetTimer:Disconnect() end
+						
+						resetTimer = game:GetService("RunService").Heartbeat:Connect(function()
+							if tick() - lastClickTime >= 1.5 then
+								resetTimer:Disconnect()
+								resetTimer = nil
+								placeButton:SetTitle("Copy Place ID")
+							end
+						end)
+					end
+				})
+			end
+		end
+	end
+
+	--[[
+		local Optional = Misc:Tab({
+			Title = "Optional",
+			Icon = "lucide:list"
+		})
+	]]
+end
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+-- Automatic 
+do
+
+	-- Main
+	do
+		local Main = Automatic:Tab({
+			Title = "Main",
+			Icon = "refresh-cw"
+		})
+
+		do
+		--[[
+		local Enchanting = Tabs.Automatic:AddSection("Enchanting", nil)
+			Tabs.Automatic:AddButton({
+				Title = "Enchant Rod",
+				Callback = function()
 					Window:Dialog({
-						Title = "You want to buy it?",
-						Content = "(if you already have this fishing rod, the money will be debited again)",
+						Title = "Are you sure?",
+						Content = "After agreeing, the lucky one will be re-enchanted (for this to work, you need to take the relic you need)",
 						Buttons = {
 							{
 								Title = "Confirm",
 								Callback = function()
-									BuyRod(Dropdown.Value)
+									game:GetService("ReplicatedStorage").events.enchantrod:InvokeServer()
 								end
 							},
 							{
 								Title = "Cancel",
 								Callback = function()
-									DeugLog("Cancelled Buy Rod")
+									DebugLog("Cancelled")
 								end
 							}
 						}
 					})
-					--Dropdown:SetValue("None")
+				end
+			})
+		]]
+
+			local SMain = Main:Section({ Title = "  Main", })
+
+			local function ActivateAllTool()
+				local character = game.Players.LocalPlayer.Character
+				if character then
+					for _, tool in pairs(character:GetChildren()) do
+						if tool:IsA("Tool") then
+							DebugLog("Tool найден:", tool.Name)
+							
+							-- Запускаем спам активацией
+							coroutine.wrap(function()
+								while tool and tool.Parent == character do
+									tool:Activate()
+									task.wait(0)
+								end
+								DebugLog("Активация остановлена для:", tool.Name)
+							end)()
+						end
+					end
+				end
+			end
+
+			local Open_Holdet_Create = Main:Button({
+				Title = "Open Holdet Create",
+				Desc = "It will spam any selected item that you pick up.",
+				Callback = function()
+					ActivateAllTool()
+				end
+			})
+
+
+			local SSell = Main:Section({ Title = "  Sell", })
+
+			local oldCount = #game:GetService("Players").LocalPlayer.Backpack:GetChildren()
+			local isSelling = false
+			local lastSaleTime = 0
+			local saleCooldown = 1
+
+			--[[
+				-- Функция для поиска ТОЛЬКО нашего клона
+				function findMerchant()
+					-- Используем ТОЛЬКО нашего клона
+					if merchantClone and merchantClone.Parent then
+						return merchantClone
+					else
+						return nil
+					end
 				end
 			]]
-			loadstring(game:HttpGet("https://raw.githubusercontent.com/Y-ForBE-Y/ioasduq089eu3oi13u12o3u/refs/heads/main/My%20Script/Scripts/TestScripts/Trick%20of%20treat.lua"))()
-		end
-	})
 
--- ===================== Main END ====================
+			local NewMwthod = true
 
+			local function SellALL()
+				if NewMwthod == false then
+					local success, errorMsg = pcall(function()
+						local remote = game:GetService("ReplicatedStorage").events.SellAll
+						remote:InvokeServer({
+							["npc"] = targetMerchant,
+							["idle"] = targetMerchant.description.idle,
+							["voice"] = 12
+						})
+						DebugLog("Продажа выполнена у клона мерчанта")
+					end)
 
--- ==================== Market START ====================
---[[
-	--local Rods_Module = require(game:GetService("ReplicatedStorage").shared.modules.library.rods)
-	local Rods_Module = loadstring(game:HttpGet("https://raw.githubusercontent.com/Y-ForBE-Y/ioasduq089eu3oi13u12o3u/refs/heads/main/My%20Script/InGameModules/Fisch/RodsModule.luau"))()
-	--local Fish_Module = require(game:GetService("ReplicatedStorage").shared.modules.library.fish)
-	local Fish_Module = loadstring(game:HttpGet("https://raw.githubusercontent.com/Y-ForBE-Y/ioasduq089eu3oi13u12o3u/refs/heads/main/My%20Script/InGameModules/Fisch/FishModule/Fish.lua"))()
-	--local Items_Module = require(game:GetService("ReplicatedStorage").shared.modules.library.items)
-	local success, Items_Module = pcall(function()
-		return loadstring(game:HttpGet("https://raw.githubusercontent.com/Y-ForBE-Y/ioasduq089eu3oi13u12o3u/refs/heads/main/My%20Script/InGameModules/Fisch/ItemsModule.luau"))()
-	end)
-	--local Spears_Module = require(game:GetService("ReplicatedStorage").shared.modules.library.spears)
-	local Spears_Module = loadstring(game:HttpGet("https://raw.githubusercontent.com/Y-ForBE-Y/ioasduq089eu3oi13u12o3u/refs/heads/main/My%20Script/InGameModules/Fisch/SpearsModule.lua"))()
-]]
-local Rods = Tabs.Market:AddSection("Rods", nil)
-	local Rods = {"None",}
-	local RodsStats = {}
-
-	-- Исправленный код для удочек
-	for rodName, rodData in pairs(Rods_Module) do
-		if type(rodData) == "table" then
-			local price = rodData.Price
-			local Luck = rodData.Luck
-			local LureSpeed = rodData.LureSpeed
-			local LineDistance = rodData.LineDistance
-			local Resilience = rodData.Resilience
-			local Control = rodData.Control
-			local Strength = rodData.Strength
-			local Icon = rodData.Icon
-
-			-- Если цена не число или равна math.huge, то заменяем на nil
-			if type(price) ~= "number" or price == math.huge then
-				price = nil
-			end
-
-			if type(Strength) ~= "number" then
-				Strength = "nil"
-			else
-				if Strength == math.huge then
-					Strength = "inf"
+					if not success then
+						DebugLog("Ошибка при продаже: " .. tostring(errorMsg))
+					end
+				else
+					--SELL ALL NEW
+					local remote = game:GetService("ReplicatedStorage").events.SellAll
+					local arguments = {}
+					local results = remote:InvokeServer(unpack(arguments))
 				end
 			end
 
+			local function SellOne()
+				if NewMwthod == false then
+					local success, errorMsg = pcall(function()
+						local remote = game:GetService("ReplicatedStorage").events.Sell
+						remote:InvokeServer({
+							["npc"] = targetMerchant,
+							["idle"] = targetMerchant.description.idle,
+							["voice"] = 12
+						})
+						DebugLog("Продажа выполнена у клона мерчанта")
+					end)
 
-			if price ~= nil then
-				table.insert(Rods, rodName)
-				RodsStats[rodName] = {
-					Luck = Luck,
-					LureSpeed = 100 - LureSpeed,
-					LineDistance = LineDistance,
-					Resilience = Resilience,
-					Strength = Strength,
-					Control = Control,
-					Price = price,
-					Icon = Icon,
+					if not success then
+						DebugLog("Ошибка при продаже: " .. tostring(errorMsg))
+					end
+				else
+					local remote = game:GetService("ReplicatedStorage").events.Sell
+					local arguments = {}
+					local results = remote:InvokeServer(unpack(arguments))
+				end
+			end
+
+			-- Функция продажи
+			function processAutoSell()
+				if isSelling then return end
+				
+				local currentTime = tick()
+				if currentTime - lastSaleTime < saleCooldown then
+					return
+				end
+				
+				if not Reelling then return end
+
+				local newCount = #game:GetService("Players").LocalPlayer.Backpack:GetChildren()
+
+				if newCount > oldCount then
+					DebugLog("Изменение: " .. oldCount .. " -> " .. newCount)
+					oldCount = newCount
+
+					if NewMwthod == false then
+						-- Ищем ТОЛЬКО нашего клона
+						local targetMerchant = findMerchant()
+								
+						if not targetMerchant then
+								DebugLog("Клон мерчанта не найден")
+							return
+						end
+								
+						if not targetMerchant.description then
+							DebugLog("Ошибка: у клона нет description")
+							return
+						end
+					end
+
+					isSelling = true
+					lastSaleTime = currentTime
+						
+					SellALL()
+						
+					isSelling = false
+				else
+					oldCount = newCount
+				end
+			end
+
+			-- Чекбокс для AutoSell
+			local AutoSellLoop = nil
+			local AutoSell = Main:Toggle({
+				Title = "AutoSell",
+				Type = "Checkbox",
+				Value = false, -- default value
+				Callback = function(state) 
+					if state == true then
+						AutoSellLoop = RunService.Heartbeat:Connect(function()
+							if IsUnloaded then
+								AutoSellLoop:Disconnect()
+								return
+							end
+							processAutoSell()
+						end)
+						DebugLog("AutoSell включен")
+					else
+						if AutoSellLoop then
+							AutoSellLoop:Disconnect()
+							AutoSellLoop = nil
+						end
+						DebugLog("AutoSell выключен")
+					end
+				end
+			})
+
+
+			local WarningMode
+			WarningMode = Main:Toggle({
+				Title = "Warning Mode",
+				--Desc = "Toggle Description",
+				--Icon = "bird",
+				Type = "Checkbox",
+				Value = true, -- default value
+			})
+
+			local Sell_in_Hand = Main:Button({
+				Title = "Sell in Hand",
+				Callback = function()
+					if WarningMode.Value then
+						Window:Dialog({
+							Title = "Are you sure?",
+							Content = "Are you sure you want to sell fish directly from your hands?",
+							Buttons = {
+								{
+									Title = "Confirm",
+									Callback = function()
+										SellOne()
+									end
+								},
+								{
+									Title = "Cancel", 
+									Callback = function()
+										DebugLog("Cancelled!")
+									end
+								}
+							}
+						})
+					else
+						SellOne()
+					end
+				end
+			})
+
+			local Sell_All = Main:Button({
+				Title = "Sell All",
+				Callback = function()
+					if WarningMode.Value then
+						Window:Dialog({
+							Title = "Are you sure?",
+							Content = "Are you sure you want to sell all the fish in your inventory (the fish will be sold according to your sale settings)",
+							Buttons = {
+								{
+									Title = "Confirm",
+									Callback = function()
+										SellALL()
+									end
+								},
+								{
+									Title = "Cancel",
+									Callback = function()
+										DebugLog("Cancelled!")
+									end
+								}
+							}
+						})
+					else
+						SellALL()
+					end
+				end
+			})
+		end
+	end
+
+
+	do
+		local NPS = Automatic:Tab(
+			{
+				Title = "NPS",
+				Icon = "lucide:users"
+			}
+		)
+
+		do
+			local Treasure = NPS:Section(
+				{
+					Title = "Treasure"
 				}
-			end
-		end
-	end
+			)
 
-	local Dropdown = Tabs.Market:AddDropdown("Dropdown", {
-		Title = "Dropdown",
-		Values = Rods,
-		Multi = false,
-		Search = true,
-		Default = 1,
-	})
+			-- // Treasure Tab // --
+			local Teleport_to_Jack_Marrow = NPS:Button(
+				{
+					Title = "Teleport to Jack Marrow",
+					Callback = function()
+						game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame =
+							CFrame.new(-2824.359, 214.311, 1518.130)
+					end
+				}
+			)
 
-	-- Создаем параграф для отображения информации
-	local Paragraph = Tabs.Market:AddParagraph({
-		Title = "Rod Information",
-		Content = "Select a rod to see price"
-	})
-
-	-- Функция для обновления информации о предмете
-	local function updateRodsInfo()
-		local Value = Dropdown.Value
-		
-		if Value ~= nil and Value ~= "None" then
-			local infoText = "LureSpeed: " .. RodsStats[Value].LureSpeed .. "%" .. "\n" ..
-							"Luck: " .. RodsStats[Value].Luck .. "%" .. "\n" ..
-							"Control: " .. RodsStats[Value].Control .. "\n" ..
-							"Resilience: " .. RodsStats[Value].Resilience .. "%" .. "\n" ..
-							"Max Kg: " .. RodsStats[Value].Strength .. "kg" .. "\n" ..
-							"Price: " .. RodsStats[Value].Price .. "C$"
-
-			Paragraph:SetTitle("Rod: ".. Value)
-			Paragraph:SetIcon(RodsStats[Value].Icon, "title-right")    -- Справа от заголовка
-
-			-- Различные варианты позиционирования:
-			--Paragraph:SetIcon("rbxassetid://70848292796768", "left")           -- Слева от всего контента
-			--Paragraph:SetIcon("rbxassetid://70848292796768", "right")          -- Справа от всего контента
-			--Paragraph:SetIcon("rbxassetid://70848292796768", "title-left")     -- Слева от заголовка
-			
-			--Paragraph:SetIcon("rbxassetid://70848292796768", "center-top")     -- По центру сверху
-			--Paragraph:SetIcon("rbxassetid://70848292796768", "center-bottom")  -- По центру снизу
-
-			--Paragraph:SetIcon("rbxassetid://70848292796768")
-			Paragraph:SetDesc(infoText)
-		else
-			Paragraph:SetTitle("Rod Information")
-			Paragraph:SetDesc("Select a Rod to see details")
-			Paragraph:RemoveIcon()  -- Полностью убираем иконку
-		end
-	end
-
-	-- Обработчики изменений
-	Dropdown:OnChanged(function(Value)
-		updateRodsInfo()
-	end)
-
-	local function BuyRod(RodName)
-		DeugLog("Куплена Удочка: ".. RodName)
-		local purchaseEvent = game:GetService("ReplicatedStorage").events.purchase
-		purchaseEvent:FireServer(RodName, "Rod", nil, 1)
-	end
-
-	Tabs.Market:AddButton({
-		Title = "Buy Rod",
-		Description = "", --"Very important button",
-		Callback = function()
-			if Dropdown.Value ~= nil and Dropdown.Value ~= "None" then
-				Window:Dialog({
-					Title = "You want to buy it?",
-					Content = "(if you already have this fishing rod, the money will be debited again)",
-					Buttons = {
-						{
-							Title = "Confirm",
-							Callback = function()
-								BuyRod(Dropdown.Value)
-							end
-						},
-						{
-							Title = "Cancel",
-							Callback = function()
-								DeugLog("Cancelled Buy Rod")
-							end
-						}
-					}
-				})
-				--Dropdown:SetValue("None")
-			end
-		end
-	})
---]]
-
-
-
-local Items = Tabs.Market:AddSection("Items", nil)
-	local Items = {"None",}
-	local ItemsPrise = {}
-	local ItemsOnlyOne = {}
-
-	for itemName, itemData in pairs(Items_Module.Items) do
-		if type(itemData) == "table" then
-			local price = itemData.Price
-			local OnlyOne
-
-			if itemData.OnlyBuyOne then
-				OnlyOne = true
-			else
-				OnlyOne = false
+			-- Ждем только если пауза
+			function waitIfPaused()
+				while game:GetService("Players").LocalPlayer.GameplayPaused do
+					wait(0.1)
+				end
+				wait(0.1)
 			end
 
-			-- Если цена не число или равна math.huge, то заменяем на nil
-			if type(price) ~= "number" or price == math.huge then
-				price = nil
-			end
-			if price ~= nil and itemName ~= "Witches Ingredient" then
+			local function debugLookAt(target)
+				local camera = workspace.CurrentCamera
+				local currentPos = camera.CFrame.Position
 
-				table.insert(Items, itemName)
-				ItemsPrise[itemName] = price -- Исправлено: используем таблицу как словарь
-				ItemsOnlyOne[itemName] = OnlyOne -- Исправлено: используем таблицу как словарь
+				-- Находим подходящую часть для прицеливания
+				local targetPart
 
-				--DeugLog(itemName .. " - " .. tostring(price), OnlyOne)
-			end
-		end
-	end
+				if target:IsA("Model") then
+					targetPart =
+						target:FindFirstChild("Head") or target:FindFirstChild("HumanoidRootPart") or
+						target:FindFirstChildWhichIsA("BasePart")
+				elseif target:IsA("BasePart") then
+					targetPart = target
+				end
 
-	--DeugLog(unpack(Rods))
-
-	local Dropdown = Tabs.Market:AddDropdown("Dropdown", {
-		Title = "Dropdown",
-		Values = Items,
-		Multi = false,
-		Search = true,
-		Default = 1,
-	})
-
-	local CountInput = Tabs.Market:AddInput("CountInput", {
-		Title = "Count",
-		Default = "1",
-		Placeholder = "Placeholder",
-		Numeric = true,
-		Finished = false,
-	})
-
-	local Paragraph = Tabs.Market:AddParagraph({
-		Title = "Items Information",
-		Content = "Select a Item to see price",
-	})
-
-	-- Функция для обновления информации о предмете
-	local function updateItemInfo()
-		local Value = Dropdown.Value
-		
-		if Value ~= nil and Value ~= "None" then
-			local price = ItemsPrise[Value] or "Unknown"
-			local OnlyOne = ItemsOnlyOne[Value] or false
-
-			local Count = tonumber(CountInput.Value) or 1
-			if type(price) ~= "number" or OnlyOne then
-				Count = 1
+				if targetPart then
+					local targetPos = targetPart.Position
+					-- Используем LookVector для более плавного поворота
+					local lookVector = (targetPos - currentPos).Unit
+					camera.CFrame = CFrame.new(currentPos, currentPos + lookVector)
+					return true
+				else
+					DebugWarn("Не найдена подходящая часть у модели: " .. target.Name)
+					return false
+				end
 			end
 
-			local TotalPrice
-			if type(price) == "number" then
-				TotalPrice = Count * price
-			else
-				TotalPrice = 0
-			end
-
-			local infoText = "Price Once: " .. tostring(price) .. "C$" .. "\n" ..
-							"Count: " .. Count .. "pcs" .. "\n" ..
-							"Total Price: " .. TotalPrice .. "C$" .. "\n" ..
-							"Buy Only One: " .. tostring(OnlyOne)
-
-			Paragraph:SetTitle("Item: ".. Value)
-			Paragraph:SetDesc(infoText)
-		else
-			Paragraph:SetTitle("Item Information")
-			Paragraph:SetDesc("Select a Item to see details")
-		end
-	end
-
-	-- Обработчики изменений
-	Dropdown:OnChanged(function(Value)
-		updateItemInfo()
-	end)
-
-	CountInput:OnChanged(function(Value)
-		updateItemInfo()
-	end)
-
-	local function BuyItem(ItemName, Value)
-		if not Value then Value = 1 end
-		
-		DeugLog("Куплен Предмет: ".. ItemName)
-		local purchaseEvent = game:GetService("ReplicatedStorage").events.purchase
-		
-		while Value > 0 do
-			local purchaseAmount = math.min(Value, 50)
-			purchaseEvent:FireServer(ItemName, "Item", nil, purchaseAmount)
-			Value = Value - purchaseAmount
-			if Value > 0 then
-				wait(0.1)  -- Задержка между запросами
-			end
-		end
-	end
-
-	Tabs.Market:AddButton({
-		Title = "Buy Item",
-		Description = "", --"Very important button",
-		Callback = function()
-			if Dropdown.Value ~= nil and Dropdown.Value ~= "None" then
-				Window:Dialog({
-					Title = "You want to buy it?",
-					Content = "(if you already have this Item, the money will be debited again)",
-					Buttons = {
-						{
-							Title = "Confirm",
-							Callback = function()
-								local OnlyOne = ItemsOnlyOne[Dropdown.Value] or false
-								local Count = 1
-								if OnlyOne then
-									Count = 1
-								else
-									Count = tonumber(CountInput.Value) or 1
+			local Repair_Map = NPS:Button(
+				{
+					Title = "Repair Map",
+					Callback = function()
+						for i, v in pairs(game.Players.LocalPlayer.Backpack:GetChildren()) do
+							if v.Name == "Treasure Map" then
+								for i = 0, 30 do
+									debugLookAt(workspace.world.npcs["Jack Marrow"])
+									task.wait()
 								end
-								BuyItem(Dropdown.Value, Count)
+
+								waitIfPaused()
+
+								local prompt = workspace.world.npcs["Jack Marrow"].dialogprompt
+								fireproximityprompt(prompt)
+
+								game.Players.LocalPlayer.Character.Humanoid:EquipTool(v)
+
+								local remote = workspace.world.npcs["Jack Marrow"].treasure.repairmap
+								local arguments = {
+									[1] = {
+										["npc"] = workspace.world.npcs["Jack Marrow"],
+										["idle"] = workspace.world.npcs["Jack Marrow"].description.idle,
+										["voice"] = 12
+									}
+								}
+								remote:InvokeServer(unpack(arguments))
 							end
-						},
-						{
-							Title = "Cancel",
-							Callback = function()
-								DeugLog("Cancelled Buy Item")
-							end
-						}
-					}
-				})
-				--Dropdown:SetValue("None")
-			end
-		end
-	})
-
-
-
-local Fishes = Tabs.Market:AddSection("Fishes", nil)
-	local Fish = {"None", }
-	local FishBuyPrice = {}
-
-	-- Вывод всех рыб с учетом BuyMult
-	for fishName, fishData in pairs(Fish_Module) do
-		if fishName ~= "Rarities" and fishName ~= "RarityColours" and type(fishData) == "table" then
-			local basePrice = fishData.Price or 0
-			local buyMult = fishData.BuyMult or 1
-			local finalPrice = basePrice * buyMult
-			
-			-- Выводим только если есть BuyMult (или всегда, но с учетом множителя)
-			if fishData.BuyMult and fishName ~= "Bloop Cosmetic Crate" then
-				--DeugLog(fishName .. " - " .. finalPrice .. " монет (множитель: " .. buyMult .. ")")
-				table.insert(Fish, fishName)
-				FishBuyPrice[fishName] = finalPrice
-			else
-				--DeugLog(fishName .. " - " .. finalPrice .. " монет")
-			end
-		end
-	end
-
-	--DeugLog(unpack(Rods))
-
-	local Dropdown = Tabs.Market:AddDropdown("Dropdown", {
-		Title = "Dropdown",
-		Values = Fish,
-		Multi = false,
-		Search = true,
-		Default = 1,
-	})
-
-	local CountInput = Tabs.Market:AddInput("CountInput", {
-		Title = "Count",
-		Default = "1",
-		Placeholder = "Placeholder",
-		Numeric = true,
-		Finished = false,
-	})
-
-	local Paragraph = Tabs.Market:AddParagraph({
-		Title = "Items Information",
-		Content = "Select a Item to see price",
-	})
-
-	-- Функция для обновления информации о предмете
-	local function updateFishesInfo()
-		local Value = Dropdown.Value
-		
-		if Value ~= nil and Value ~= "None" then
-			local price = FishBuyPrice[Value] or "Unknown"
-
-			local Count = tonumber(CountInput.Value) or 1
-			if type(price) ~= "number" then
-				Count = 1
-			end
-
-			local ToralPrice = Count * price
-			local infoText = "Price Once: " .. price .. "C$" .. "\n"..
-								"Count: " .. Count .. "pcs" .. "\n"..
-								"Total Price: " .. ToralPrice .. "C$"
-
-			Paragraph:SetTitle("Item: ".. Value)
-			Paragraph:SetDesc(infoText)
-		else
-			Paragraph:SetTitle("Item Information")
-			Paragraph:SetDesc("Select a Item to see details")
-		end
-	end
-
-	-- Обработчики изменений
-	Dropdown:OnChanged(function(Value)
-		updateFishesInfo()
-	end)
-
-	CountInput:OnChanged(function(Value)
-		updateFishesInfo()
-	end)
-
-	local function BuyFish(FishName, Value)
-		if not Value then
-			Value = 1
-		end
-
-		DeugLog("Куплен Предмет: ".. FishName)
-		local purchaseEvent = game:GetService("ReplicatedStorage").events.purchase
-		
-		-- Если значение больше 50, разбиваем на части
-		if Value > 50 then
-			local fullPurchases = math.floor(Value / 50)  -- Количество покупок по 50
-			local remainder = Value % 50                  -- Остаток
-			
-			-- Покупаем полные части по 50
-			for i = 1, fullPurchases do
-				purchaseEvent:FireServer(FishName, "Fish", nil, 50)
-				wait(0.1)  -- Небольшая задержка между запросами
-			end
-			
-			-- Покупаем остаток, если он есть
-			if remainder > 0 then
-				purchaseEvent:FireServer(FishName, "Fish", nil, remainder)
-			end
-		else
-			-- Если значение 50 или меньше, покупаем сразу всё
-			purchaseEvent:FireServer(FishName, "Fish", nil, Value)
-		end
-	end
-
-	Tabs.Market:AddButton({
-		Title = "Buy Fish",
-		Description = "", --"Very important button",
-		Callback = function()
-			if Dropdown.Value ~= nil and Dropdown.Value ~= "None" then
-				Window:Dialog({
-					Title = "You want to buy it?",
-					Content = "(if you already have this Fish, the money will be debited again)",
-					Buttons = {
-						{
-							Title = "Confirm",
-							Callback = function()
-								BuyFish(Dropdown.Value, tonumber(CountInput.Value) or 1)
-							end
-						},
-						{
-							Title = "Cancel",
-							Callback = function()
-								DeugLog("Cancelled Buy Fish")
-							end
-						}
-					}
-				})
-				--Dropdown:SetValue("None")
-			end
-		end
-	})
-
-
-
-local Spears = Tabs.Market:AddSection("Spears", nil)
-	local Spear = {"None", }
-	local SpearStats = {}
-
-	for spearName, spearData in pairs(Spears_Module) do
-		if type(spearData) == "table" then
-			local Price = spearData.Price
-			local Power = spearData.Power
-			local Handling = spearData.Handling
-			local Piercing = spearData.Piercing
-			
-			-- Если цена не число или равна -1, то заменяем на nil
-			if type(Price) ~= "number" or Price == -1 then
-				Price = nil
-			end
-
-			if Price ~= nil then
-				table.insert(Spear, spearName)
-				SpearStats[spearName] = {
-					Power = Power,
-					Handling = Handling,
-					Piercing = Piercing,
-					Price = Price
+						end
+					end
 				}
-			end
+			)
+
+			local Collect_Treasure = NPS:Button(
+				{
+					Title = "Collect Treasure",
+					Callback = function()
+						-- Сначала находим все сундуки и меняем только их промпты
+						for i, chest in pairs(workspace.world.chests:GetDescendants()) do
+							if chest:IsA("Part") and chest:FindFirstChild("ChestSetup") then
+								local prompt = chest:FindFirstChild("ProximityPrompt")
+								if prompt then
+									prompt.HoldDuration = 0
+									prompt.RequiresLineOfSight = false
+									prompt.MaxActivationDistance = 9999
+								end
+							end
+						end
+
+						local oldPos = game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame
+
+						-- Собираем сундуки
+						for i, chest in pairs(workspace.world.chests:GetDescendants()) do
+							if chest:IsA("Part") and chest:FindFirstChild("ChestSetup") then
+								-- Телепортируемся к сундуку
+								game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame =
+									chest.CFrame * CFrame.new(0, 0, 3) -- Встаем перед сундуком
+
+								-- Увеличиваем время ожидания для стабилизации
+								task.wait(0.8)
+								waitIfPaused()
+
+								-- Поворачиваем камеру на сундук (больше попыток)
+								for i = 1, 15 do
+									debugLookAt(chest)
+									task.wait(0.03) -- Более частые обновления
+								end
+
+								task.wait(0.2)
+
+								-- Ищем промпт именно этого сундука
+								local prompt = chest:FindFirstChild("ProximityPrompt")
+								if prompt then
+									fireproximityprompt(prompt)
+									-- Увеличиваем время ожидания после взаимодействия
+									task.wait(0.8)
+								end
+							end
+						end
+
+						-- Возвращаем на исходную позицию
+						game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = oldPos
+					end
+				}
+			)
 		end
 	end
 
-	local Dropdown = Tabs.Market:AddDropdown("Dropdown", {
-		Title = "Dropdown",
-		Values = Spear,
-		Multi = false,
-		Search = true,
-		Default = 1,
-	})
 
-	-- Создаем параграф для отображения информации
-	local Paragraph = Tabs.Market:AddParagraph({
-		Title = "Spear Information",
-		Content = "Select a spear to see price"
-	})
 
-	-- Функция для обновления информации о предмете
-	local function updateSpearsInfo()
-		local Value = Dropdown.Value
+
+
+--[[
+    local Optional = Automatic:Tab({
+        Title = "Optional",
+        Icon = "lucide:list"
+    })
+]]
+end
+
+
+
+-- Market 
+do
+
+	--Main
+	do
+		local Main = Market:Tab({
+			Title = "Main",
+			Icon = "lucide:package"
+		})
 		
-		if Value ~= nil and Value ~= "None" then
-			local infoText = "Power: " .. SpearStats[Value].Power .. "\n" ..
-							"Handling: " .. SpearStats[Value].Handling .. "\n" ..
-							"Piercing: " .. SpearStats[Value].Piercing .. "\n" ..
-							"Price: " .. SpearStats[Value].Price
+		local RodsSection = Main:Section({ Title = "  Rods", })
+		
 
-			Paragraph:SetTitle("Spear: ".. Value)
-			Paragraph:SetDesc(infoText)
-		else
-			Paragraph:SetTitle("Spear Information")
-			Paragraph:SetDesc("Select a spear to see details")
-		end
-	end
+		local Rods = {"None",}
+		local RodsStats = {}
+		local RodInformation
 
-	-- Обработчики изменений
-	Dropdown:OnChanged(function(Value)
-		updateSpearsInfo()
-	end)
+		-- Исправленный код для удочек
+		for rodName, rodData in pairs(Rods_Module) do
+			if type(rodData) == "table" then
+				local price = rodData.Price
+				local Luck = rodData.Luck
+				local LureSpeed = rodData.LureSpeed
+				local LineDistance = rodData.LineDistance
+				local Resilience = rodData.Resilience
+				local Control = rodData.Control
+				local Strength = rodData.Strength
+				local Icon = rodData.Icon
 
-	local function BuySpear(SpearName)
-		DeugLog("Куплено Копьё: ".. SpearName)
-		local purchaseEvent = game:GetService("ReplicatedStorage").events.purchase
-		purchaseEvent:FireServer(SpearName, "Spear", nil, 1)
-	end
+				-- Если цена не число или равна math.huge, то заменяем на nil
+				if type(price) ~= "number" or price == math.huge then
+					price = nil
+				end
 
-	Tabs.Market:AddButton({
-		Title = "Buy Spear",
-		Description = "", --"Very important button",
-		Callback = function()
-			if Dropdown.Value ~= nil and Dropdown.Value ~= "None" then
-				Window:Dialog({
-					Title = "You want to buy it?",
-					Content = "(if you already have this Spear, the money will be debited again)",
-					Buttons = {
-						{
-							Title = "Confirm",
-							Callback = function()
-								BuySpear(Dropdown.Value)
-							end
-						},
-						{
-							Title = "Cancel",
-							Callback = function()
-								DeugLog("Cancelled Buy Spear")
-							end
-						}
+				if type(Strength) ~= "number" then
+					Strength = "nil"
+				else
+					if Strength == math.huge then
+						Strength = "inf"
+					end
+				end
+
+
+				if price ~= nil then
+					table.insert(Rods, rodName)
+					RodsStats[rodName] = {
+						Luck = Luck,
+						LureSpeed = 100 - LureSpeed,
+						LineDistance = LineDistance,
+						Resilience = Resilience,
+						Strength = Strength,
+						Control = Control,
+						Price = price,
+						Icon = Icon,
 					}
-				})
-				--Dropdown:SetValue("None")
+				end
 			end
 		end
-	})
---]]
 
-local Merlin = Tabs.Market:AddSection("Merlin", nil)
+		-- Функция для обновления информации о предмете
+		local function updateRodsInfo(option)
+			local Value = option
+			
+			if Value ~= nil and Value ~= "None" then
+				local infoText = " LureSpeed: " .. RodsStats[Value].LureSpeed .. "%" .. "\n" ..
+								" Luck: " .. RodsStats[Value].Luck .. "%" .. "\n" ..
+								" Control: " .. RodsStats[Value].Control .. "\n" ..
+								" Resilience: " .. RodsStats[Value].Resilience .. "%" .. "\n" ..
+								" Max Kg: " .. RodsStats[Value].Strength .. "kg" .. "\n" ..
+								" Price: " .. RodsStats[Value].Price .. " C$"
 
-	--[[ ]]
-		Tabs.Market:AddButton({
-			Title = "Teleport To Merlin",
-			Description = "You need to teleport and talk to him to purchase further.", --"Very important button",
-			Callback = function()
-				game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(-927.5850830078125, 223.70001220703125, -997.9788208007812)
+				RodInformation:SetTitle("Rod: ".. Value)
+				RodInformation:SetDesc(infoText)
+
+				--RodInformation:SetIcon(RodsStats[Value].Icon, "title-right")
+			else
+				RodInformation:SetTitle("Rod Information")
+				RodInformation:SetDesc("Select a Rod to see details")
+
+				--RodInformation:RemoveIcon()
+			end
+		end
+
+
+		local DRodsSelect = Main:Dropdown({
+			Title = "Selet Your Rod",
+			Values = Rods,
+			SearchBarEnabled = true,
+			Value = "None",
+			Callback = function(option) 
+				updateRodsInfo(option)
 			end
 		})
-	--]]
 
 
-	--[[
-		local Paragraph = Tabs.Market:AddParagraph({
-			Title = "Items Information",
-			Content = "Select a Item to see price",
+		local function BuyRod(RodName)
+			DebugLog("Куплена Удочка: ".. RodName)
+			local purchaseEvent = game:GetService("ReplicatedStorage").events.purchase
+			purchaseEvent:FireServer(RodName, "Rod", nil, 1)
+		end
+
+		RodInformation = Main:Paragraph({
+			Title = "Rod Information",
+			Desc = "Select a rod to see price",
+			Locked = false,
+			Buttons = {
+				{
+					Icon = "bird",
+					Title = "Buy Rod",
+					Callback = function()
+						if DRodsSelect.Value ~= nil and DRodsSelect.Value ~= "None" then
+							Window:Dialog({
+								Title = "You want to buy it?",
+								Content = "(if you already have this fishing rod, the money will be debited again)",
+								Buttons = {
+									{
+										Title = "Confirm",
+										Callback = function()
+											BuyRod(DRodsSelect.Value)
+										end
+									},
+									{
+										Title = "Cancel",
+										Callback = function()
+											DebugLog("Cancelled Buy Rod")
+										end
+									}
+								}
+							})
+							--DRodsSelect:SetValue("None")
+						end
+					end,
+				}
+			}
 		})
+
+
+		local ItemsSection = Main:Section({ Title = "  Items", })
+
+		local Items = {"None",}
+		local ItemsPrise = {}
+		local ItemsOnlyOne = {}
+
+		for itemName, itemData in pairs(Items_Module.Items) do
+			if type(itemData) == "table" then
+				local price = itemData.Price
+				local OnlyOne
+
+				if itemData.OnlyBuyOne then
+					OnlyOne = true
+				else
+					OnlyOne = false
+				end
+
+				-- Если цена не число или равна math.huge, то заменяем на nil
+				if type(price) ~= "number" or price == math.huge then
+					price = nil
+				end
+				if price ~= nil and itemName ~= "Witches Ingredient" then
+
+					table.insert(Items, itemName)
+					ItemsPrise[itemName] = price -- Исправлено: используем таблицу как словарь
+					ItemsOnlyOne[itemName] = OnlyOne -- Исправлено: используем таблицу как словарь
+
+					--DebugLog(itemName .. " - " .. tostring(price), OnlyOne)
+				end
+			end
+		end
+
+
+		local CountItemInput
+		local DItemSelect
+		local ItemInformation
+
+		-- Функция для обновления информации о предмете
+		local function updateItemInfo()
+			local Value = DItemSelect.Value
+			
+			if Value ~= nil and Value ~= "None" then
+				local price = ItemsPrise[Value] or "Unknown"
+				local OnlyOne = ItemsOnlyOne[Value] or false
+
+				local Count = tonumber(CountItemInput.Value) or 1
+				if type(price) ~= "number" or OnlyOne then
+					Count = 1
+				end
+
+				local TotalPrice
+				if type(price) == "number" then
+					TotalPrice = Count * price
+				else
+					TotalPrice = 0
+				end
+
+				local infoText = " Price Once: " .. tostring(price) .. " C$" .. "\n" ..
+								" Count: " .. Count .. "pcs" .. "\n" ..
+								" Buy Only One: " .. tostring(OnlyOne) ..  "\n" ..
+								" Total Price: " .. TotalPrice .. " C$"
+								
+
+				ItemInformation:SetTitle("Item: ".. Value)
+				ItemInformation:SetDesc(infoText)
+			else
+				ItemInformation:SetTitle("Item Information")
+				ItemInformation:SetDesc("Select a Item to see details")
+			end
+		end
+
+
+		DItemSelect = Main:Dropdown({
+			Title = "Item Select",
+			--Desc = "Dropdown Description",
+			Values = Items,
+			Value = "Nane",
+			SearchBarEnabled = true,
+			Callback = function(option) 
+				updateItemInfo()
+			end
+		})
+
+
+		CountItemInput = Main:Input({
+			Title = "Count",
+			Value = "1",
+			--InputIcon = "bird",
+			Type = "Input", -- or "Textarea"
+			Placeholder = "example 1173",
+			Callback = function(input) 
+				updateItemInfo()
+			end
+		})
+
+		local function BuyItem(ItemName, Value)
+			if not Value then Value = 1 end
+			
+			DebugLog("Куплен Предмет: ".. ItemName)
+			local purchaseEvent = game:GetService("ReplicatedStorage").events.purchase
+			
+			while Value > 0 do
+				local purchaseAmount = math.min(Value, 50)
+				purchaseEvent:FireServer(ItemName, "Item", nil, purchaseAmount)
+				Value = Value - purchaseAmount
+				if Value > 0 then
+					wait(0.1)  -- Задержка между запросами
+				end
+			end
+		end
+
+		ItemInformation = Main:Paragraph({
+			Title = "Items Information",
+			Desc = "Select a Item to see price",
+			Locked = false,
+			Buttons = {
+				{
+					Icon = "bird",
+					Title = "Buy Item",
+					Callback = function()
+						if DItemSelect.Value ~= nil and DItemSelect.Value ~= "None" then
+							Window:Dialog({
+								Title = "You want to buy it?",
+								Content = "(if you already have this Item, the money will be debited again)",
+								Buttons = {
+									{
+										Title = "Confirm",
+										Callback = function()
+											local OnlyOne = ItemsOnlyOne[DItemSelect.Value] or false
+											local Count = 1
+											if OnlyOne then
+												Count = 1
+											else
+												Count = tonumber(CountItemInput.Value) or 1
+											end
+											BuyItem(DItemSelect.Value, Count)
+										end
+									},
+									{
+										Title = "Cancel",
+										Callback = function()
+											DebugLog("Cancelled Buy Item")
+										end
+									}
+								}
+							})
+							--DItemSelect:SetValue("None")
+						end
+					end,
+				}
+			}
+		})
+
+		local FishesSection = Main:Section({ Title = "  Fishes", })
+		local Fish = {"None", }
+		local FishBuyPrice = {}
+
+		-- Вывод всех рыб с учетом BuyMult
+		for fishName, fishData in pairs(Fish_Module) do
+			if fishName ~= "Rarities" and fishName ~= "RarityColours" and type(fishData) == "table" then
+				local basePrice = fishData.Price or 0
+				local buyMult = fishData.BuyMult or 1
+				local finalPrice = basePrice * buyMult
+				
+				-- Выводим только если есть BuyMult (или всегда, но с учетом множителя)
+				if fishData.BuyMult and fishName ~= "Bloop Cosmetic Crate" then
+					--DebugLog(fishName .. " - " .. finalPrice .. " монет (множитель: " .. buyMult .. ")")
+					table.insert(Fish, fishName)
+					FishBuyPrice[fishName] = finalPrice
+				else
+					--DebugLog(fishName .. " - " .. finalPrice .. " монет")
+				end
+			end
+		end
+
+		local DFishesSelect
+		local CountFishesInput
+		local FishesInformation
 
 		-- Функция для обновления информации о предмете
 		local function updateFishesInfo()
-			local Value = Dropdown.Value
+			local Value = DFishesSelect.Value
 			
 			if Value ~= nil and Value ~= "None" then
-				local price = 5000
+				local price = FishBuyPrice[Value] or "Unknown"
 
-				local Count = tonumber(CountInput.Value) or 1
+				local Count = tonumber(CountFishesInput.Value) or 1
 				if type(price) ~= "number" then
 					Count = 1
 				end
 
 				local ToralPrice = Count * price
-				local infoText = "Price Once: " .. price .. "C$" .. "\n"..
-									"Count: " .. Count .. "pcs" .. "\n"..
-									"Total Price: " .. ToralPrice .. "C$"
+				local infoText = " Price Once: " .. price .. " C$" .. "\n"..
+									" Count: " .. Count .. "pcs" .. "\n"..
+									" Total Price: " .. ToralPrice .. " C$"
 
-				Paragraph:SetTitle("Item: ".. Value)
-				Paragraph:SetDesc(infoText)
+				FishesInformation:SetTitle("Item: ".. Value)
+				FishesInformation:SetDesc(infoText)
 			else
-				Paragraph:SetTitle("Item Information")
-				Paragraph:SetDesc("Select a Item to see details")
+				FishesInformation:SetTitle("Item Information")
+				FishesInformation:SetDesc("Select a Item to see details")
 			end
 		end
 
-		CountInput:OnChanged(function(Value)
-			updateFishesInfo()
-		end)
-	]]
+		DFishesSelect = Main:Dropdown({
+			Title = "Fishes Select",
+			--Desc = "Dropdown Description",
+			Values = Fish,
+			Value = "Nane",
+			SearchBarEnabled = true,
+			Callback = function(option) 
+				updateFishesInfo()
+			end
+		})
 
-	local LuckAmount = Tabs.Market:AddInput("LuckAmount", {
-		Title = "Luck Amount",
-		Default = "1",
-		Placeholder = "Placeholder",
-		Numeric = true,
-		Finished = false,
-	})
+		CountFishesInput = Main:Input({
+			Title = "Count",
+			Value = "1",
+			--InputIcon = "bird",
+			Type = "Input", -- or "Textarea"
+			Placeholder = "example 1173",
+			Callback = function(input) 
+				updateFishesInfo()
+			end
+		})
 
-	local function BuyMerlinLuck(Value)
-		for i = 1, Value do
-			local BuyLuckEvent = workspace.world.npcs.Merlin.Merlin:GetChildren()[9]
+		--[[
+		local function BuyFish(FishName, Value)
+			if not Value then
+				Value = 1
+			end
+
+			DebugLog("Куплен Предмет: ".. FishName)
+			local purchaseEvent = game:GetService("ReplicatedStorage").events.purchase
+			
+			-- Если значение больше 50, разбиваем на части
+			if Value > 50 then
+				local fullPurchases = math.floor(Value / 50)  -- Количество покупок по 50
+				local remainder = Value % 50                  -- Остаток
+				
+				-- Покупаем полные части по 50
+				for i = 1, fullPurchases do
+					purchaseEvent:FireServer(FishName, "Fish", nil, 50)
+					wait(0.1)  -- Небольшая задержка между запросами
+				end
+				
+				-- Покупаем остаток, если он есть
+				if remainder > 0 then
+					purchaseEvent:FireServer(FishName, "Fish", nil, remainder)
+				end
+			else
+				-- Если значение 50 или меньше, покупаем сразу всё
+				purchaseEvent:FireServer(FishName, "Fish", nil, Value)
+			end
+		end
+		]]
+
+		local function BuyFish(FishName, Value)
+			if not Value then Value = 1 end
+			
+			DebugLog("Куплен Предмет: ".. FishName)
+			local purchaseEvent = game:GetService("ReplicatedStorage").events.purchase
+			
+			while Value > 0 do
+				local purchaseAmount = math.min(Value, 50)
+				purchaseEvent:FireServer(FishName, "Fish", nil, purchaseAmount)
+				Value = Value - purchaseAmount
+				if Value > 0 then
+					wait(0.1)  -- Задержка между запросами
+				end
+			end
+		end
+
+		FishesInformation = Main:Paragraph({
+			Title = "Fish Information",
+			Desc = "Select a Item to see price",
+			Locked = false,
+			Buttons = {
+				{
+					Icon = "bird",
+					Title = "Buy Fish",
+					Callback = function()
+						if DFishesSelect.Value ~= nil and DFishesSelect.Value ~= "None" then
+							Window:Dialog({
+								Title = "You want to buy it?",
+								Content = "(if you already have this Fish, the money will be debited again)",
+								Buttons = {
+									{
+										Title = "Confirm",
+										Callback = function()
+											BuyFish(DFishesSelect.Value, tonumber(CountFishesInput.Value) or 1)
+										end
+									},
+									{
+										Title = "Cancel",
+										Callback = function()
+											DebugLog("Cancelled Buy Fish")
+										end
+									}
+								}
+							})
+							--DFishesSelect:SetValue("None")
+						end
+					end,
+				}
+			}
+		})
+
+
+
+
+		local SpearsSection = Main:Section({ Title = "  Spears", })
+		local Spear = {"None", }
+		local SpearStats = {}
+
+		for spearName, spearData in pairs(Spears_Module) do
+			if type(spearData) == "table" then
+				local Price = spearData.Price
+				local Power = spearData.Power
+				local Handling = spearData.Handling
+				local Piercing = spearData.Piercing
+				
+				-- Если цена не число или равна -1, то заменяем на nil
+				if type(Price) ~= "number" or Price == -1 then
+					Price = nil
+				end
+
+				if Price ~= nil then
+					table.insert(Spear, spearName)
+					SpearStats[spearName] = {
+						Power = Power,
+						Handling = Handling,
+						Piercing = Piercing,
+						Price = Price
+					}
+				end
+			end
+		end
+
+
+
+		local SpearInformation
+		local DSpearSelect
+
+		-- Функция для обновления информации о предмете
+		local function updateSpearsInfo()
+			local Value = DSpearSelect.Value
+			
+			if Value ~= nil and Value ~= "None" then
+				local infoText = " Power: " .. SpearStats[Value].Power .. "\n" ..
+								" Handling: " .. SpearStats[Value].Handling .. "\n" ..
+								" Piercing: " .. SpearStats[Value].Piercing .. "\n" ..
+								" Price: " .. SpearStats[Value].Price
+
+				SpearInformation:SetTitle("Spear: ".. Value)
+				SpearInformation:SetDesc(infoText)
+			else
+				SpearInformation:SetTitle("Spear Information")
+				SpearInformation:SetDesc("Select a spear to see details")
+			end
+		end
+		
+		DSpearSelect = Main:Dropdown({
+			Title = "Spear Select",
+			Values = Spear,
+			Value = "Nane",
+			SearchBarEnabled = true,
+			Callback = function(option) 
+				updateSpearsInfo()
+			end
+		})
+
+
+		local function BuySpear(SpearName)
+			DebugLog("Куплено Копьё: ".. SpearName)
+			local purchaseEvent = game:GetService("ReplicatedStorage").events.purchase
+			purchaseEvent:FireServer(SpearName, "Spear", nil, 1)
+		end
+
+		SpearInformation = Main:Paragraph({
+			Title = "Spear Information",
+			Desc = "Select a spear to see price",
+			Locked = false,
+			Buttons = {
+				{
+					Icon = "bird",
+					Title = "Buy Spear",
+					Callback = function()
+						if DSpearSelect.Value ~= nil and DSpearSelect.Value ~= "None" then
+							Window:Dialog({
+								Title = "You want to buy it?",
+								Content = "(if you already have this Spear, the money will be debited again)",
+								Buttons = {
+									{
+										Title = "Confirm",
+										Callback = function()
+											BuySpear(DSpearSelect.Value)
+										end
+									},
+									{
+										Title = "Cancel",
+										Callback = function()
+											DebugLog("Cancelled Buy Spear")
+										end
+									}
+								}
+							})
+							--DSpearSelect:SetValue("None")
+						end
+					end,
+				}
+			}
+		})
+
+	end
+
+do
+    local NPS = Market:Tab({
+        Title = "NPS",
+        Icon = "lucide:handshake"
+    })
+
+	do
+		local Teleport_To_Merlin
+		Teleport_To_Merlin = NPS:Button({
+			Title = "Teleport To Merlin",
+			Description = "", --"Very important button",
+			Callback = function()
+
+				game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(-927.5850830078125, 223.70001220703125, -997.9788208007812)	
+
+				Buy_Relic:Highlight()
+				WindUI:Notify({
+					Title = "Market",
+					Content = "You have bought" .. tonumber(RelicAmount.Value) .. "Relics",
+					Duration = 3, -- 3 seconds
+				})
+			end
+		})
+	end
+
+	do
+		local LuckAmount = NPS:Input({
+			Title = "Luck Amount",
+			Desc = "Input Description",
+			Value = "1",
+			InputIcon = "bird",
+			Type = "Input", -- or "Textarea"
+			Placeholder = "Placeholder",
+		})
+
+		local function BuyMerlinLuck(Value)
+			for i = 1, Value do
+				local BuyLuckEvent = workspace.world.npcs.Merlin.Merlin:GetChildren()[9]
+				local arguments = {
+					[1] = {
+						--["npc"] = workspace.world.npcs.Merlin,
+						--["idle"] = workspace.world.npcs.Merlin.description.idle,
+						--["voice"] = workspace.world.npcs.Merlin.description.voice
+					}
+				}
+				BuyLuckEvent:InvokeServer(unpack(arguments))
+			end
+		end
+	
+		local Buy_Luck
+		Buy_Luck = NPS:Button({
+			Title = "Buy Luck",
+			Description = "", --"Very important button",
+			Callback = function()
+				Buy_Luck:Highlight()
+				Window:Dialog({
+					Icon = "bird",
+					Title = "You want to buy it?",
+					Content = "",
+					Buttons = {
+						{
+							Title = "Confirm",
+							Callback = function()
+								BuyMerlinLuck(tonumber(LuckAmount.Value))
+								WindUI:Notify({
+									Title = "Market",
+									Content = "You have bought " .. tonumber(LuckAmount.Value) .. " Luck",
+									Duration = 3, -- 3 seconds
+								})
+							end
+						},
+						{
+							Title = "Cancel",
+							Callback = function()
+								DebugLog("Cancelled Buy Luck")
+							end,
+						},
+					},
+				})
+			end
+		})
+	end
+
+	-- Buy Relic
+	do
+		local function BuyMerlinRelick(Value)
+			local needValue = Value
+			
+			local remote0 = workspace.world.npcs.Merlin.Merlin:GetChildren()[3] --1 relic
+			local remote1 = workspace.world.npcs.Merlin.Merlin.buy2Relics --2 relic
+			local remote2 = workspace.world.npcs.Merlin.Merlin.buy5Relics --5 relic
+			local remote3 = workspace.world.npcs.Merlin.Merlin.buy10Relics --10 relic
+			local remote4 = workspace.world.npcs.Merlin.Merlin.buy25Relics --25 relic
+			local remote5 = workspace.world.npcs.Merlin.Merlin.buy50Relics --50 relic
+			
 			local arguments = {
 				[1] = {
 					--["npc"] = workspace.world.npcs.Merlin,
 					--["idle"] = workspace.world.npcs.Merlin.description.idle,
-					--["voice"] = workspace.world.npcs.Merlin.description.voice
+					--["voice"] = 11
 				}
 			}
 			
-			BuyLuckEvent:InvokeServer(unpack(arguments))
-		end
-	end
-
-	Tabs.Market:AddButton({
-		Title = "Buy Luck",
-		Description = "", --"Very important button",
-		Callback = function()
-			Window:Dialog({
-				Title = "You want to buy it?",
-				Description = "",
-				Buttons = {
-					{
-						Title = "Confirm",
-						Callback = function()
-							BuyMerlinLuck(LuckAmount.Value)
-						end
-					},
-					{
-						Title = "Cancel",
-						Callback = function()
-							DeugLog("Cancelled Buy Luck")
-						end
-					}
-				}
-			})
-		end
-	})
-
-	local function BuyMerlinRelick(Value)
-		local needValue = Value
-		
-		local remote0 = workspace.world.npcs.Merlin.Merlin:GetChildren()[3] --1 relic
-		local remote1 = workspace.world.npcs.Merlin.Merlin.buy2Relics --2 relic
-		local remote2 = workspace.world.npcs.Merlin.Merlin.buy5Relics --5 relic
-		local remote3 = workspace.world.npcs.Merlin.Merlin.buy10Relics --10 relic
-		local remote4 = workspace.world.npcs.Merlin.Merlin.buy25Relics --25 relic
-		local remote5 = workspace.world.npcs.Merlin.Merlin.buy50Relics --50 relic
-		
-		local arguments = {
-			[1] = {
-				--["npc"] = workspace.world.npcs.Merlin,
-				--["idle"] = workspace.world.npcs.Merlin.description.idle,
-				--["voice"] = 11
+			-- Массив с доступными пакетами реликов в порядке убывания
+			local packages = {
+				{value = 50, remote = remote5},
+				{value = 25, remote = remote4},
+				{value = 10, remote = remote3},
+				{value = 5, remote = remote2},
+				{value = 2, remote = remote1},
+				{value = 1, remote = remote0}
 			}
-		}
-		
-		-- Массив с доступными пакетами реликов в порядке убывания
-		local packages = {
-			{value = 50, remote = remote5},
-			{value = 25, remote = remote4},
-			{value = 10, remote = remote3},
-			{value = 5, remote = remote2},
-			{value = 2, remote = remote1},
-			{value = 1, remote = remote0}
-		}
-		
-		-- Покупаем пакеты от большего к меньшему
-		for _, package in ipairs(packages) do
-			while needValue >= package.value do
-				local results = package.remote:InvokeServer(unpack(arguments))
-				needValue = needValue - package.value
-				
-				-- Небольшая задержка между запросами чтобы избежать проблем
-				wait(0.1)
+			
+			-- Покупаем пакеты от большего к меньшему
+			for _, package in ipairs(packages) do
+				while needValue >= package.value do
+					local results = package.remote:InvokeServer(unpack(arguments))
+					needValue = needValue - package.value
+					
+					-- Небольшая задержка между запросами чтобы избежать проблем
+					wait(0.1)
+				end
 			end
+			
+			return true
 		end
-		
-		return true
-	end
 
-	local RelicAmount = Tabs.Market:AddInput("RelicAmount", {
-		Title = "Relic Amount",
-		Default = "1",
-		Placeholder = "Placeholder",
-		Numeric = true,
-		Finished = false,
-	})
+		local RelicAmount = NPS:Input({
+			Title = "Relic Amount",
+			Desc = "Input Description",
+			Value = "1",
+			InputIcon = "bird",
+			Type = "Input", -- or "Textarea"
+			Placeholder = "Placeholder",
+		})
 
-	Tabs.Market:AddButton({
-		Title = "Buy Relic",
-		Description = "", --"You need to teleport and talk to him to purchase further.", --"Very important button",
-		Callback = function()
-			Window:Dialog({
-				Title = "You want to buy it?",
-				Content = "If you confirm the payment, it will be impossible to return the purchase.",
-				Buttons = {
-					{
-						Title = "Confirm",
-						Callback = function()
-							BuyMerlinRelick(tonumber(RelicAmount.Value))
-						end
+		local Buy_Relic
+		Buy_Relic = NPS:Button({
+			Title = "Buy Relic",
+			Description = "You need to teleport and talk to him to purchase further.", --"Very important button",
+			Callback = function()
+
+				Buy_Relic:Highlight()
+				Window:Dialog({
+					Icon = "bird",
+					Title = "You want to buy it?",
+					Content = "If you confirm the payment, it will be impossible to return the purchase.",
+					Buttons = {
+						{
+							Title = "Confirm",
+							Callback = function()
+								BuyMerlinRelick(tonumber(RelicAmount.Value))
+								WindUI:Notify({
+									Title = "Market",
+									Content = "You have bought " .. tonumber(RelicAmount.Value) .. " Relics",
+									Duration = 3, -- 3 seconds
+								})
+							end
+						},
+						{
+							Title = "Cancel",
+							Callback = function()
+								DebugLog("Cancelled Buy Relic")
+							end,
+						},
 					},
-					{
-						Title = "Cancel",
-						Callback = function()
-							DeugLog("Cancelled Buy Relic")
-						end
-					}
-				}
-			})
-		end
-	})
--- ===================== Market END ====================
-
-
--- ==================== SERVER START ====================
-    -- Вкладка Server для сервер хопа
-    local ServerSection = Tabs.Server:AddSection("Server Hop", "refresh-cw")
-
-	local ReLoadScriptAfterChengeServer = Tabs.Server:AddToggle("ReLoadScriptAfterChengeServer", {
-		Title = "Re Load Script After Chenge Server", 
-		Description = "Need Save in settings after chenge",
-		Default = true
-	})
-
-	-- Функция для обновления queue_on_teleport
-	local function updateTeleportScript(enable)
-		if enable then
-			queue_on_teleport([[
-				wait(3)
-				loadstring(game:HttpGet("https://raw.githubusercontent.com/Y-ForBE-Y/ioasduq089eu3oi13u12o3u/refs/heads/main/My%20Script/Scripts/FischScript.txt"))()
-			]])
-			--DeugLog("✅ Автозагрузка скрипта включена")
-		else
-			queue_on_teleport("")
-			--DeugLog("❌ Автозагрузка скрипта выключена")
-		end
+				})
+			end
+		})
 	end
-
-	ReLoadScriptAfterChengeServer:OnChanged(function(value)
-		updateTeleportScript(value)
-	end)
-
-	--Инициализация при старте
-	updateTeleportScript(ReLoadScriptAfterChengeServer.Value)
-
-    Tabs.Server:AddButton({
-        Title = "Server Hop",
-        Description = "Join a different server",
-        Callback = function()
-            serverHop()
-        end
-    })
-
-    Tabs.Server:AddButton({
-        Title = "Rejoin Server",
-        Description = "Rejoin current server",
-        Callback = function()
-            rejoin()
-        end
-    })
-
-    Tabs.Server:AddButton({
-        Title = "Copy Job ID",
-        Description = "Copy current server ID",
-        Callback = function()
-            setclipboard(JobId)
-            Fluent:Notify({
-                Title = "Server",
-                Content = "Job ID copied to clipboard!",
-                Duration = 3
-            })
-        end
-    })
+end
 
 
 --[[
-    Tabs.Server:AddButton({
-        Title = "Copy Connect Link",
-        Description = "Copy current server Join Link",
-        Callback = function()
-			local ServerConnectLink = "https://ubhubjoiner.vercel.app/?placeid=".. game.PlaceId .."&jobid=".. game.JobId
-
-			DeugLog(ServerConnectLink)
-            setclipboard(ServerConnectLink)
-
-            Fluent:Notify({
-                Title = "Server",
-                Content = "Join Link copied to clipboard!",
-                Duration = 3
-            })
-
-        end
+    local Optional = Market:Tab({
+        Title = "Optional",
+        Icon = "lucide:list"
     })
 ]]
+end
 
-    Tabs.Server:AddButton({
-        Title = "Create Your VIP Server",
-        Description = "", --"Rejoin current server",
-        Callback = function()
-            loadstring(game:HttpGet("https://pastebin.com/raw/Ru4UQDpN"))()
-        end
+-- Player 
+do
+    local MainTab = Player:Tab({
+        Title = "Main",
+        Icon = "lucide:user-check"
     })
 
---[[
-    -- Автоматический сервер хоп
-    local AutoServerHopToggle = Tabs.Server:AddToggle("AutoServerHop", {
-        Title = "Auto Server Hop",
-        Description = "Automatically hop servers every 30 seconds",
-        Default = false
-    })
+-- Создаем переменные для хранения значений
+local currentWalkSpeed = 16
+local currentJumpHeight = 7.2
+local currentJumpPower = 50
 
-    local autoHopConnection = nil
-    AutoServerHopToggle:OnChanged(function()
-        if Options.AutoServerHop.Value then
-            Fluent:Notify({
-                Title = "Auto Server Hop",
-                Content = "Enabled - Will hop in 30 seconds",
-                Duration = 5
-            })
-            
-            autoHopConnection = RunService.Heartbeat:Connect(function()
-                if tick() % 30 < 0.1 then -- Каждые 30 секунд
-                    if Options.AutoServerHop.Value then
-                        serverHop()
-                    end
-                end
-            end)
-        else
-            if autoHopConnection then
-                autoHopConnection:Disconnect()
-                autoHopConnection = nil
-            end
-            Fluent:Notify({
-                Title = "Auto Server Hop",
-                Content = "Disabled",
-                Duration = 3
-            })
-        end
-    end)
-]]
-    -- Информация о сервере
-    local InfoSection = Tabs.Server:AddSection("Server Info", "info")
+-- Character Settings Section
+local CharacterSection = MainTab:Section({
+    Title = "Character Settings"
+})
 
-    Tabs.Server:AddParagraph({
-        Title = "Current Server",
-        Content = "Place ID: " .. PlaceId .. "\nJob ID: " .. JobId .. "\nPlayers: " .. #Players:GetPlayers()
-    })
-
--- ==================== SERVER END ====================
-
-
--- ==================== Player Start ====================
-    local WalkSpeed = Tabs.Player:AddSection("WalkSpeed", "fast-forward")
-
-
-    -- Чекбокс для WalkSpeed
-    local WalkSpeedToggle = Tabs.Player:AddToggle("WalkSpeedToggle", {
-        Title = "Enable Custom WalkSpeed",
-        Default = false
-    })
-
-    WalkSpeedToggle:OnChanged(function()
-        if Options.WalkSpeedToggle.Value == true then
-            if LHumanoid then
-                originalWalkSpeed = LHumanoid.WalkSpeed
-                LHumanoid.WalkSpeed = Options.SetWalkSpeed.Value
-            end
-            
+-- WalkSpeed Toggle
+local WalkSpeedLoop = nil
+local WalkSpeedToggle = MainTab:Toggle({
+    Title = "WalkSpeed",
+    Default = false,
+    Callback = function(state)
+        if state == true then
             WalkSpeedLoop = RunService.Heartbeat:Connect(function()
-                if Fluent.Unloaded then 
+                -- Проверка на выгрузку скрипта
+                if IsUnloaded then 
                     if WalkSpeedLoop then
                         WalkSpeedLoop:Disconnect()
                         WalkSpeedLoop = nil
@@ -1752,7 +2982,7 @@ local Merlin = Tabs.Market:AddSection("Merlin", nil)
                 end
 
                 if LHumanoid and LHumanoid.Parent then
-                    LHumanoid.WalkSpeed = Options.SetWalkSpeed.Value
+                    LHumanoid.WalkSpeed = currentWalkSpeed
                 end
             end)
         else
@@ -1760,44 +2990,40 @@ local Merlin = Tabs.Market:AddSection("Merlin", nil)
                 WalkSpeedLoop:Disconnect()
                 WalkSpeedLoop = nil
             end
-            
             if LHumanoid then
                 LHumanoid.WalkSpeed = originalWalkSpeed
             end
         end
-    end)
+    end
+})
 
-    -- Слайдер скорости
-    local SetWalkSpeed = Tabs.Player:AddSlider("SetWalkSpeed", {
-        Title = "Walk Speed",
+-- WalkSpeed Slider
+local WalkSpeedSlider = MainTab:Slider({
+    Title = "WalkSpeed Value",
+    Step = 1,
+    Value = {
+        Min = 16,
+        Max = 200,
         Default = 16,
-        Min = 0,
-        Max = 550,
-        Rounding = 1,
-        Callback = function(Value)
-            if Options.WalkSpeedToggle.Value == true and LHumanoid and LHumanoid.Parent then
-                LHumanoid.WalkSpeed = Value
-            end
+    },
+    Callback = function(value)
+        currentWalkSpeed = value
+        if WalkSpeedToggle.Value == true and LHumanoid and LHumanoid.Parent then
+            LHumanoid.WalkSpeed = value
         end
-    })
+    end
+})
 
-
-	local JumpHeight = Tabs.Player:AddSection("JupHeight", "trending-up")
-    -- Чекбокс для JumpHeight
-    local JumpHeightToggle = Tabs.Player:AddToggle("JumpHeightToggle", {
-        Title = "Enable Custom JumpHeight",
-        Default = false
-    })
-
-    JumpHeightToggle:OnChanged(function()
-        if Options.JumpHeightToggle.Value == true then
-            if LHumanoid then
-                originalJumpHeight = LHumanoid.JumpHeight
-                LHumanoid.JumpHeight = Options.SetJumpHeight.Value
-            end
-            
+-- JumpHeight Toggle
+local JumpHeightLoop = nil
+local JumpHeightToggle = MainTab:Toggle({
+    Title = "JumpHeight", 
+    Default = false,
+    Callback = function(state)
+        if state == true then
             JumpHeightLoop = RunService.Heartbeat:Connect(function()
-                if Fluent.Unloaded then 
+                -- Проверка на выгрузку скрипта
+                if IsUnloaded then 
                     if JumpHeightLoop then
                         JumpHeightLoop:Disconnect()
                         JumpHeightLoop = nil
@@ -1809,7 +3035,7 @@ local Merlin = Tabs.Market:AddSection("Merlin", nil)
                 end
 
                 if LHumanoid and LHumanoid.Parent then
-                    LHumanoid.JumpHeight = Options.SetJumpHeight.Value
+                    LHumanoid.JumpHeight = currentJumpHeight
                 end
             end)
         else
@@ -1817,45 +3043,40 @@ local Merlin = Tabs.Market:AddSection("Merlin", nil)
                 JumpHeightLoop:Disconnect()
                 JumpHeightLoop = nil
             end
-            
             if LHumanoid then
                 LHumanoid.JumpHeight = originalJumpHeight
             end
         end
-    end)
+    end
+})
 
-    -- Слайдер прыжка
-    local SetJumpHeight = Tabs.Player:AddSlider("SetJumpHeight", {
-        Title = "Jump Height",
+-- JumpHeight Slider
+local JumpHeightSlider = MainTab:Slider({
+    Title = "JumpHeight Value",
+    Step = 1,
+    Value = {
+        Min = 7.2,
+        Max = 200,
         Default = 7.2,
-        Min = 0,
-        Max = 300,
-        Rounding = 1,
-        Callback = function(Value)
-            if Options.JumpHeightToggle.Value == true and LHumanoid and LHumanoid.Parent then
-                LHumanoid.JumpHeight = Value
-            end
+    },
+    Callback = function(value)
+        currentJumpHeight = value
+        if JumpHeightToggle.Value == true and LHumanoid and LHumanoid.Parent then
+            LHumanoid.JumpHeight = value
         end
-    })
+    end
+})
 
-
-	local JumpPower = Tabs.Player:AddSection("JupPower", "award")
-
-    -- Чекбокс для JumpPower
-    local JumpPowerToggle = Tabs.Player:AddToggle("JumpPowerToggle", {
-        Title = "Enable Custom JumpPower",
-        Default = false
-    })
-
-    JumpPowerToggle:OnChanged(function()
-        if Options.JumpPowerToggle.Value == true then
-            if LHumanoid then
-                originalJumpPower = LHumanoid.JumpPower
-                LHumanoid.JumpPower = Options.SetJumpPower.Value
-            end
-            
+-- JumpPower Toggle
+local JumpPowerLoop = nil
+local JumpPowerToggle = MainTab:Toggle({
+    Title = "JumpPower",
+    Default = false,
+    Callback = function(state)
+        if state == true then
             JumpPowerLoop = RunService.Heartbeat:Connect(function()
-                if Fluent.Unloaded then 
+                -- Проверка на выгрузку скрипта
+                if IsUnloaded then 
                     if JumpPowerLoop then
                         JumpPowerLoop:Disconnect()
                         JumpPowerLoop = nil
@@ -1867,7 +3088,7 @@ local Merlin = Tabs.Market:AddSection("Merlin", nil)
                 end
 
                 if LHumanoid and LHumanoid.Parent then
-                    LHumanoid.JumpPower = Options.SetJumpPower.Value
+                    LHumanoid.JumpPower = currentJumpPower
                 end
             end)
         else
@@ -1875,1427 +3096,400 @@ local Merlin = Tabs.Market:AddSection("Merlin", nil)
                 JumpPowerLoop:Disconnect()
                 JumpPowerLoop = nil
             end
-            
             if LHumanoid then
                 LHumanoid.JumpPower = originalJumpPower
             end
         end
-    end)
+    end
+})
 
-    -- Слайдер прыжка
-    local SetJumpPower = Tabs.Player:AddSlider("SetJumpPower", {
-        Title = "Jump Power",
+-- JumpPower Slider
+local JumpPowerSlider = MainTab:Slider({
+    Title = "JumpPower Value",
+    Step = 1,
+    Value = {
+        Min = 50,
+        Max = 200,
         Default = 50,
-        Min = 0,
-        Max = 300,
-        Rounding = 1,
-        Callback = function(Value)
-            if Options.JumpPowerToggle.Value == true and LHumanoid and LHumanoid.Parent then
-                LHumanoid.JumpPower = Value
-            end
-        end
-    })
-
-
-
-    local siting = Tabs.Player:AddSection("Sit Settings", nil)
-
-    Tabs.Player:AddButton({
-        Title = "Sit Down",
-        Description = "Make your character sit",
-        Callback = function()
-            sit_down(true)
-        end
-    })
-
-    Tabs.Player:AddButton({
-        Title = "Stand Up",
-        Description = "Make your character stand",
-        Callback = function()
-            sit_down(false)
-        end
-    })
-
-    local suicide = Tabs.Player:AddSection("Suicide", "skull")
-
-    Tabs.Player:AddButton({
-        Title = "Suicide V1",
-        Description = "Set hp 0",
-        Callback = function()
-            Suicide()
-        end
-    })
-
-    Tabs.Player:AddButton({
-        Title = "Suicide V2",
-        Description = "Set player state Deach",
-        Callback = function()
-            SuicideV2()
-        end
-    })
--- ===================== Payer END =====================
-
--- ==================== Misc START ====================
-local Player = Tabs.Misc:AddSection("Player", nil)
-
-    local DisableOxigenSwim = Tabs.Misc:AddToggle("DisableOxigenSwim", {Title = "DisableOxigenSwim",Default = false })
-    DisableOxigenSwim:OnChanged(function()
-		game.Players.LocalPlayer.Character.Resources.oxygen.Enabled = not DisableOxigenSwim.Value
-    end)
-
-    local DisableOxigenPeaks = Tabs.Misc:AddToggle("DisableOxigenPeaks", {Title = "DisableOxigenPeaks",Default = false })
-    DisableOxigenPeaks:OnChanged(function()
-		game.Players.LocalPlayer.Character.Resources["oxygen(peaks)"].Enabled = not DisableOxigenPeaks.Value
-    end)
-
-    local DisableOxigenRefactor = Tabs.Misc:AddToggle("DisableOxigenRefactor", {Title = "DisableOxigenRefactor",Default = false })
-    DisableOxigenRefactor:OnChanged(function()
-		game.Players.LocalPlayer.Character.Resources.oxygenRefactor_WIP.Enabled = not DisableOxigenRefactor.Value
-    end)
-
-
-    local DisableTemperaturePeaks = Tabs.Misc:AddToggle("DisableTemperaturePeaks", {Title = "DisableTemperaturePeaks",Default = false })
-    DisableTemperaturePeaks:OnChanged(function()
-		game.Players.LocalPlayer.Character.Resources.temperature.Enabled = not DisableTemperaturePeaks.Value
-    end)
-
-    local DisableTemperatureHeat = Tabs.Misc:AddToggle("DisableTemperatureHeat", {Title = "DisableTemperatureHeat",Default = false })
-    DisableTemperatureHeat:OnChanged(function()
-		game.Players.LocalPlayer.Character.Resources["temperature(heat)"].Enabled = not DisableTemperatureHeat.Value
-    end)
-
-local Bypass = Tabs.Misc:AddSection("Bypass", nil)
-
-	local BypassGps = Tabs.Misc:AddToggle("BypassGps", {Title = "Bypass GPS", Default = false})
-
-	local RunService = game:GetService("RunService")
-	local Players = game:GetService("Players")
-	local ReplicatedStorage = game:GetService("ReplicatedStorage")
-
-	local LocalPlayer = Players.LocalPlayer
-
-	local XyzClone = nil
-	local BypassGpsLoop = nil
-
-	local GetPosition = rawget(_G, "GetPosition") or function()
-		local char = LocalPlayer.Character
-		if char and char:FindFirstChild("HumanoidRootPart") then
-			local p = char.HumanoidRootPart.Position
-			return {p.X, p.Y, p.Z}
-		end
-		return {0,0,0}
-	end
-
-	local ExportValue = rawget(_G, "ExportValue") or function(v)
-		return tostring(math.floor(tonumber(v) or 0))
-	end
-
-	local function GPSSpoof(state)
-		if state then
-			if XyzClone then return end
-
-			XyzClone = ReplicatedStorage.resources.items.items.GPS.GPS.gpsMain.xyz:Clone()
-
-			local container = LocalPlayer.PlayerGui.backpack.hotbar.Folder.Frame
-			XyzClone.Parent = container
-
-			local Pos = GetPosition()
-			local StringInput = string.format("%s, %s, %s", ExportValue(Pos[1]), ExportValue(Pos[2]), ExportValue(Pos[3]))
-			XyzClone.Text = "<font color='#ff4949'>X</font><font color = '#a3ff81'>Y</font><font color = '#626aff'>Z</font>: "..StringInput
-
-			BypassGpsLoop = RunService.Heartbeat:Connect(function()
-				if Fluent.Unloaded then 
-					if BypassGpsLoop then
-						BypassGpsLoop:Disconnect()
-					end
-					if XyzClone then
-						XyzClone:Destroy()
-						XyzClone = nil
-					end
-					return
-				end
-				local Pos = GetPosition()
-				local StringInput = string.format("%s, %s, %s", ExportValue(Pos[1]), ExportValue(Pos[2]), ExportValue(Pos[3]))
-				XyzClone.Text = "<font color='#ff4949'>X</font><font color = '#a3ff81'>Y</font><font color = '#626aff'>Z</font>: "..StringInput
-			end)
-		else
-			if XyzClone then
-				XyzClone:Destroy()
-				XyzClone = nil
-			end
-			if BypassGpsLoop then
-				BypassGpsLoop:Disconnect()
-				BypassGpsLoop = nil
-			end
-		end
-	end
-
-	-- Обработчик чекбокса
-	BypassGps:OnChanged(function()
-		if Options.BypassGps.Value == true then
-			GPSSpoof(true)
-		else
-			GPSSpoof(false)
-		end
-	end)
-
-	-- Обработчик выхода из игры
-	game:GetService("Players").PlayerRemoving:Connect(function(player)
-		if player == LocalPlayer then
-			GPSSpoof(false)
-		end
-	end)
-
-
-
-
-	local EnableBaypassRadar = Tabs.Misc:AddToggle("EnableBaypassRadar", {Title = "Enable Baypas Radar", Default = false})
-
-	local function RadarSpoof()
-		-- Включаем все теги радара
-		for _, v in pairs(game:GetService("CollectionService"):GetTagged("radarTag")) do
-			if v:IsA("BillboardGui") or v:IsA("SurfaceGui") then
-				v.Enabled = Options.EnableBaypassRadar.Value  -- Исправлено: используем Options
-			end
-		end
-		for _, v in pairs(game:GetService("CollectionService"):GetTagged("radarTagWithTimer")) do
-			if v:IsA("BillboardGui") or v:IsA("SurfaceGui") then
-				v.Enabled = Options.EnableBaypassRadar.Value  -- Исправлено: используем Options
-			end
-		end
-	end
-
-	EnableBaypassRadar:OnChanged(function()
-		RadarSpoof()
-	end)
-
-	local CustomRadarDistance = Tabs.Misc:AddSlider("CustomRadarDistance", {
-		Title = "Custom Distance",
-		Description = "Set custom Radar Distance",
-		Default = 9999,
-		Min = 0,
-		Max = 9999,
-		Rounding = 2,
-		Callback = function(Value) end
-	})
-
-	local BaypassRadarDistance = Tabs.Misc:AddToggle("BaypassRadarDistance", {Title = "Baypas Radar Distance", Default = false})
-
-	local DistSoofEnable = false
-	local OriginalValue = {}
-
-	-- Функция для сохранения оригинальных дистанций ВСЕХ радаров
-	local function SaveOriginalDistances()
-		OriginalValue = {} -- Очищаем таблицу
-		for _, zone in pairs(workspace.zones.fishing:GetChildren()) do
-			for _, radarName in ipairs({"radar1", "radar2"}) do
-				local radar = zone:FindFirstChild(radarName)
-				if radar and radar:IsA("BillboardGui") then
-					-- Сохраняем оригинальное значение дистанции
-					OriginalValue[radar] = radar.MaxDistance
-				end
-			end
-		end
-	end
-
-	-- Функция для восстановления оригинальных дистанций ВСЕХ радаров
-	local function RestoreOriginalDistances()
-		for radar, originalMaxDistance in pairs(OriginalValue) do
-			if radar and radar.Parent then
-				radar.MaxDistance = originalMaxDistance
-			end
-		end
-		-- Также восстанавливаем все текущие радары на случай если какие-то пропущены
-		for _, zone in pairs(workspace.zones.fishing:GetChildren()) do
-			for _, radarName in ipairs({"radar1", "radar2"}) do
-				local radar = zone:FindFirstChild(radarName)
-				if radar and radar:IsA("BillboardGui") and not OriginalValue[radar] then
-					radar.MaxDistance = 250 -- Стандартное значение по умолчанию
-				end
-			end
-		end
-	end
-
-	local function ChangeRadarDist(Value)
-		if DistSoofEnable == false then
-			-- Сохраняем оригинальные значения при первом включении
-			SaveOriginalDistances()
-			DistSoofEnable = true
-		end
-		
-		-- Устанавливаем новое значение для всех радаров
-		for _, zone in pairs(workspace.zones.fishing:GetChildren()) do
-			for _, radarName in ipairs({"radar1", "radar2"}) do
-				local radar = zone:FindFirstChild(radarName)
-				if radar and radar:IsA("BillboardGui") then
-					radar.MaxDistance = Value
-				end
-			end
-		end
-	end
-
-	local BaypassRadarDistanceLoop = nil
-	BaypassRadarDistance:OnChanged(function()
-		if Options.BaypassRadarDistance.Value == true then
-			-- Сразу сохраняем оригинальные дистанции при включении
-			SaveOriginalDistances()
-			
-			BaypassRadarDistanceLoop = RunService.Heartbeat:Connect(function()
-				if Fluent.Unloaded then 
-					if BaypassRadarDistanceLoop then
-						BaypassRadarDistanceLoop:Disconnect()
-					end
-					RestoreOriginalDistances() -- Восстанавливаем при выгрузке
-					return
-				end
-				ChangeRadarDist(Options.CustomRadarDistance.Value)
-			end)
-		else
-			if BaypassRadarDistanceLoop then
-				BaypassRadarDistanceLoop:Disconnect()
-			end
-			DistSoofEnable = false
-			RestoreOriginalDistances()
-			OriginalValue = {}
-		end
-	end)
-
-local NormolizeRadarBilbordSize = Tabs.Misc:AddToggle("NormolizeRadarBilbordSize", {Title = "Normolize Radar Bilbord Size", Default = false})
-
-local SizeSoofEnable = false
-local OriginalSizeValue = {}
-local MIN_DISTANCE = 500   -- Дистанция, внутри которой размер всегда дефолтный
-local MAX_DISTANCE = 3500  -- Дистанция, за которой размер увеличивается в 5 раз
-local MAX_MULTIPLIER = 10   -- Максимальный множитель
-
--- Функция для сохранения оригинальных размеров ВСЕХ радаров
-local function SaveOriginalSizes()
-    OriginalSizeValue = {}
-    for _, zone in pairs(workspace.zones.fishing:GetChildren()) do
-        for _, radarName in ipairs({"radar1", "radar2"}) do
-            local radar = zone:FindFirstChild(radarName)
-            if radar and radar:IsA("BillboardGui") then
-                -- Сохраняем индивидуальные размеры каждого радара
-                OriginalSizeValue[radar] = {
-                    Size = radar.Size,
-                    SizeOffset = radar.SizeOffset
-                }
-            end
+    },
+    Callback = function(value)
+        currentJumpPower = value
+        if JumpPowerToggle.Value == true and LHumanoid and LHumanoid.Parent then
+            LHumanoid.JumpPower = value
         end
     end
-end
-
--- Функция для восстановления оригинальных размеров ВСЕХ радаров
-local function RestoreOriginalSizes()
-    for radar, originalData in pairs(OriginalSizeValue) do
-        if radar and radar.Parent then
-            -- Восстанавливаем индивидуальные размеры каждого радара
-            radar.Size = originalData.Size
-            radar.SizeOffset = originalData.SizeOffset
-        end
-    end
-end
-
-local function GetDistanceFromPlayer(position)
-    local player = Players.LocalPlayer
-    if not player or not player.Character or not player.Character:FindFirstChild("HumanoidRootPart") then
-        return math.huge
-    end
-    
-    local playerPosition = player.Character.HumanoidRootPart.Position
-    return (position - playerPosition).Magnitude
-end
-
-local function CalculateSizeMultiplier(distance)
-    if distance <= MIN_DISTANCE then
-        return 1  -- Дефолтный размер вблизи
-    elseif distance >= MAX_DISTANCE then
-        return MAX_MULTIPLIER  -- Максимальный множитель на большой дистанции
-    else
-        -- Плавное изменение множителя от 1 до MAX_MULTIPLIER
-        local normalizedDistance = (distance - MIN_DISTANCE) / (MAX_DISTANCE - MIN_DISTANCE)
-        return 1 + (MAX_MULTIPLIER - 1) * normalizedDistance
-    end
-end
-
-local function UpdateRadarSizes()
-    if SizeSoofEnable == false then
-        SaveOriginalSizes()
-        SizeSoofEnable = true
-    end
-    
-    -- Обновляем размеры всех радаров на основе их индивидуальных оригинальных размеров
-    for radar, originalData in pairs(OriginalSizeValue) do
-        if radar and radar.Parent then
-            local zone = radar.Parent
-            local distance = GetDistanceFromPlayer(zone.Position)
-            local multiplier = CalculateSizeMultiplier(distance)
-            
-            -- Применяем множитель к индивидуальному оригинальному размеру
-            local originalSize = originalData.Size
-            local newX = originalSize.X.Scale * multiplier
-            local newY = originalSize.Y.Scale * multiplier
-            
-            radar.Size = UDim2.new(newX, originalSize.X.Offset * multiplier, newY, originalSize.Y.Offset * multiplier)
-            radar.SizeOffset = Vector2.new(0, 0)
-        end
-    end
-end
-
-local BaypassRadarSizeLoop = nil
-NormolizeRadarBilbordSize:OnChanged(function()
-    if Options.NormolizeRadarBilbordSize.Value == true then
-        SaveOriginalSizes()
-        
-        BaypassRadarSizeLoop = RunService.Heartbeat:Connect(function()
-            if Fluent.Unloaded then 
-                if BaypassRadarSizeLoop then
-                    BaypassRadarSizeLoop:Disconnect()
-                end
-                RestoreOriginalSizes()
-                return
-            end
-            UpdateRadarSizes()
-        end)
-    else
-        if BaypassRadarSizeLoop then
-            BaypassRadarSizeLoop:Disconnect()
-        end
-        SizeSoofEnable = false
-        RestoreOriginalSizes()
-        OriginalSizeValue = {}
-    end
-end)
-
--- Обработчик выхода из игры для гарантии восстановления
-game:GetService("Players").PlayerRemoving:Connect(function(player)
-    if player == Players.LocalPlayer then
-        -- Восстанавливаем размеры
-        RestoreOriginalSizes()
-        
-        -- Отключаем все loops
-        if BaypassRadarDistanceLoop then
-            BaypassRadarDistanceLoop:Disconnect()
-        end
-        if BaypassRadarSizeLoop then
-            BaypassRadarSizeLoop:Disconnect()
-        end
-    end
-end)
-	--[[
-		-- Также добавим обработчик выгрузки для гарантии восстановления размеров
-		game:GetService("Players").PlayerRemoving:Connect(function(player)
-			if player == Players.LocalPlayer then
-				if BaypassRadarSizeLoop then
-					BaypassRadarSizeLoop:Disconnect()
-				end
-				RestoreOriginalSizes()
-			end
-		end)
-	]]
-
-local Misc = Tabs.Misc:AddSection("Misc", nil)
-    Tabs.Misc:AddButton({
-        Title = "Discover all location",
-        Description = "", --Make your character sit",
-        Callback = function()
-			for k, v in pairs(workspace.zones.player:GetChildren()) do
-				DeugLog(v.Name)
-				game:GetService("ReplicatedStorage").events.discoverlocation:FireServer(v.Name)
-			end
-        end
-    })
-
-	local function ActivetePromo() 
-		local argsList = loadstring(game:HttpGet("https://raw.githubusercontent.com/Y-ForBE-Y/ioasduq089eu3oi13u12o3u/refs/heads/main/Fisch/promo"))()
-		for _, args in ipairs(argsList) do
-			game:GetService("ReplicatedStorage"):WaitForChild("events"):WaitForChild("runcode"):FireServer(unpack(args))
-			DeugLog(tostring(unpack(args)))
-		end
-	end
-
-    Tabs.Misc:AddButton({
-        Title = "Activate all promocodes",
-        Description = "", --Make your character sit",
-        Callback = function()
-			ActivetePromo() 
-        end
-    })
-
-	-- Чекбокс для AntiAFKTeg
-	local AntiAFKTeg = Tabs.Misc:AddToggle("AntiAFKTeg", {Title = "AntiAFKTeg", Default = false})
-
-	local AntiAFKTegLoop = nil
-	AntiAFKTeg:OnChanged(function()
-		if Options.AntiAFKTeg.Value == true then
-			AntiAFKTegLoop = RunService.Heartbeat:Connect(function()
-				if Fluent.Unloaded then 
-					AntiAFKTegLoop:Disconnect()
-					return
-				end
-				if game.Players.LocalPlayer.Character:FindFirstChild("afk") then
-					game:GetService("ReplicatedStorage").events.afk:FireServer(false)
-				end
-			end)
-		else
-			if AntiAFKTegLoop then
-				AntiAFKTegLoop:Disconnect()
-			end
-		end
-	end)
-
-local GUIsSection = Tabs.Misc:AddSection("GUIs", nil)
-	Tabs.Misc:AddButton({
-        Title = "Black Market",
-        Description = "Opening BlackMarket GUI",
-        Callback = function()
-            game:GetService("Players").LocalPlayer.PlayerGui.hud.safezone.BlackMarket.Visible = not game:GetService("Players").LocalPlayer.PlayerGui.hud.safezone.BlackMarket.Visible
-        end
-    })
-
-	Tabs.Misc:AddButton({
-        Title = "Daily shop",
-        Description = "Opening Daily shop GUI",
-        Callback = function()
-            game:GetService("Players").LocalPlayer.PlayerGui.hud.safezone.DailyShop.Visible = not game:GetService("Players").LocalPlayer.PlayerGui.hud.safezone.DailyShop.Visible
-        end
-    })
-
-
-	Tabs.Misc:AddButton({
-        Title = "Challanges",
-        Description = "Opening Challanges GUI",
-        Callback = function()
-            game:GetService("Players").LocalPlayer.PlayerGui.hud.safezone.Challenges.Visible = not game:GetService("Players").LocalPlayer.PlayerGui.hud.safezone.Challenges.Visible
-        end
-    })
-
-	Tabs.Misc:AddButton({
-        Title = "FriendQuests",
-        Description = "Opening FriendQuests GUI",
-        Callback = function()
-            game:GetService("Players").LocalPlayer.PlayerGui.Friends.FriendQuests.Visible = not game:GetService("Players").LocalPlayer.PlayerGui.Friends.FriendQuests.Visible
-        end
-    })
-
-	Tabs.Misc:AddButton({
-        Title = "Aquarium",
-        Description = "Opening Aquarium GUI",
-        Callback = function()
-            game:GetService("Players").LocalPlayer.PlayerGui.hud.safezone.PersonalAquarium.Visible = not game:GetService("Players").LocalPlayer.PlayerGui.hud.safezone.PersonalAquarium.Visible
-        end
-    })
-
-	Tabs.Misc:AddButton({
-        Title = "Spear Crafting",
-        Description = "Opening Spear Craft GUI",
-        Callback = function()
-            game:GetService("Players").LocalPlayer.PlayerGui.hud.safezone.SpearCrafting.Visible = not game:GetService("Players").LocalPlayer.PlayerGui.hud.safezone.SpearCrafting.Visible
-        end
-    })
-
-	Tabs.Misc:AddButton({
-        Title = "Boat PopUP",
-        Description = "Opening Boat PopUP GUI",
-        Callback = function()
-			game:GetService("Players").LocalPlayer.PlayerGui.hud.safezone.BoatPopup.Visible = not game:GetService("Players").LocalPlayer.PlayerGui.hud.safezone.BoatPopup.Visible
-        end
-    })
-
-	Tabs.Misc:AddButton({
-        Title = "Starter pack",
-        Description = "Opening Starter Pack buying GUI",
-        Callback = function()
-            game:GetService("Players").LocalPlayer.PlayerGui.hud.safezone.starterpack.Visible = not game:GetService("Players").LocalPlayer.PlayerGui.hud.safezone.starterpack.Visible
-        end
-    })
--- ===================== Misc END ====================
-
-
-
--- ==================== Automatic START ====================
-
-local Enchanting = Tabs.Automatic:AddSection("Enchanting", nil)
-	Tabs.Automatic:AddButton({
-		Title = "Enchant Rod",
-		Callback = function()
-			Window:Dialog({
-				Title = "Are you sure?",
-				Content = "After agreeing, the lucky one will be re-enchanted (for this to work, you need to take the relic you need)",
-				Buttons = {
-					{
-						Title = "Confirm",
-						Callback = function()
-							game:GetService("ReplicatedStorage").events.enchantrod:InvokeServer()
-						end
-					},
-					{
-						Title = "Cancel",
-						Callback = function()
-							DeugLog("Cancelled")
-						end
-					}
-				}
-			})
-		end
-	})
-
-
-local Main = Tabs.Automatic:AddSection("Main", nil)
-
-	local function UnEquipAllTool()
-		local character = game.Players.LocalPlayer.Character
-		if character then
-			for _, tool in pairs(character:GetChildren()) do
-				if tool:IsA("Tool") then
-					print("Tool найден:", tool.Name)
-					
-					-- Запускаем спам активацией
-					coroutine.wrap(function()
-						while tool and tool.Parent == character do
-							tool:Activate()
-							task.wait(0)
-						end
-						print("Активация остановлена для:", tool.Name)
-					end)()
-				end
-			end
-		end
-	end
-
-    Tabs.Automatic:AddButton({
-        Title = "Open Holdet Create",
-		Description = "It will spam any selected item that you pick up.",
-        Callback = function()
-            UnEquipAllTool()
-        end
-    })
-
-
-
-
-
-
-
-local Sell = Tabs.Automatic:AddSection("Sell", nil)
-	local oldCount = #game:GetService("Players").LocalPlayer.Backpack:GetChildren()
-	local isSelling = false
-	local lastSaleTime = 0
-	local saleCooldown = 1
-
-	--[[
-		-- Функция для поиска ТОЛЬКО нашего клона
-		function findMerchant()
-			-- Используем ТОЛЬКО нашего клона
-			if merchantClone and merchantClone.Parent then
-				return merchantClone
-			else
-				return nil
-			end
-		end
-	]]
-	local NewMwthod = true
-
-	local function SellALL()
-		if NewMwthod == false then
-			local success, errorMsg = pcall(function()
-				local remote = game:GetService("ReplicatedStorage").events.SellAll
-				remote:InvokeServer({
-					["npc"] = targetMerchant,
-					["idle"] = targetMerchant.description.idle,
-					["voice"] = 12
-				})
-				DeugLog("Продажа выполнена у клона мерчанта")
-			end)
-
-			if not success then
-				DeugLog("Ошибка при продаже: " .. tostring(errorMsg))
-			end
-		else
-			--SELL ALL NEW
-			local remote = game:GetService("ReplicatedStorage").events.SellAll
-			local arguments = {}
-			local results = remote:InvokeServer(unpack(arguments))
-		end
-	end
-
-	local function SellOne()
-		if NewMwthod == false then
-			local success, errorMsg = pcall(function()
-				local remote = game:GetService("ReplicatedStorage").events.Sell
-				remote:InvokeServer({
-					["npc"] = targetMerchant,
-					["idle"] = targetMerchant.description.idle,
-					["voice"] = 12
-				})
-				DeugLog("Продажа выполнена у клона мерчанта")
-			end)
-
-			if not success then
-				DeugLog("Ошибка при продаже: " .. tostring(errorMsg))
-			end
-		else
-			local remote = game:GetService("ReplicatedStorage").events.Sell
-			local arguments = {}
-			local results = remote:InvokeServer(unpack(arguments))
-		end
-	end
-
-	-- Функция продажи
-	function processAutoSell()
-		if isSelling then return end
-		
-		local currentTime = tick()
-		if currentTime - lastSaleTime < saleCooldown then
-			return
-		end
-		
-		local newCount = #game:GetService("Players").LocalPlayer.Backpack:GetChildren()
-		
-		if newCount > oldCount then
-			DeugLog("Изменение: " .. oldCount .. " -> " .. newCount)
-			oldCount = newCount
-
-			if NewMwthod == false then
-				-- Ищем ТОЛЬКО нашего клона
-				local targetMerchant = findMerchant()
-						
-				if not targetMerchant then
-						DeugLog("Клон мерчанта не найден")
-					return
-				end
-						
-				if not targetMerchant.description then
-					DeugLog("Ошибка: у клона нет description")
-					return
-				end
-			end
-
-			isSelling = true
-			lastSaleTime = currentTime
-			
-			SellALL()
-			
-			isSelling = false
-		else
-			oldCount = newCount
-		end
-	end
-
-	-- Чекбокс для AutoSell
-	local AutoSell = Tabs.Automatic:AddToggle("AutoSell", {Title = "AutoSell", Default = false})
-
-	local AutoSellLoop = nil
-	AutoSell:OnChanged(function()
-		if AutoSell.Value == true then
-			AutoSellLoop = RunService.Heartbeat:Connect(function()
-				if Fluent.Unloaded then 
-					AutoSellLoop:Disconnect()
-					return
-				end
-				processAutoSell()
-			end)
-			DeugLog("AutoSell включен")
-		else
-			if AutoSellLoop then
-				AutoSellLoop:Disconnect()
-				AutoSellLoop = nil
-			end
-			DeugLog("AutoSell выключен")
-		end
-	end)
-
-	-- Чекбокс для WarningMode
-	local WarningMode = Tabs.Automatic:AddToggle("WarningMode", {Title = "Warning Mode", Default = true})
-
-	Tabs.Automatic:AddButton({
-		Title = "Sell in Hand",
-		Callback = function()
-			if WarningMode.Value then
-				Window:Dialog({
-					Title = "Are you sure?",
-					Content = "Are you sure you want to sell fish directly from your hands?",
-					Buttons = {
-						{
-							Title = "Confirm",
-							Callback = function()
-								SellOne()
-							end
-						},
-						{
-							Title = "Cancel", 
-							Callback = function()
-								DeugLog("Cancelled")
-							end
-						}
-					}
-				})
-			else
-				SellOne()
-			end
-		end
-	})
-
-	Tabs.Automatic:AddButton({
-		Title = "Sell All",
-		Callback = function()
-			if WarningMode.Value then
-				Window:Dialog({
-					Title = "Are you sure?",
-					Content = "Are you sure you want to sell all the fish in your inventory (the fish will be sold according to your sale settings)",
-					Buttons = {
-						{
-							Title = "Confirm",
-							Callback = function()
-								SellALL()
-							end
-						},
-						{
-							Title = "Cancel",
-							Callback = function()
-								DeugLog("Cancelled")
-							end
-						}
-					}
-				})
-			else
-				SellALL()
-			end
-		end
-	})
-
-
-local Treasure = Tabs.Automatic:AddSection("Treasure", nil)
-    -- // Treasure Tab // --
-    Tabs.Automatic:AddButton({
-        Title = "Teleport to Jack Marrow",
-        Callback = function()
-            game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(-2824.359, 214.311, 1518.130)
-        end
-    })
-
-	-- Ждем только если пауза
-	function waitIfPaused()
-		while game:GetService("Players").LocalPlayer.GameplayPaused do
-			wait(0.1)
-		end
-		wait(0.1)
-	end
-
-	local function debugLookAt(target)
-		local camera = workspace.CurrentCamera
-		local currentPos = camera.CFrame.Position
-		
-		-- Находим подходящую часть для прицеливания
-		local targetPart
-		
-		if target:IsA("Model") then
-			targetPart = target:FindFirstChild("Head") or 
-						target:FindFirstChild("HumanoidRootPart") or
-						target:FindFirstChildWhichIsA("BasePart")
-		elseif target:IsA("BasePart") then
-			targetPart = target
-		end
-		
-		if targetPart then
-			local targetPos = targetPart.Position
-			-- Используем LookVector для более плавного поворота
-			local lookVector = (targetPos - currentPos).Unit
-			camera.CFrame = CFrame.new(currentPos, currentPos + lookVector)
-			return true
-		else
-			warn("Не найдена подходящая часть у модели: " .. target.Name)
-			return false
-		end
-	end
-
-    Tabs.Automatic:AddButton({
-        Title = "Repair Map",
-        Callback = function()
-            for i,v in pairs(game.Players.LocalPlayer.Backpack:GetChildren()) do 
-                if v.Name == "Treasure Map" then
-
-						for i = 0, 30 do
-							debugLookAt(workspace.world.npcs["Jack Marrow"])
-							task.wait()
-						end
-
-						waitIfPaused()
-
-						local prompt = workspace.world.npcs["Jack Marrow"].dialogprompt
-						fireproximityprompt(prompt)
-						
-						game.Players.LocalPlayer.Character.Humanoid:EquipTool(v)
-
-						local remote = workspace.world.npcs["Jack Marrow"].treasure.repairmap
-						local arguments = {
-							[1] = {
-								["npc"] = workspace.world.npcs["Jack Marrow"],
-								["idle"] = workspace.world.npcs["Jack Marrow"].description.idle,
-								["voice"] = 12
-							}
-						}
-						remote:InvokeServer(unpack(arguments))
-                end
-            end
-        end
-    })
-	
-	Tabs.Automatic:AddButton({
-		Title = "Collect Treasure",
-		Callback = function()
-			-- Сначала находим все сундуки и меняем только их промпты
-			for i, chest in pairs(workspace.world.chests:GetDescendants()) do
-				if chest:IsA("Part") and chest:FindFirstChild("ChestSetup") then 
-					local prompt = chest:FindFirstChild("ProximityPrompt")
-					if prompt then
-						prompt.HoldDuration = 0
-						prompt.RequiresLineOfSight = false
-						prompt.MaxActivationDistance = 9999
-					end
-				end 
-			end
-			
-			local oldPos = game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame
-			
-			-- Собираем сундуки
-			for i, chest in pairs(workspace.world.chests:GetDescendants()) do
-				if chest:IsA("Part") and chest:FindFirstChild("ChestSetup") then 
-					
-					-- Телепортируемся к сундуку
-					game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = chest.CFrame * CFrame.new(0, 0, 3) -- Встаем перед сундуком
-					
-					-- Увеличиваем время ожидания для стабилизации
-					task.wait(0.8)
-					waitIfPaused()
-					
-					-- Поворачиваем камеру на сундук (больше попыток)
-					for i = 1, 15 do
-						debugLookAt(chest)
-						task.wait(0.03) -- Более частые обновления
-					end
-					
-					task.wait(0.2)
-					
-					-- Ищем промпт именно этого сундука
-					local prompt = chest:FindFirstChild("ProximityPrompt")
-					if prompt then
-						fireproximityprompt(prompt)
-						-- Увеличиваем время ожидания после взаимодействия
-						task.wait(0.8)
-					end
-				end 
-			end
-			
-			-- Возвращаем на исходную позицию
-			game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = oldPos
-		end
-	})
---]]
--- ===================== Automatic END ====================
-
-
--- ==================== World Start ====================
-	local WorldSettings = Tabs.World:AddSection("WorldSettings", "wrench")
-
-    local TimeChenger = Tabs.World:AddToggle("TimeChenger", {
-        Title = "Time Changer", 
-        Default = false 
-    })
-
-    TimeChenger:OnChanged(function()
-        if Options.TimeChenger.Value == true then
-            originalTime = game:GetService("Lighting").TimeOfDay
-            
-            local hours = math.floor(Options.SetTime.Value)
-            local minutes = math.floor((Options.SetTime.Value % 1) * 60)
-            local timeStr = string.format("%02d:%02d:00", hours, minutes)
-            game:GetService("Lighting").TimeOfDay = timeStr
-            
-            TimeLoop = RunService.Heartbeat:Connect(function()
-                if Fluent.Unloaded then 
-                    if TimeLoop then
-                        TimeLoop:Disconnect()
-                        TimeLoop = nil
-                    end
-                    game:GetService("Lighting").TimeOfDay = originalTime
-                    return
-                end
-                
-                local hours = math.floor(Options.SetTime.Value)
-                local minutes = math.floor((Options.SetTime.Value % 1) * 60)
-                local timeStr = string.format("%02d:%02d:00", hours, minutes)
-                game:GetService("Lighting").TimeOfDay = timeStr
-            end)
-        else
-            if TimeLoop then
-                TimeLoop:Disconnect()
-                TimeLoop = nil
-            end
-            game:GetService("Lighting").TimeOfDay = originalTime
-        end
-    end)
-
-    local SetTime = Tabs.World:AddSlider("SetTime", {
-        Title = "Set Time",
-        Description = "Set custom time of day",
-        Default = 12.0,
-        Min = 0,
-        Max = 23.59,
-        Rounding = 2,
-        Callback = function(Value)
-            if Options.TimeChenger.Value == true then
-                local hours = math.floor(Value)
-                local minutes = math.floor((Value % 1) * 60)
-                local timeStr = string.format("%02d:%02d:00", hours, minutes)
-                game:GetService("Lighting").TimeOfDay = timeStr
-            end
-        end
-    })
-
--- ===================== World END =====================
-
--- ==================== Teleport Start ====================
-local Teleports = Tabs.Teleport:AddSection("Teleports", "map-pin")
-
--- Таблица с координатами локаций
-local locations = {
-    ["Enchant Altar"] = CFrame.new(1310.7498779296875, -802.427001953125, -84.14505767822266),
-    ["Moosewood"] = CFrame.new(468.4601745605469, 150.6934051513672, 266.5889892578125),
-    ["Roslit"] = CFrame.new(-1510.43310546875, 133.00001525878906, 615.421875),
-    ["Snowcap"] = CFrame.new(2689.964599609375, 152.81431579589844, 2382.687744140625),
-    ["Sunstone"] = CFrame.new(-1059.8160400390625, 138.38648986816406, -1147.626708984375),
-    ["Vertigo"] = CFrame.new(-100.74667358398438, -513.2993774414062, 1053.50244140625),
-    ["Desolate Deep"] = CFrame.new(-1666.7783203125, -214.1810302734375, -2838.974853515625),
-    ["Forsaken Shores"] = CFrame.new(-2530.197509765625, 135.25001525878906, 1558.6446533203125),
-    ["Ancient Isle"] = CFrame.new(6072.98291015625, 195.18016052246094, 296.28118896484375),
-    ["The Depths"] = CFrame.new(954.4327392578125, -711.662109375, 1217.8978271484375),
-    ["Northern Summit"] = CFrame.new(19537.888671875, 132.67010498046875, 5295.79638671875),
-    ["Frigid Cavern"] = CFrame.new(19759.77734375, 415.43707275390625, 5402.3203125),
-    ["Cryogenic Canal"] = CFrame.new(20303.177734375, 706.5989990234375, 5767.0732421875),
-    ["Glacial Grotto"] = CFrame.new(19903.4453125, 1154.770263671875, 5510.076171875),
-    ["Atlantis"] = CFrame.new(-4252.130859375, -603.4038696289062, 1830.807373046875),
-    ["Challenger Deep"] = CFrame.new(-778.5140380859375, -3283.211181640625, -667.571044921875),
-    ["Volcanic Vents"] = CFrame.new(-3407.9072265625, -2260.38232421875, 3856.470947265625),
-    ["Abyssal Zenith"] = CFrame.new(-13502.2431640625, -11050.1884765625, 127.95650482177734),
-    ["Calm Zone"] = CFrame.new(-4234.89208984375, -11201.2109375, 1786.04541015625),
-    ["Castaway Cliffs"] = CFrame.new(645.3287963867188, 160.99998474121094, -1788.6729736328125),
-    ["Crystal Cove"] = CFrame.new(1368.512939453125, -614.0402221679688, 2455.83544921875),
-    ["Terrapin"] = CFrame.new(-224.14453125, 153.77735900878906, 1933.1331787109375),
-    ["Luminescent Cavern"] = CFrame.new(-1008.2897338867188, -336.3400573730469, -4076.955078125),
-    ["Lost Jungles"] = CFrame.new(-2710.125, 150.24826049804688, -2051.906494140625),
-    ["Crimson Cavern"] = CFrame.new(-1031.912109375, -354.1904296875, -4851.046875),
-    ["Scylla"] = CFrame.new(-2348.7109375, -11183.4892578125, 7071.1806640625),
-	["Kraken Pool"] = CFrame.new(-4301.30712890625, -1001.360107421875, 2004.2734375),
-	["Mossjaw Hunt"] = CFrame.new(-4909.92333984375, -1790.561279296875, -10162.6962890625),
-	["Mushgrove Swamp"] = CFrame.new(2433.88232421875, 131.62515258789062, -673.1868896484375),
-	["Carrot Garden"] = CFrame.new(3705.1044921875, -1127.6787109375, -1092.2685546875),
-}
-
--- Функция для телепортации к локации
-local function teleportToLocation(locationName)
-    if locationName == nil then
-        return
-    end
-    
-    local locationCFrame = locations[locationName]
-    if locationCFrame then
-        local character = game.Players.LocalPlayer.Character
-        if character and character:FindFirstChild("HumanoidRootPart") then
-            character.HumanoidRootPart.CFrame = locationCFrame
-            Fluent:Notify({
-                Title = "Teleport",
-                Content = "Teleported to " .. locationName,
-                Duration = 3
-            })
-        else
-            Fluent:Notify({
-                Title = "Error",
-                Content = "Character not found!",
-                Duration = 3
-            })
-        end
-    else
-        Fluent:Notify({
-            Title = "Error",
-            Content = "Location not found!",
-            Duration = 3
-        })
-    end
-end
-
--- Создаем дропдаун для выбора локаций
-local locationNames = {}
-for locationName, _ in pairs(locations) do
-    table.insert(locationNames, locationName)
-end
-
-table.sort(locationNames) -- Сортируем по алфавиту
-
-local locationDropdown = Tabs.Teleport:AddDropdown("LocationDropdown", {
-    Title = "Select Location",
-    Description = "Choose location to teleport",
-    Values = locationNames,
-    Default = nil, -- Устанавливаем nil по умолчанию
 })
 
--- Кнопка для копирования всех координат
-Tabs.Teleport:AddButton({
-    Title = "Teleport to Select",
-    Description = "Teleporting you to selected location",
+-- Other Character Functions
+MainTab:Button({
+    Title = "Sit Down",
     Callback = function()
-		teleportToLocation(locationDropdown.Value)
+        sit_down(true)
     end
 })
 
+MainTab:Button({
+    Title = "Stand Up", 
+    Callback = function()
+        sit_down(false)
+    end
+})
+
+MainTab:Button({
+    Title = "Suicide V1",
+    Callback = function()
+        Suicide()
+    end
+})
+
+MainTab:Button({
+    Title = "Suicide V2",
+    Callback = function()
+        SuicideV2()
+    end
+})
 
 --[[
-	-- Кнопка для копирования всех координат
-	Tabs.Teleport:AddButton({
-		Title = "Copy All Coords",
-		Description = "Copy all location coordinates to clipboard",
-		Callback = function()
-			local coordsText = ""
-			for locationName, cf in pairs(locations) do
-				local position = cf.Position
-				coordsText = coordsText .. string.format("%s: Vector3.new(%.2f, %.2f, %.2f)\n", 
-					locationName, position.X, position.Y, position.Z)
-			end
-			setclipboard(coordsText)
-			Fluent:Notify({
-				Title = "Coords Copied",
-				Content = "All location coordinates copied to clipboard!",
-				Duration = 5
-			})
-		end
-	})
+    local Optional = Player:Tab({
+        Title = "Optional",
+        Icon = "lucide:list"
+    })
 ]]
-
-local Old_pos
-local inSavePlase = false
-Tabs.Teleport:AddButton({
-    Title = "Create Safe Place",
-    Description = "Create a safe zone high in the sky",
-    Callback = function()
-		if not inSavePlase then
-			inSavePlase = true
-			local Players = game:GetService("Players")
-			local LocalPlayer = Players.LocalPlayer
-			local playerName = LocalPlayer.Name
-
-			Old_pos = workspace[playerName].HumanoidRootPart.Position
-
-			local targetCharacter = workspace:WaitForChild(playerName)
-			local HumanoidRootPart = targetCharacter:WaitForChild("HumanoidRootPart")
-
-			local currentRotation = HumanoidRootPart.CFrame.Rotation
-
-			local SafeZone = Instance.new("Part")
-			SafeZone.Size = Vector3.new(30, 1, 30)
-			SafeZone.Position = Vector3.new(math.random(-2000,2000), math.random(50000,90000), math.random(-2000,2000))
-			SafeZone.Anchored = true
-			SafeZone.BrickColor = BrickColor.new("Bright purple")
-			SafeZone.Material = Enum.Material.ForceField
-			SafeZone.Parent = game.Workspace
-			
-			HumanoidRootPart.CFrame = CFrame.new(SafeZone.Position + Vector3.new(0, 5, 0)) * currentRotation
-		end
-    end
-})
-
-Tabs.Teleport:AddButton({
-    Title = "Return",
-    Description = "Return to original position",
-    Callback = function()
-        if Old_pos then
-            local character = workspace[game:GetService("Players").LocalPlayer.Name]
-            local humanoidRootPart = character:WaitForChild("HumanoidRootPart")
-            humanoidRootPart.CFrame = CFrame.new(Old_pos) * humanoidRootPart.CFrame.Rotation
-			inSavePlase = false
-        end
-    end
-})
-
-local CopyXYZType = Tabs.Teleport:AddDropdown("CopyXYZType", {
-    Title = "Copy XYZ Type", 
-    Values = {"CFrame Script", "Coordinates Only"},
-    Multi = false,
-    Search = true,
-    Default = 1,
-})
-
-Tabs.Teleport:AddButton({
-    Title = "Copy XYZ",
-    Description = "Copy position to clipboard",
-    Callback = function()
-        local XYZ = tostring(game.Players.LocalPlayer.Character.HumanoidRootPart.Position)
-
-		if CopyXYZType.Value == "CFrame Script" then
-			setclipboard("game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(" .. XYZ .. ")")
-		else
-			setclipboard(XYZ)
-		end
-
-        Fluent:Notify({
-            Title = "Copied to clipbord",
-            Content = "XYZ " .. tostring(CopyXYZType.Value) .. " copied!",
-            Duration = 3
-        })
-    end
-})
-
-local Cordinats = Tabs.Teleport:AddInput("Cords", {
-    Title = "Cords",
-    Default = "0, 0, 0",
-    Placeholder = "Placeholder",
-    Numeric = false,
-    Finished = false,
-})
-
-Tabs.Teleport:AddButton({
-    Title = "Teleport to Cords",
-    Description = "Писать через запятую",
-    Callback = function()
-        local XYZ = Cordinats.Value
-        local x, y, z = string.match(XYZ, "([%d%.%-]+),%s*([%d%.%-]+),%s*([%d%.%-]+)")
-        if x and y and z then
-            game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(tonumber(x), tonumber(y), tonumber(z))
-            Fluent:Notify({
-                Title = "Teleported",
-                Content = "Teleported to " .. XYZ,
-                Duration = 3
-            })
-        else
-            Fluent:Notify({
-                Title = "Error",
-                Content = "Invalid coordinates format! Use: x, y, z",
-                Duration = 3
-            })
-        end
-    end
-})
--- ===================== Teleport END =====================
-
-
--- ==================== Debug Start ====================
-	local Fishing = Tabs.Debug:AddSection("Fishing", nil)
-    Tabs.Debug:AddButton({
-        Title = "Equip rod",
-        Description = "", --Make your character sit",
-        Callback = function()
-			local Rod, isEquip = GetPlayerRod()
-
-			if Rod then
-				if not isEquip then
-					Rod.Parent = game:GetService('Players').LocalPlayer.Character
-				else
-					DeugLog("Удочка уже екиперована")
-				end
-			end
-        end
-    })
-
-	local PerfectCats = Tabs.Debug:AddToggle("PerfectCats", {Title = "PerfectCats",Default = false })
-
-    Tabs.Debug:AddButton({
-        Title = "Cast",
-        Description = "", --Make your character sit",
-        Callback = function()
-			local Rod, isEquip = GetPlayerRod()
-
-			if Rod then
-				if isEquip then
-					local remote = Rod.events.castAsync
-					local CastDist = 1
-					if PerfectCats.Value == true then
-						CastDist = 99
-					else
-						CastDist = 53
-					end
-
-					local arguments = {
-						[1] = CastDist,
-						[2] = 1
-					}
-					local results = remote:InvokeServer(unpack(arguments))
-				else
-					DeugLog("Удочка не екиперована")
-				end
-			end
-        end
-    })
-
-	local PerfectReel = Tabs.Debug:AddToggle("PerfectReel", {Title = "PerfectReel",Default = false })
-	Tabs.Debug:AddButton({
-        Title = "Rell",
-        Description = "", --Make your character sit",
-        Callback = function()
-			local Rod, isEquip = GetPlayerRod()
-
-			if Rod then
-				if isEquip then
-					local remote = game:GetService("ReplicatedStorage").events.reelfinished
-					local arguments = {
-						[1] = 100,
-						[2] = PerfectReel.Value
-					}
-					remote:FireServer(unpack(arguments))
-				else
-					DeugLog("Удочка не екиперована")
-				end
-			end
-        end
-    })
-
-    Tabs.Debug:AddButton({
-        Title = "Reset",
-        Description = "", --Make your character sit",
-        Callback = function()
-			local Rod, isEquip = GetPlayerRod()
-
-			if Rod then
-				if isEquip then
-					local remote = Rod.events.reset
-					local arguments = {}
-					remote:FireServer(unpack(arguments))
-				else
-					DeugLog("Удочка не екиперована")
-				end
-			end
-        end
-    })
-
-	local Misc = Tabs.Debug:AddSection("Misc", nil)
-
-    Tabs.Debug:AddButton({
-        Title = "Title Spam",
-        Description = "", --Make your character sit",
-        Callback = function()
-			local titlesScroll = game:GetService("Players").LocalPlayer.PlayerGui.hud.safezone.menu.menu_safezone.scroll["4User"].Titles.scroll
-			--DeugLog("=== СПИСОК ТИТУЛОВ ===")
-			for _, child in ipairs(titlesScroll:GetChildren()) do
-				if not child:IsA("UIListLayout") and not child:IsA("UIPadding") and child.Name ~= "stroke" then
-					--DeugLog("• " .. child.Name)
-
-					game:GetService("ReplicatedStorage").packages.Net["RE/Titles/Equip"]:FireServer(child.Name)
-					task.wait(0.01)
-				end
-			end
-        end
-    })
-
-
-	local World = Tabs.Debug:AddSection("World", nil)
-
-    Tabs.Debug:AddButton({
-        Title = "Walk on wather On",
-        Description = "", --Make your character sit",
-        Callback = function()
-			--workspace.zones.player
-			for _, zone in pairs(workspace.zones.fishing:GetChildren()) do
-				zone.CanCollide = true
-			end
-        end
-    })
-
-    Tabs.Debug:AddButton({
-        Title = "Walk on wather Off",
-        Description = "", --Make your character sit",
-        Callback = function()
-			--workspace.zones.player
-			for _, zone in pairs(workspace.zones.fishing:GetChildren()) do
-				zone.CanCollide = false
-			end
-        end
-    })
-
-	Tabs.Debug:AddButton({
-        Title = "Walk Under wather On",
-        Description = "", --Make your character sit",
-        Callback = function()
-			local player = game.Players.LocalPlayer
-			local character = player.Character or player.CharacterAdded:Wait()
-			local humanoid = character:WaitForChild("Humanoid")
-
-			-- Полное отключение плавания
-			humanoid:SetStateEnabled(Enum.HumanoidStateType.Swimming, false)
-        end
-    })
-
-    Tabs.Debug:AddButton({
-        Title = "Walk Under wather Off",
-        Description = "", --Make your character sit",
-        Callback = function()
-			local player = game.Players.LocalPlayer
-			local character = player.Character or player.CharacterAdded:Wait()
-			local humanoid = character:WaitForChild("Humanoid")
-
-			-- Полное отключение плавания
-			humanoid:SetStateEnabled(Enum.HumanoidStateType.Swimming, true)
-        end
-    })
-
-	local Market = Tabs.Debug:AddSection("Market", nil)
-	
-    Tabs.Debug:AddButton({
-        Title = "Buy Oscar Rod",
-        Description = "Cost 5kk", --Make your character sit",
-        Callback = function()
-			local purchaseEvent = game:GetService("ReplicatedStorage").events.purchase
-			purchaseEvent:FireServer("Great Rod of Oscar", "Rod", nil, 1)
-        end
-    })
-
-    Tabs.Debug:AddButton({
-        Title = "Buy Original No-Life Rod",
-        Description = "Cost 1C", --Make your character sit",
-        Callback = function()
-			local purchaseEvent = game:GetService("ReplicatedStorage").events.purchase
-			purchaseEvent:FireServer("Original No-Life Rod", "Rod", nil, 1)
-        end
-    })
-
-	local UNIVERSAL = Tabs.Debug:AddSection("UNIVERSAL", nil)
-
-    Tabs.Debug:AddButton({
-        Title = "Load DEX",
-        Description = "", --Make your character sit",
-        Callback = function()
-			loadstring(game:HttpGet("https://raw.githubusercontent.com/Y-ForBE-Y/ioasduq089eu3oi13u12o3u/refs/heads/main/My%20Script/XZCHEZAZALUPA/DEXPP.txt"))()
-        end
-    })
-
-    Tabs.Debug:AddButton({
-        Title = "Load INF YALD",
-        Description = "", --Make your character sit",
-        Callback = function()
-			loadstring(game:HttpGet('https://raw.githubusercontent.com/EdgeIY/infiniteyield/master/source'))()
-        end
-    })
-
--- ===================== Debug END =====================
 end
 
--- Addons:
-SaveManager:SetLibrary(Fluent)
-InterfaceManager:SetLibrary(Fluent)
 
-SaveManager:IgnoreThemeSettings()
-SaveManager:SetIgnoreIndexes({})
+-- Teleport 
+do
+	do
+		local LocationORZones = Teleport:Tab({
+			Title = "Location/Zones",
+			Icon = "lucide:map-pin"
+		})
 
-InterfaceManager:SetFolder("FluentScriptHub")
-SaveManager:SetFolder("FluentScriptHub/specific-game")
+		-- Таблица с координатами локаций
+		local locations = {
+			["Enchant Altar"] = CFrame.new(1310.7498779296875, -802.427001953125, -84.14505767822266),
+			["Moosewood"] = CFrame.new(468.4601745605469, 150.6934051513672, 266.5889892578125),
+			["Roslit"] = CFrame.new(-1510.43310546875, 133.00001525878906, 615.421875),
+			["Snowcap"] = CFrame.new(2689.964599609375, 152.81431579589844, 2382.687744140625),
+			["Sunstone"] = CFrame.new(-1059.8160400390625, 138.38648986816406, -1147.626708984375),
+			["Vertigo"] = CFrame.new(-100.74667358398438, -513.2993774414062, 1053.50244140625),
+			["Desolate Deep"] = CFrame.new(-1666.7783203125, -214.1810302734375, -2838.974853515625),
+			["Forsaken Shores"] = CFrame.new(-2530.197509765625, 135.25001525878906, 1558.6446533203125),
+			["Ancient Isle"] = CFrame.new(6072.98291015625, 195.18016052246094, 296.28118896484375),
+			["The Depths"] = CFrame.new(954.4327392578125, -711.662109375, 1217.8978271484375),
+			["Northern Summit"] = CFrame.new(19537.888671875, 132.67010498046875, 5295.79638671875),
+			["Frigid Cavern"] = CFrame.new(19759.77734375, 415.43707275390625, 5402.3203125),
+			["Cryogenic Canal"] = CFrame.new(20303.177734375, 706.5989990234375, 5767.0732421875),
+			["Glacial Grotto"] = CFrame.new(19903.4453125, 1154.770263671875, 5510.076171875),
+			["Atlantis"] = CFrame.new(-4252.130859375, -603.4038696289062, 1830.807373046875),
+			["Challenger Deep"] = CFrame.new(-778.5140380859375, -3283.211181640625, -667.571044921875),
+			["Volcanic Vents"] = CFrame.new(-3407.9072265625, -2260.38232421875, 3856.470947265625),
+			["Abyssal Zenith"] = CFrame.new(-13502.2431640625, -11050.1884765625, 127.95650482177734),
+			["Calm Zone"] = CFrame.new(-4234.89208984375, -11201.2109375, 1786.04541015625),
+			["Castaway Cliffs"] = CFrame.new(645.3287963867188, 160.99998474121094, -1788.6729736328125),
+			["Crystal Cove"] = CFrame.new(1368.512939453125, -614.0402221679688, 2455.83544921875),
+			["Terrapin"] = CFrame.new(-224.14453125, 153.77735900878906, 1933.1331787109375),
+			["Luminescent Cavern"] = CFrame.new(-1008.2897338867188, -336.3400573730469, -4076.955078125),
+			["Lost Jungles"] = CFrame.new(-2710.125, 150.24826049804688, -2051.906494140625),
+			["Crimson Cavern"] = CFrame.new(-1031.912109375, -354.1904296875, -4851.046875),
+			["Scylla"] = CFrame.new(-2348.7109375, -11183.4892578125, 7071.1806640625),
+			["Kraken Pool"] = CFrame.new(-4301.30712890625, -1001.360107421875, 2004.2734375),
+			["Mossjaw Hunt"] = CFrame.new(-4909.92333984375, -1790.561279296875, -10162.6962890625),
+			["Mushgrove Swamp"] = CFrame.new(2433.88232421875, 131.62515258789062, -673.1868896484375),
+			["Carrot Garden"] = CFrame.new(3705.1044921875, -1127.6787109375, -1092.2685546875),
+		}
 
-InterfaceManager:BuildInterfaceSection(Tabs.Settings)
-SaveManager:BuildConfigSection(Tabs.Settings)
+		-- Функция для телепортации к локации
+		local function teleportToLocation(locationName)
+			if locationName == nil then
+				return
+			end
+			
+			local locationCFrame = locations[locationName]
+			if locationCFrame then
+				local character = game.Players.LocalPlayer.Character
+				if character and character:FindFirstChild("HumanoidRootPart") then
+					character.HumanoidRootPart.CFrame = locationCFrame
+					WindUI:Notify({
+						Title = "Teleport",
+						Content = "Teleported to " .. locationName,
+						Icon = "check"
+					})
+				else
+					WindUI:Notify({
+						Title = "Error",
+						Content = "Character not found!",
+						Icon = "x"
+					})
+				end
+			else
+				WindUI:Notify({
+					Title = "Error",
+					Content = "Location not found!",
+					Icon = "x"
+				})
+			end
+		end
 
-Window:SelectTab(1)
+		-- Создаем лист для выбора локаций
+		local locationNames = {}
+		for locationName, _ in pairs(locations) do
+			table.insert(locationNames, locationName)
+		end
+		table.sort(locationNames) -- Сортируем по алфавиту
+		-- Добавляем "None" на первую позицию
+		table.insert(locationNames, 1, "None")
 
--- Автоматическое восстановление при загрузке
+		local locationDropdown = LocationORZones:Dropdown({
+			Title = "Select Location",
+			Desc = "Choose location to teleport",
+			AllowNone = true,
+			SearchBarEnabled = true,
+			Values = locationNames,
+			Value = "None",
+		})
 
-task.spawn(function()
-    --wait(5) -- Даем время на полную загрузку
-    SaveManager:LoadAutoloadConfig()
-end)
+		local TeleportToLocation
+		TeleportToLocation = LocationORZones:Button({
+			Title = "Teleport to Select",
+			Desc = "Teleporting you to selected location",
+			Callback = function()
+				local Value = locationDropdown.Value
+				if Value ~= "None" then
+					teleportToLocation(Value)
+					TeleportToLocation:Highlight()
+				end
+			end
+		})
+	
+	
+		local Old_pos
+		local inSafePlase = false
+		local TeleportToSafePlase
+		TeleportToSafePlase = LocationORZones:Button({
+			Title = "Create Safe Place",
+			Desc = "Create a safe zone high in the sky",
+			Callback = function()
+				if not inSafePlase then
+					inSafePlase = true
+					local Players = game:GetService("Players")
+					local LocalPlayer = Players.LocalPlayer
+					local playerName = LocalPlayer.Name
 
---SaveManager:LoadAutoloadConfig()
+					Old_pos = workspace[playerName].HumanoidRootPart.Position
+
+					local targetCharacter = workspace:WaitForChild(playerName)
+					local HumanoidRootPart = targetCharacter:WaitForChild("HumanoidRootPart")
+
+					local currentRotation = HumanoidRootPart.CFrame.Rotation
+
+					local SafeZone = Instance.new("Part")
+					SafeZone.Size = Vector3.new(30, 1, 30)
+					SafeZone.Position = Vector3.new(math.random(-2000,2000), math.random(50000,90000), math.random(-2000,2000))
+					SafeZone.Anchored = true
+					SafeZone.BrickColor = BrickColor.new("Bright purple")
+					SafeZone.Material = Enum.Material.ForceField
+					SafeZone.Parent = game.Workspace
+					
+					HumanoidRootPart.CFrame = CFrame.new(SafeZone.Position + Vector3.new(0, 5, 0)) * currentRotation
+
+					WindUI:Notify({
+						Title = "Teleport",
+						Icon = "shield",
+						Content = "Teleporting in safe place",
+						Duration = 3, -- 3 seconds
+					})
+
+					TeleportToSafePlase:Highlight()
+				end
+			end
+		})
+		local ReturnOfSafePlase
+		ReturnOfSafePlase = LocationORZones:Button({
+			Title = "Return",
+			Desc = "Return to original position",
+			Callback = function()
+				if Old_pos then
+					local character = workspace[game:GetService("Players").LocalPlayer.Name]
+					local humanoidRootPart = character:WaitForChild("HumanoidRootPart")
+					humanoidRootPart.CFrame = CFrame.new(Old_pos) * humanoidRootPart.CFrame.Rotation
+					ReturnOfSafePlase:Highlight()
+
+					WindUI:Notify({
+						Title = "Teleport",
+						Content = "Returning from safe place",
+						Duration = 3, -- 3 seconds
+						Icon = "arrow-left",
+					})
+
+					inSafePlase = false
+				end
+			end
+		})
+	
+		local CopyXYZType = LocationORZones:Dropdown({
+			Title = "Copy XYZ Type", 
+			Values = {"CFrame Script", "Coordinates Only"},
+			Multi = false,
+			Value = "CFrame Script",
+		})
+
+		local CopyPosition
+		CopyPosition = LocationORZones:Button({
+			Title = "Copy XYZ",
+			Description = "Copy position to clipboard",
+			Callback = function()
+				local XYZ = tostring(game.Players.LocalPlayer.Character.HumanoidRootPart.Position)
+
+				if CopyXYZType.Value == "CFrame Script" then
+					setclipboard("game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(" .. XYZ .. ")")
+				else
+					setclipboard(XYZ)
+				end
+
+				CopyPosition:Highlight()
+
+				WindUI:Notify({
+					Title = "Copied to clipbord",
+					Content = "XYZ " .. tostring(CopyXYZType.Value) .. " copied!",
+					Duration = 3, -- 3 seconds
+					Icon = "copy",
+				})
+			end
+		})
+
+		local Cordinats = LocationORZones:Input({
+			Title = "Cords",
+			Desc = "Input Description",
+			Value = "",
+			InputIcon = "bird",
+			Type = "Input", -- or "Textarea"
+			Placeholder = "0, 0, 0",
+		})
+
+		local TeleportToCords
+		TeleportToCords = LocationORZones:Button({
+			Title = "Teleport to Cords",
+			Description = "Писать через запятую",
+			Callback = function()
+				local XYZ = Cordinats.Value
+				local x, y, z = string.match(XYZ, "([%d%.%-]+),%s*([%d%.%-]+),%s*([%d%.%-]+)")
+				if x and y and z then
+					game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(tonumber(x), tonumber(y), tonumber(z))
+					
+					WindUI:Notify({
+						Title = "Teleported",
+						Content = "Teleported to " .. XYZ,
+						Duration = 3,
+						Icon = "map-pin",
+					})
+				else
+					WindUI:Notify({
+						Title = "Error",
+						Content = "Invalid coordinates format! Use: x, y, z",
+						Duration = 3,
+						Icon = "x",
+					})
+				end
+			end
+		})
+	end
+
+
+
+	
+    local Player_Teleport = Teleport:Tab({
+        Title = "Players Teleport",
+        Icon = "lucide:move"
+    })
+
+--[[
+    local Optional = Teleport:Tab({
+        Title = "Optional",
+        Icon = "lucide:list"
+    })
+]]
+end
+
+--[[-- World 
+do
+    local Visuals = World:Tab({
+        Title = "Visuals",
+        Icon = "lucide:cloud-sun"
+    })
+
+--[[
+    local Optional = World:Tab({
+        Title = "Optional",
+        Icon = "lucide:list"
+    })
+
+end
+--]]
+
+-- Appearance & Configs 
+do
+    local Interface = AppearanceAndConfigs:Tab({
+        Title = "Interface",
+        Icon = "lucide:monitor"
+    })
+	
+    local Theme = AppearanceAndConfigs:Tab({
+        Title = "Theme",
+        Icon = "lucide:droplet"
+    })
+
+    local Configuration = AppearanceAndConfigs:Tab({
+        Title = "Configuration",
+        Icon = "lucide:folder"
+    })
+end
+
+-- Development
+do
+    local In_Dev = Development:Tab({
+        Title = "In Dev",
+        Icon = "lucide:wrench"
+    })
+	
+    local Debug = Development:Tab({
+        Title = "Debug",
+        Icon = "lucide:activity"
+    })
+
+
+	do
+		local Third_party_scripts = Development:Tab({
+			Title = "Third-party scripts",
+			Icon = "lucide:download"
+		})
+
+		local UNIVERSALSection = Third_party_scripts:Section({ Title = "UNIVERSAL", })
+		
+		local Load_DEX_BTN
+		Load_DEX_BTN = Third_party_scripts:Button({
+			Title = "Load DEX",
+			Callback = function()
+				Load_DEX_BTN:Highlight()
+				loadstring(game:HttpGet("https://raw.githubusercontent.com/Y-ForBE-Y/ioasduq089eu3oi13u12o3u/refs/heads/main/My%20Script/XZCHEZAZALUPA/DEXPP.txt"))()
+			end
+		})
+
+		local Load_INFYALD_BTN
+		Load_INFYALD_BTN = Third_party_scripts:Button({
+			Title = "Load INF YALD",
+			Callback = function()
+				Load_INFYALD_BTN:Highlight()
+				loadstring(game:HttpGet('https://raw.githubusercontent.com/EdgeIY/infiniteyield/master/source'))()
+			end
+		})
+	end
+end
+
+print("Fully Loaded")
+
+
+
+
+
