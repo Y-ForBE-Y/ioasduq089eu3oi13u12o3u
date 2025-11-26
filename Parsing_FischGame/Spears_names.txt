@@ -1,6 +1,0 @@
-Barbed Spear
-Craftable
-Flimsy Spear
-Mini Spear
-Poison-Tipped Spear
-Steady Spear
